@@ -1,0 +1,14 @@
+//
+// Created by Neko Toxin on 2023/3/19.
+//
+
+#ifndef SECONDLEVELFS_OPENFILEMANAGER_H
+#define SECONDLEVELFS_OPENFILEMANAGER_H
+
+
+class OpenFileManager {
+
+};
+
+
+#endif //SECONDLEVELFS_OPENFILEMANAGER_H
