@@ -5,6 +5,8 @@ project(SecondLevelFS)
 add_executable(SecondLevelFS
         BufferManager.cpp
         BufferManager.h
+        UserManager.cpp
+        UserManager.h
         DiskDriver.cpp
         DiskDriver.h
         File.cpp
@@ -13,8 +15,8 @@ add_executable(SecondLevelFS
         FileManager.h
         FileSystem.cpp
         FileSystem.h
-        INode.cpp
-        INode.h
+        Inode.cpp
+        Inode.h
         Kernel.cpp
         Kernel.h
         main.cpp
@@ -22,13 +24,17 @@ add_executable(SecondLevelFS
         OpenFileManager.h
         User.cpp
         User.h
-        Utility.cpp
-        Utility.h
-        )
+        KernelAPI.cpp)
+
+add_executable(Client
+        Client.cpp)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+
+
 
 # Set compiler flags
 if (MSVC)
