@@ -1,0 +1,10 @@
+/objs
+/test
+.ssh
+.vscode
+create_remote.sh
+cmake-build-debug
+.test
+.idea
+.vscode
+.DS_Store
