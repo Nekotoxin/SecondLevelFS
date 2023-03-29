@@ -15,8 +15,8 @@ add_executable(SecondLevelFS
         FileManager.h
         FileSystem.cpp
         FileSystem.h
-        Inode.cpp
-        Inode.h
+        INode.cpp
+        INode.h
         Kernel.cpp
         Kernel.h
         main.cpp
@@ -27,7 +27,7 @@ add_executable(SecondLevelFS
         KernelAPI.cpp)
 
 add_executable(Client
-        Client.cpp)
+        client.cpp)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 11)
