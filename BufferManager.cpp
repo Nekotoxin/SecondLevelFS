@@ -2,6 +2,7 @@
 #include "BufferManager.h"
 #include "Kernel.h"
 #include<string.h>
+#include <stdio.h>
 #include<iostream>
 using namespace std;
 BufferManager::BufferManager()
