@@ -1,129 +1,77 @@
-#ifndef FILE_SYSTEM_H
-#define FILE_SYSTEM_H
-
+#pragma once
+#define _CRT_SECURE_NO_WARNINGS
 #include "INode.h"
 #include "BufferManager.h"
-#include "Buf.h"
-#include <pthread.h>
+#include "DiskDriver.h"
+/* ´ÅÅÌÎÄ¼ş½á¹¹£ºSuperBlock + DiskINode + ÎÄ¼şÊı¾İÇø */
 
-/*
- * æ–‡ä»¶ç³»ç»Ÿå­˜å‚¨èµ„æºç®¡ç†å—(Super Block)çš„å®šä¹‰ã€‚
- */
-class SuperBlock
+/* ÎÄ¼şÏµÍ³´æ´¢×ÊÔ´¹ÜÀí¿é(SuperBlock½á¹¹) 1024×Ö½Ú */
+class SuperBlock 
 {
-	/* Functions */
 public:
-	/* Constructors */
-	SuperBlock();
-	/* Destructors */
-	~SuperBlock();
-	
-	/* Members */
+	const static int MAX_NUMBER_FREE = 100;
+	const static int MAX_NUMBER_INODE = 100;
+
 public:
-	int		s_isize;		/* å¤–å­˜InodeåŒºå ç”¨çš„ç›˜å—æ•° */
-	int		s_fsize;		/* ç›˜å—æ€»æ•° */
-	
-	int		s_nfree;		/* ç›´æ¥ç®¡ç†çš„ç©ºé—²ç›˜å—æ•°é‡ */
-	int		s_free[100];	/* ç›´æ¥ç®¡ç†çš„ç©ºé—²ç›˜å—ç´¢å¼•è¡¨ */
-	
-	int		s_ninode;		/* ç›´æ¥ç®¡ç†çš„ç©ºé—²å¤–å­˜Inodeæ•°é‡ */
-	int		s_inode[100];	/* ç›´æ¥ç®¡ç†çš„ç©ºé—²å¤–å­˜Inodeç´¢å¼•è¡¨ */
-	
-	pthread_mutex_t		s_flock;		/* å°é”ç©ºé—²ç›˜å—ç´¢å¼•è¡¨æ ‡å¿— */
-	pthread_mutex_t		s_ilock;		/* å°é”ç©ºé—²Inodeè¡¨æ ‡å¿— */
-	
-	int		s_fmod;			/* å†…å­˜ä¸­super blockå‰¯æœ¬è¢«ä¿®æ”¹æ ‡å¿—ï¼Œæ„å‘³ç€éœ€è¦æ›´æ–°å¤–å­˜å¯¹åº”çš„Super Block */
-	int		s_ronly;		/* æœ¬æ–‡ä»¶ç³»ç»Ÿåªèƒ½è¯»å‡º */
-	int     s_time;	        /* æœ€è¿‘ä¸€æ¬¡æ›´æ–°æ—¶é—´ */
-	int		padding[29];	/* å¡«å……ä½¿SuperBlockå—å¤§å°ç­‰äº1024å­—èŠ‚ï¼Œå æ®2ä¸ªæ‰‡åŒº */
+	int	s_isize;		        //Íâ´æINodeÇøÕ¼ÓÃµÄÅÌ¿éÊı 1022
+	int	s_fsize;		        //ÎÄ¼şÏµÍ³µÄÊı¾İÅÌ¿é×ÜÊı  16384 - 1024 = 15360
+
+	int	s_nfree;		        //Ö±½Ó¹ÜÀíµÄ¿ÕÏĞÅÌ¿éÊıÁ¿
+	int	s_free[MAX_NUMBER_FREE];//Ö±½Ó¹ÜÀíµÄ¿ÕÏĞÅÌ¿éË÷Òı±í
+
+	int	s_ninode;		          //Ö±½Ó¹ÜÀíµÄ¿ÕÏĞÍâ´æINodeÊıÁ¿
+	int	s_inode[MAX_NUMBER_INODE];//Ö±½Ó¹ÜÀíµÄ¿ÕÏĞÍâ´æINodeË÷Òı±í
+
+	int	s_fmod;			        //ÄÚ´æÖĞsuper block¸±±¾±»ĞŞ¸Ä±êÖ¾£¬ÒâÎ¶×ÅĞèÒª¸üĞÂÍâ´æ¶ÔÓ¦µÄSuper Block
+	int	s_time;			        //×î½üÒ»´Î¸üĞÂÊ±¼ä
+	int	padding[50];	        //Ìî³äÊ¹SuperBlock¿é´óĞ¡µÈÓÚ1024×Ö½Ú£¬Õ¼¾İ2¸öÉÈÇø
 };
 
-
-
-/*
- * æ–‡ä»¶ç³»ç»Ÿç±»(FileSystem)ç®¡ç†æ–‡ä»¶å­˜å‚¨è®¾å¤‡ä¸­
- * çš„å„ç±»å­˜å‚¨èµ„æºï¼Œç£ç›˜å—ã€å¤–å­˜INodeçš„åˆ†é…ã€
- * é‡Šæ”¾ã€‚
- */
-class FileSystem
+/* DiskINode½ÚµãµÄË÷Òı½á¹¹ 32×Ö½Ú */
+class DirectoryEntry 
 {
 public:
-	/* static consts */
-	//static const int NMOUNT = 5;			/* ç³»ç»Ÿä¸­ç”¨äºæŒ‚è½½å­æ–‡ä»¶ç³»ç»Ÿçš„è£…é…å—æ•°é‡ */
-
-	static const int SUPER_BLOCK_SECTOR_NUMBER = 0;	/* å®šä¹‰SuperBlockä½äºç£ç›˜ä¸Šçš„æ‰‡åŒºå·ï¼Œå æ®200ï¼Œ201ä¸¤ä¸ªæ‰‡åŒºã€‚ */
-
-	static const int ROOTINO = 0;			/* æ–‡ä»¶ç³»ç»Ÿæ ¹ç›®å½•å¤–å­˜Inodeç¼–å· */
-
-	static const int INODE_NUMBER_PER_SECTOR = 8;		/* å¤–å­˜INodeå¯¹è±¡é•¿åº¦ä¸º64å­—èŠ‚ï¼Œæ¯ä¸ªç£ç›˜å—å¯ä»¥å­˜æ”¾512/64 = 8ä¸ªå¤–å­˜Inode */
-	static const int INODE_ZONE_START_SECTOR = 2;		/* å¤–å­˜InodeåŒºä½äºç£ç›˜ä¸Šçš„èµ·å§‹æ‰‡åŒºå· */
-	static const int INODE_ZONE_SIZE = 27 - 2;		/* ç£ç›˜ä¸Šå¤–å­˜InodeåŒºå æ®çš„æ‰‡åŒºæ•° */
-
-	static const int DATA_ZONE_START_SECTOR = 27;		/* æ•°æ®åŒºçš„èµ·å§‹æ‰‡åŒºå· */
-	static const int DATA_ZONE_END_SECTOR = 1000 - 1;	/* æ•°æ®åŒºçš„ç»“æŸæ‰‡åŒºå· */
-	static const int DATA_ZONE_SIZE = 1000 - DATA_ZONE_START_SECTOR;	/* æ•°æ®åŒºå æ®çš„æ‰‡åŒºæ•°é‡ */
-
-	/* Functions */
+	static const int DIRSIZ = 28;//Ä¿Â¼ÏîÖĞÂ·¾¶²¿·ÖµÄ×î´ó×Ö·û´®³¤¶È
 public:
-	/* Constructors */
+	int m_ino;                   //Ä¿Â¼ÏîÖĞINode±àºÅ²¿·Ö£¬¼´¶ÔÓ¦ÎÄ¼şÔÚ¿éÉè±¸ÉÏµÄÍâ´æË÷Òı½ÚµãºÅ
+	char name[DIRSIZ];           //Ä¿Â¼ÏîÖĞÂ·¾¶Ãû²¿·Ö
+};
+
+class FileSystem 
+{
+public:
+	static const int BLOCK_SIZE = 512;           //Block¿é´óĞ¡£¬µ¥Î»×Ö½Ú
+	static const int DISK_SECTOR_NUMBER = 16384; //´ÅÅÌËùÓĞÉÈÇøÊıÁ¿ 8MB / 512B = 16384  
+	static const int SUPERBLOCK_START_SECTOR = 0;//¶¨ÒåSuperBlockÎ»ÓÚ´ÅÅÌÉÏµÄÉÈÇøºÅ£¬Õ¼¾İÁ½¸öÉÈÇø
+	static const int INODE_START_SECTOR = 2;     //Íâ´æINodeÇøÎ»ÓÚ´ÅÅÌÉÏµÄÆğÊ¼ÉÈÇøºÅ
+	static const int INODE_SECTOR_NUMBER = 1022; //´ÅÅÌÉÏÍâ´æINodeÇøÕ¼¾İµÄÉÈÇøÊı
+	static const int INODE_SIZE = sizeof(DiskINode);//64×Ö½Ú
+	static const int INODE_NUMBER_PER_SECTOR = BLOCK_SIZE / INODE_SIZE;//Íâ´æINode¶ÔÏó³¤¶ÈÎª64×Ö½Ú£¬Ã¿¸ö´ÅÅÌ¿é¿ÉÒÔ´æ·Å512/64 = 8¸öÍâ´æINode
+	static const int ROOT_INODE_NO = 0;          //ÎÄ¼şÏµÍ³¸ùÄ¿Â¼Íâ´æINode±àºÅ
+	static const int INODE_NUMBER_ALL = INODE_SECTOR_NUMBER * INODE_NUMBER_PER_SECTOR; //Íâ´æINodeµÄ×Ü¸öÊı
+	static const int DATA_START_SECTOR = INODE_START_SECTOR + INODE_SECTOR_NUMBER;     //Êı¾İÇøµÄÆğÊ¼ÉÈÇøºÅ    
+	static const int DATA_END_SECTOR = DISK_SECTOR_NUMBER - 1;                         //Êı¾İÇøµÄ×îºóÉÈÇøºÅ
+	static const int DATA_SECTOR_NUMBER = DISK_SECTOR_NUMBER - DATA_START_SECTOR;      //Êı¾İÇøÕ¼¾İµÄÉÈÇøÊıÁ¿
+
+	DiskDriver* diskDriver;
+	SuperBlock* superBlock;
+	BufferManager* cacheManager;
+
 	FileSystem();
-	/* Destructors */
 	~FileSystem();
 
-	/* 
-	 * @comment åˆå§‹åŒ–æˆå‘˜å˜é‡
-	 */
-	void Initialize();
+	void FormatSuperBlock();//¸ñÊ½»¯SuperBlock
+	void FormatDevice();    //¸ñÊ½»¯Õû¸öÎÄ¼şÏµÍ³
 
-	/* 
-	* @comment ç³»ç»Ÿåˆå§‹åŒ–æ—¶è¯»å…¥SuperBlock
-	*/
-	void LoadSuperBlock();
+	/* ÔÚ²Ù×÷ÏµÍ³³õÊ¼»¯Ê±£¬»á½«´ÅÅÌµÄSuperBlock¶ÁÈëÒ»¸öÄÚ´æµÄSuperBlock¸±±¾£¬ÒÔ±ãÓÚÄÚºËÒÔ¸ü¿ìµÄËÙ¶ÈËæÊ±·ÃÎÊÄÚ´æ¸±±¾¡£
+	Ò»µ©ÄÚ´æÖĞµÄ¸±±¾·¢Éú±ä»¯£¬»áÍ¨¹ıÉèÖÃs_fmod±êÖ¾£¬ÓÉÄÚºË½«ÄÚ´æ¸±±¾Ğ´Èë´ÅÅÌ */
+	void LoadSuperBlock();  //ÏµÍ³³õÊ¼»¯Ê±¶ÁÈëSuperBlock
+	void Update();          //½«SuperBlock¶ÔÏóµÄÄÚ´æ¸±±¾¸üĞÂµ½´æ´¢Éè±¸µÄSuperBlockÖĞÈ¥
 
-	/* 
-	 * @comment æ ¹æ®æ–‡ä»¶å­˜å‚¨è®¾å¤‡çš„è®¾å¤‡å·devè·å–
-	 * è¯¥æ–‡ä»¶ç³»ç»Ÿçš„SuperBlock
-	 */
-	SuperBlock* GetFS();
-	/* 
-	 * @comment å°†SuperBlockå¯¹è±¡çš„å†…å­˜å‰¯æœ¬æ›´æ–°åˆ°
-	 * å­˜å‚¨è®¾å¤‡çš„SuperBlockä¸­å»
-	 */
-	void Update();
+	/* ´ÅÅÌInode½ÚµãµÄ·ÖÅäÓë»ØÊÕËã·¨Éè¼ÆÓëÊµÏÖ */
+	INode* IAlloc();        //ÔÚ´æ´¢Éè±¸ÉÏ·ÖÅäÒ»¸ö¿ÕÏĞÍâ´æINode£¬Ò»°ãÓÃÓÚ´´½¨ĞÂµÄÎÄ¼ş
+	void IFree(int number); //ÊÍ·Å±àºÅÎªnumberµÄÍâ´æINode£¬Ò»°ãÓÃÓÚÉ¾³ıÎÄ¼ş
 
-	/* 
-	 * @comment  åœ¨å­˜å‚¨è®¾å¤‡devä¸Šåˆ†é…ä¸€ä¸ªç©ºé—²
-	 * å¤–å­˜INodeï¼Œä¸€èˆ¬ç”¨äºåˆ›å»ºæ–°çš„æ–‡ä»¶ã€‚
-	 */
-	Inode* IAlloc();
-	/* 
-	 * @comment  é‡Šæ”¾å­˜å‚¨è®¾å¤‡devä¸Šç¼–å·ä¸ºnumber
-	 * çš„å¤–å­˜INodeï¼Œä¸€èˆ¬ç”¨äºåˆ é™¤æ–‡ä»¶ã€‚
-	 */
-	void IFree(int number);
-
-	/* 
-	 * @comment åœ¨å­˜å‚¨è®¾å¤‡devä¸Šåˆ†é…ç©ºé—²ç£ç›˜å—
-	 */
-	Buf* Alloc();
-	/* 
-	 * @comment é‡Šæ”¾å­˜å‚¨è®¾å¤‡devä¸Šç¼–å·ä¸ºblknoçš„ç£ç›˜å—
-	 */
-	void Free(int blkno);
-
-
-private:
-	/* 
-	 * @comment æ£€æŸ¥è®¾å¤‡devä¸Šç¼–å·blknoçš„ç£ç›˜å—æ˜¯å¦å±äº
-	 * æ•°æ®ç›˜å—åŒº
-	 */
-	bool BadBlock(SuperBlock* spb, int blkno);
-
-
-private:
-	BufferManager* m_BufferManager;		/* FileSystemç±»éœ€è¦ç¼“å­˜ç®¡ç†æ¨¡å—(BufferManager)æä¾›çš„æ¥å£ */
-	int updlock;				/* Update()å‡½æ•°çš„é”ï¼Œè¯¥å‡½æ•°ç”¨äºåŒæ­¥å†…å­˜å„ä¸ªSuperBlockå‰¯æœ¬ä»¥åŠï¼Œ
-								è¢«ä¿®æ”¹è¿‡çš„å†…å­˜Inodeã€‚ä»»ä¸€æ—¶åˆ»åªå…è®¸ä¸€ä¸ªè¿›ç¨‹è°ƒç”¨è¯¥å‡½æ•° */
+	Buf* Alloc();    //ÔÚ´æ´¢Éè±¸ÉÏ·ÖÅä¿ÕÏĞ´ÅÅÌ¿é
+	void Free(int blkno);   //ÊÍ·Å´æ´¢Éè±¸ÉÏ±àºÅÎªblknoµÄ´ÅÅÌ¿é
 };
-
-#endif

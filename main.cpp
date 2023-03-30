@@ -1,626 +1,319 @@
-#include "Kernel.h"
+#define _CRT_SECURE_NO_WARNINGS
+#include "DiskDriver.h"
+#include "BufferManager.h"
+#include "OpenFileManager.h"
+#include "SystemCall.h"
+#include "UserCall.h"
 #include <iostream>
-#include <string>
-#include <string.h>
 #include <sstream>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>      
-#include <strings.h>      
-#include <sys/types.h> 
-#include <sys/socket.h> 
-#include <netinet/in.h> 
-#include <arpa/inet.h>
-#include<pthread.h>
-#include <signal.h>
-#define PORT 1235
-#define BACKLOG 128
-
+#include <unordered_map>
 using namespace std;
 
-void handle_pipe(int sig)
+DiskDriver myDiskDriver;
+BufferManager myCacheManager;
+OpenFileTable myOpenFileTable;
+SuperBlock mySuperBlock;
+FileSystem myFileSystem;
+INodeTable myINodeTable;
+SystemCall mySystemCall;
+UserCall myUserCall;
+
+bool AutoTest()
 {
-//ä¸åšä»»ä½•å¤„ç†å³å¯
+	UserCall& User = myUserCall;
+	cout << "×¢Òâ£º×Ô¶¯²âÊÔ²»°üº¬¸ñÊ½»¯²Ù×÷" << endl;
+	cout << "ÓÉÓÚ²âÊÔ³ÌĞòÖĞµÄÎÄ¼ş¾ä±úĞ´¶¨£¬ËùÒÔÈç¹ûÖ®Ç°´ò¿ª¹ıÎÄ¼ş¿ÉÄÜ»áÖ´ĞĞ³ö´í£¬½¨ÒéµÚÒ»²½¾Í×Ô¶¯²âÊÔ" << endl;
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /bin" << endl;
+	User.userMkDir("/bin");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /etc" << endl;
+	User.userMkDir("/etc");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home" << endl;
+	User.userMkDir("/home");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /dev" << endl;
+	User.userMkDir("/dev");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ls" << endl;
+	User.userLs();
+
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home/texts" << endl;
+	User.userMkDir("/home/texts");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home/reports" << endl;
+	User.userMkDir("/home/reports");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home/photos" << endl;
+	User.userMkDir("/home/photos");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ftree /" << endl;
+	User.userTree("/");
+
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /home/texts" << endl;
+	User.userCd("/home/texts");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate Readme.txt" << endl;
+	User.userCreate("Readme.txt");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen Readme.txt" << endl;
+	User.userOpen("Readme.txt");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 8 Readme.txt 2609" << endl;
+	User.userWrite("8", "Readme.txt", "2609");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 8 0 begin" << endl;
+	User.userSeek("8", "0", "0");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 8 ReadmeOut.txt 2609" << endl;
+	User.userRead("8", "ReadmeOut.txt", "2609");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 8" << endl;
+	User.userClose("8");
+
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /home/reports" << endl;
+	User.userCd("/home/reports");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate Report.pdf" << endl;
+	User.userCreate("Report.pdf");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen Report.pdf" << endl;
+	User.userOpen("Report.pdf");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 9 Report.pdf 1604288" << endl; 
+	User.userWrite("9", "Report.pdf", "1604288");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 9 0 begin" << endl; 
+	User.userSeek("9", "0", "0");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 9 ReportOut.pdf 1604288" << endl;
+	User.userRead("9", "ReportOut.pdf", "1604288");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 9" << endl;
+	User.userClose("9");
+
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /home/photos" << endl;
+	User.userCd("/home/photos");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate DennisRitchie.jpg" << endl;
+	User.userCreate("DennisRitchie.jpg");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen DennisRitchie.jpg" << endl;
+	User.userOpen("DennisRitchie.jpg");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 10 DennisRitchie.jpg 7402" << endl;
+	User.userWrite("10", "DennisRitchie.jpg", "7402");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 10 DennisRitchieOut.jpg 7402" << endl;
+	User.userSeek("10", "0", "0");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 10" << endl;
+	User.userRead("10", "DennisRitchieOut.jpg", "7402");
+
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /test" << endl; 
+	User.userMkDir("/test");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /test" << endl; 
+	User.userCd("/test");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate Jerry" << endl;
+	User.userCreate("Jerry");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen Jerry" << endl; 
+	User.userOpen("Jerry");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 13 input.txt 800" << endl;
+	User.userWrite("13", "input.txt", "800");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 13 500 begin" << endl;
+	User.userSeek("13", "500", "0");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 13 std 500" << endl; 
+	User.userRead("13", "std", "500");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 13 500 begin" << endl;
+	User.userSeek("13", "500", "0");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 13 abc.txt 500" << endl; 
+	User.userRead("13", "abc.txt", "500");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 13 abc.txt 300" << endl;
+	User.userWrite("13", "abc.txt", "300");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 13" << endl;
+	User.userClose("13");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ftree /" << endl;
+	User.userTree("/");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /test" << endl;
+	User.userCd("/test");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "frename Jerry Larry" << endl;
+	User.userRename("Jerry", "Larry");
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ls" << endl;
+	User.userLs();
+	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ftree /" << endl;
+	User.userTree("/");
+
+	cout << "×Ô¶¯²âÊÔ½áÊø" << endl << endl;
+	return true;
 }
 
-bool isNumber(const string& str)
+int main() 
 {
-    for (char const &c : str) {
-        if (std::isdigit(c) == 0) return false;
-    }
-    return true;
-}
+	UserCall& User = myUserCall;
+	cout << "***************************************************************************************" << endl
+		<< "*                                                                                     *" << endl
+		<< "*                                   ÀàUnixÎÄ¼şÏµÍ³                                    *" << endl
+		<< "*                                                                                     *" << endl
+		<< "* [²Ù×÷ËµÃ÷]:                                                                         *" << endl
+		<< "* [ÃüÁî]:help <op_name>\t[¹¦ÄÜ]:ÃüÁîÌáÊ¾                                               *" << endl
+		<< "* [ÃüÁî]:test\t[¹¦ÄÜ]:×Ô¶¯²âÊÔ                                                       *" << endl
+		<< "* [ÃüÁî]:fformat\t[¹¦ÄÜ]:¸ñÊ½»¯ÎÄ¼şÏµÍ³                                         *" << endl
+		<< "* [ÃüÁî]:ls\t[¹¦ÄÜ]:²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ                                               *" << endl
+		<< "* [ÃüÁî]:mkdir <dirname>\t[¹¦ÄÜ]:Éú³ÉÎÄ¼ş¼Ğ                                     *" << endl
+		<< "* [ÃüÁî]:cd <dirname>\t[¹¦ÄÜ]:½øÈëÄ¿Â¼                                               *" << endl
+		<< "* [ÃüÁî]:fcreate <filename>\t[¹¦ÄÜ]:´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş                     *" << endl
+		<< "* [ÃüÁî]:fopen <filename>\t[¹¦ÄÜ]:´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş                     *" << endl
+		<< "* [ÃüÁî]:fwrite <fd> <infile> <size>\t[¹¦ÄÜ]:´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú       *" << endl
+		<< "* [ÃüÁî]:fread <fd> <outfile> <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile    *" << endl
+		<< "* [ÃüÁî]:fread <fd> std <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»               *" << endl
+		<< "* [ÃüÁî]:fseek <fd> <step> begin\t[¹¦ÄÜ]:ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep        *" << endl
+		<< "* [ÃüÁî]:fseek <fd> <step> cur\t[¹¦ÄÜ]:ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep                  *" << endl
+		<< "* [ÃüÁî]:fseek <fd> <step> end\t[¹¦ÄÜ]:ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep                  *" << endl
+		<< "* [ÃüÁî]:fclose <fd>\t[¹¦ÄÜ]:¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş                                 *" << endl
+		<< "* [ÃüÁî]:fdelete <filename>\t[¹¦ÄÜ]:É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ       *" << endl
+		<< "* [ÃüÁî]:frename <filename> <filename1>\t[¹¦ÄÜ]:½«ÎÄ¼şflienameÖØÃüÃûÎªfilename1        *" << endl
+		<< "* [ÃüÁî]:ftree <dirname>\t[¹¦ÄÜ]:ÁĞ³ödirnameµÄÎÄ¼şÄ¿Â¼Ê÷                        *" << endl
+		<< "* [ÃüÁî]:exit \t[¹¦ÄÜ]:ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ                                 *" << endl
+		<< "***************************************************************************************" << endl;
 
-stringstream print_head(){
-	stringstream send_str;
-    send_str << "===============================================" << endl;
-    send_str << "||è¯·åœ¨ä¸€è¡Œä¸­ä¾æ¬¡è¾“å…¥éœ€è¦è°ƒç”¨çš„å‡½æ•°åç§°åŠå…¶å‚æ•°  ||" << endl;
-    send_str << "||open(char *name, int mode)                 ||" << endl;
-    send_str << "||close(int fd)                              ||" << endl;
-    send_str << "||read(int fd, int length)                   ||" << endl;
-    send_str << "||write(int fd, char *buffer, int length)    ||" << endl;
-    send_str << "||seek(int fd, int position, int ptrname)    ||" << endl;
-    send_str << "||mkfile(char *name, int mode)               ||" << endl;
-    send_str << "||rm(char *name)                             ||" << endl;
-    send_str << "||ls()                                       ||" << endl;
-    send_str << "||mkdir(char* dirname)                       ||" << endl;
-    send_str << "||cd(char* dirname)                          ||" << endl;
-    send_str << "||cat(char* dirname)                         ||" << endl;
-    send_str << "||copyin(char* ofpath, char *  ifpath)       ||" << endl;
-    send_str << "||copyout(char* ifpath, char *  ofpath)      ||" << endl;
-    send_str << "||q/Q é€€å‡ºæ–‡ä»¶ç³»ç»Ÿ                           ||" << endl << endl << endl;
-	return send_str;
-}
-class sendU{
-private:
-    int fd;
-    string username;
-public:
-    int send_(const stringstream& send_str){
-        // cout<<send_str.str()<<endl;
-        int numbytes=send(fd, send_str.str().c_str(), send_str.str().length(), 0); 
-        cout<< "[[ "<< username<<" ]] send "<<numbytes << " bytes" <<endl;       
-        return numbytes;
-    };
-    sendU(int fd,string username){
-        this->fd=fd;
-        this->username=username;
-    };
-};
+	string line, opt, val[3];
+	while (true) 
+	{
+		cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ ";
+		getline(cin, line);
+		if (line.size() == 0) 
+			continue;
 
-void *start_routine( void *ptr) 
-{
-    int fd = *(int *)ptr;
-    char buf[1024];
-    int numbytes;
-    numbytes=send(fd,"è¯·è¾“å…¥ç”¨æˆ·åï¼š",sizeof("è¯·è¾“å…¥ç”¨æˆ·åï¼š"),0); 
-    cout << "[info] sendå‡½æ•°è¿”å›å€¼ï¼š"  << numbytes << endl;
-
-    printf("è¿›å…¥ç”¨æˆ·çº¿ç¨‹ï¼Œfd=%d\n", fd);
-
-    memset(buf, 0, sizeof(buf));
-    if ((numbytes=recv(fd,buf,1024,0)) == -1){ 
-        cout<<("recv() error\n"); 
-        return (void*) NULL;
-    }
-
-    string username=buf;
-    cout << "[info] ç”¨æˆ·è¾“å…¥ç”¨æˆ·åï¼š"  << username << endl;
-    
-    sendU sd(fd,username);
-    sd.send_(print_head());
-
-    // åˆå§‹åŒ–ç”¨æˆ·Userç»“æ„å’Œç›®å½•
-    Kernel::Instance().GetUserManager().Login(username);
-
-    string tipswords="||SecondFileSystem@"+username+"è¯·è¾“å…¥å‡½æ•°ååŠå‚æ•°$";
-    while(true){
-        char buf_recv[1024]={0};
-        
-        // å‘é€æç¤º
-        numbytes = send(fd,tipswords.c_str(),tipswords.length(),0); 
-        if(numbytes<=0){
-            cout<<"[info] ç”¨æˆ· "<<username<<" æ–­å¼€è¿æ¥."<<endl;
-            Kernel::Instance().GetUserManager().Logout();
-            return (void*)NULL;
-        }
-        printf("[INFO] send %d bytes\n", numbytes);
-        
-        // è¯»å–ç”¨æˆ·è¾“å…¥çš„å‘½ä»¤è¡Œ
-        if ((numbytes=recv(fd, buf_recv,1024,0)) == -1){ 
-            cout<<"recv() error"<<endl;
-            Kernel::Instance().GetUserManager().Logout();
-            return (void *)NULL;
-        }
-        //è§£æå‘½ä»¤åç§°
-        stringstream ss(buf_recv);
-        cout<<"buf_recv : "<<buf_recv<<endl;
-        string api;
-        ss>>api;
-        stringstream send_str;
-
-        cout<<"api : "<< api << endl;
-        if(api == "cd"){
-            string param1;
-            ss >> param1;
-            if(param1 == ""){
-                send_str<< "cd [fpath]";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // è°ƒç”¨
-            User &u=Kernel::Instance().GetUser();
-			u.u_error= NOERROR;
-			char dirname[300]={0};
-            strcpy(dirname,param1.c_str());
-            u.u_dirp=dirname;
-            u.u_arg[0]=(unsigned long long)(dirname);
-	        FileManager &fimanag = Kernel::Instance().GetFileManager();
-	        fimanag.ChDir();
-            // æ‰“å°ç»“æœ
-            send_str << "[result]:\n" << "now dir=" << dirname << endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if(api == "ls"){
-			User &u=Kernel::Instance().GetUser();
-			u.u_error=NOERROR;
-			string cur_path=u.u_curdir;
-			FD fd = Kernel::Instance().Sys_Open(cur_path, (File::FILE_FREAD));
-            send_str << " cur_path:" << cur_path << endl;
-            char buf[33]={0};
-			while(1){
-				if(Kernel::Instance().Sys_Read(fd, 32, 33, buf) == 0)
-					break;
-				else{
-                    // send_str << "cur_path:" << cur_path << endl << "buf:" << buf;
-					DirectoryEntry *mm=(DirectoryEntry*)buf;
-					if(mm->m_ino==0)
-						continue;
-					send_str << "====== " << mm->m_name << " ======" << endl;
-					memset(buf, 0, 32);
-				}
+		stringstream in(line);
+		in >> opt;
+		val[0] = val[1] = val[2] = "";
+		
+		//¸ñÊ½»¯ÎÄ¼şÏµÍ³
+		if (opt == "fformat") {
+			//Us.userCd("/");
+			myOpenFileTable.Reset();
+			myINodeTable.Reset();
+			myCacheManager.FormatBuffer();
+			myFileSystem.FormatDevice();
+			//myUserCall.ofiles.Reset();
+			cout << "¸ñÊ½»¯Íê±Ï£¬ÎÄ¼şÏµÍ³ÒÑÍË³ö£¬ÇëÖØĞÂÆô¶¯£¡" << endl;
+			return 0;
+		}
+		//²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ
+		else if (opt == "ls")
+			User.userLs();
+		//Éú³ÉÎÄ¼ş¼Ğ
+		else if (opt == "mkdir") {
+			in >> val[0];
+			if (val[0][0] != '/')
+				val[0] = User.curDirPath + val[0];
+			User.userMkDir(val[0]);
+		}
+		//½øÈëÄ¿Â¼
+		else if (opt == "cd") {
+			in >> val[0];
+			User.userCd(val[0]);
+		}
+		//´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş
+		else if (opt == "fcreate") {
+			in >> val[0];
+			if (val[0][0] != '/')
+				val[0] = User.curDirPath + val[0];
+			User.userCreate(val[0]);
+		}
+		//´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş
+		else if (opt == "fopen") {
+			in >> val[0];
+			if (myUserCall.ar0[UserCall::EAX] == 0) {
+				User.userMkDir("demo");
+				User.userDelete("demo");
 			}
-			Kernel::Instance().Sys_Close(fd);
-            sd.send_(send_str);
-            continue;
-        }
-        if(api == "mkdir"){
-            string path;
-            ss >> path;
-            if(path == ""){
-                send_str << "mkdir [dirpath]";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int ret = Kernel::Instance().Sys_CreatDir(path);
-            send_str<<"mkdir success (ret=" << ret << ")" <<endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if(api == "mkfile"){
-            string filename;
-            ss >> filename;
-            if(filename == ""){
-                send_str << "mkfile [filepath]";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            User &u =Kernel::Instance().GetUser();
-			u.u_error = NOERROR;
-			u.u_ar0[0] = 0;
-            u.u_ar0[1] = 0;
-            char filename_char[512];
-			strcpy(filename_char,filename.c_str());
-            u.u_dirp=filename_char;
-			u.u_arg[1] = Inode::IRWXU;
-			FileManager &fimanag=Kernel::Instance().GetFileManager();
-			fimanag.Creat();
-            send_str<<"mkfile sucess"<<endl;
-            sd.send_(send_str);
-            continue;
-        }     
-        if(api == "rm"){
-            string filename;
-            ss >> filename;
-            if(filename == ""){
-                send_str << "rm [filepath]";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            User &u =Kernel::Instance().GetUser();
-			u.u_error = NOERROR;
-			u.u_ar0[0] = 0;
-            u.u_ar0[1] = 0;
-            char filename_char[512];
-			strcpy(filename_char,filename.c_str());
-            u.u_dirp=filename_char;
-			FileManager &fimanag=Kernel::Instance().GetFileManager();
-			fimanag.UnLink();
-            send_str<<"rm success"<<endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if(api == "seek"){
-            string fd,position,ptrname;
-            ss >> fd>>position>>ptrname;
-            if(fd == ""||position==""||ptrname==""){
-                send_str << "seek [fd] [position] [ptrname]";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            if(!isNumber(fd)){
-                send_str << "[fd] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int fd_int = atoi(fd.c_str());
-            if(!isNumber(position)){
-                send_str << "[position] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int position_int = atoi(position.c_str());
-			if(!isNumber(ptrname)){
-                send_str << "[ptrname] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int ptrname_int = atoi(ptrname.c_str());
-            User &u =Kernel::Instance().GetUser();
-			u.u_error = NOERROR;
-			u.u_ar0[0] = 0;
-            u.u_ar0[1] = 0;
-			u.u_arg[0]=fd_int;
-			u.u_arg[1]=position_int;
-			u.u_arg[2]=ptrname_int;
-			FileManager &fimanag=Kernel::Instance().GetFileManager();
-			fimanag.Seek();
-			send_str<<"[Results:]\n"<<"u.u_ar0="<<u.u_ar0<<endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "open"){
-            // FD Kernel::Sys_Open(std::string& fpath,int mode)
-            string param1;
-            string param2;
-            ss >> param1 >> param2;
-            if(param1 == "" || param2 == ""){
-                send_str << "open [fpath] [mode]\n";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            string fpath = param1;
-            if(!isNumber(param2)){
-                send_str << "[mode] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int mode = atoi(param2.c_str());
-
-            // è°ƒç”¨
-            FD fd = Kernel::Instance().Sys_Open(fpath, mode);
-            // æ‰“å°ç»“æœ
-            send_str << "[ ç»“ æœ ]:\n" << "fd=" << fd << endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "read")
-        {
-            string p1_fd;
-            string p2_size;
-            ss >> p1_fd >> p2_size;
-            if(p1_fd == "" || p2_size == ""){
-                send_str << "read [fd] [size]\n";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            if(!isNumber(p1_fd)){
-                send_str << "[fd] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            if(!isNumber(p2_size)){
-                send_str << "[size] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int fd = atoi(p1_fd.c_str());
-            if(fd < 0){
-                send_str << "[fd] åº”å½“ä¸ºæ­£æ•´æ•°" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int size = atoi(p2_size.c_str());
-            if(size <= 0 || size > 1024){
-                send_str << "[size] size çš„å–å€¼èŒƒå›´æ˜¯(0,1024]." << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // è°ƒç”¨ API
-            char buf[1025];
-            memset(buf, 0, sizeof(buf));
-            int ret = Kernel::Instance().Sys_Read(fd, size, 1025, buf);
-            // ç»“æœè¿”å›
-            send_str << "[ ç»“ æœ ]:\n"
-                 << "ret=" << ret << endl 
-                 << buf << endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "write")
-        {
-            string p1_fd = "";
-            string p2_content = "";
-            ss >> p1_fd >> p2_content;
-            if (p1_fd == "") {
-                send_str << "write [fd] [content]\n";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            if (!isNumber(p1_fd)){
-                send_str << "[fd] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int fd = atoi(p1_fd.c_str());
-            if(fd < 0){
-                send_str << "[fd] åº”å½“ä¸ºæ­£æ•´æ•°" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            if(p2_content.length() > 1024){
-                send_str << "[content] å†…å®¹è¿‡é•¿ï¼ˆä¸è¶…è¿‡1024å­—èŠ‚ï¼‰" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            char buf[1025];
-            memset(buf, 0, sizeof(buf));
-            strcpy(buf, p2_content.c_str());
-            int size = p2_content.length();
-            // è°ƒç”¨ API
-            int ret = Kernel::Instance().Sys_Write(fd, size, 1024, buf);
-            // æ‰“å°ç»“æœ
-            send_str << "[ ç»“ æœ ]\n" << "ret=" << ret << endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "close")
-        {
-            string p1_fd;
-            ss >> p1_fd;
-            if(p1_fd == ""){
-                send_str << "close [fd]\n";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            if(!isNumber(p1_fd)){
-                send_str <<  "[fd] å‚æ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            int fd = atoi(p1_fd.c_str());
-            if(fd < 0){
-                send_str << "[fd] fdåº”å½“ä¸ºæ­£æ•´æ•°" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // è°ƒç”¨ API
-            int ret = Kernel::Instance().Sys_Close(fd);
-            send_str << "[ ç»“ æœ ]\n" << "ret=" << ret << endl;
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "cat"){
-            string p1_fpath;
-            ss >> p1_fpath;
-            if(p1_fpath == "")
-            {
-                send_str << "cat [fpath]\n";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            string fpath = p1_fpath;
-            // Open
-            FD fd = Kernel::Instance().Sys_Open(fpath, 0x1);
-            if(fd < 0){
-                send_str << "[cat] æ‰“å¼€æ–‡ä»¶å‡ºé”™." << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // Read
-            char buf[257];
-            while(true){
-                memset(buf, 0, sizeof(buf));
-                int ret = Kernel::Instance().Sys_Read(fd, 256, 256, buf);
-                if(ret <= 0){
-                    break;
-                }
-                send_str << buf;
-            }
-            // Close
-            Kernel::Instance().Sys_Close(fd);
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "copyin"){
-            string p1_ofpath;
-            string p2_ifpath;
-            ss >> p1_ofpath >> p2_ifpath;
-            if(p1_ofpath == "" || p2_ifpath == ""){
-                send_str << "copyin ofpath ifpath\n";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // æ‰“å¼€å¤–éƒ¨æ–‡ä»¶
-            int ofd = open(p1_ofpath.c_str(), O_RDONLY); //åªè¯»æ–¹å¼æ‰“å¼€å¤–éƒ¨æ–‡ä»¶
-            if(ofd < 0){
-                send_str << "[ERROR] æ‰“å¼€æ–‡ä»¶å¤±è´¥ï¼š" << p1_ofpath << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // åˆ›å»ºå†…éƒ¨æ–‡ä»¶
-            Kernel::Instance().Sys_Creat(p2_ifpath, 0x1 | 0x2);
-            int ifd = Kernel::Instance().Sys_Open(p2_ifpath, 0x1 | 0x2);
-            if(ifd < 0){
-                close(ofd);
-                send_str << "[ERROR] æ‰“å¼€æ–‡ä»¶å¤±è´¥ï¼š" << p2_ifpath << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // å¼€å§‹æ‹·è´ï¼Œä¸€æ¬¡ 256 å­—èŠ‚
-            char buf[256];
-            int all_read_num = 0;
-            int all_write_num = 0;
-            while(true){
-                memset(buf, 0, sizeof(buf));
-                int read_num = read(ofd, buf, 256);
-                if(read_num <= 0){
-                    break;
-                }
-                all_read_num += read_num;
-                int write_num = \
-                    Kernel::Instance().Sys_Write(ifd, read_num, 256, buf);
-                if(write_num <= 0){
-                    send_str << "[ERROR] å†™å…¥æ–‡ä»¶å¤±è´¥ï¼š" << p2_ifpath;
-                    break;
-                }
-                all_write_num += write_num;
-            }
-            send_str << "å…±è¯»å–å­—èŠ‚ï¼š" << all_read_num 
-                 << " å…±å†™å…¥å­—èŠ‚ï¼š" << all_write_num << endl;
-            close(ofd);
-            Kernel::Instance().Sys_Close(ifd);
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "copyout"){
-            string p1_ifpath;
-            string p2_ofpath;
-            ss >> p1_ifpath >> p2_ofpath;
-            if (p1_ifpath == "" || p2_ofpath == "")
-            {
-                send_str << "copyout [ifpath] [ofpath]\n";
-                send_str << "å‚æ•°ä¸ªæ•°é”™è¯¯" << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // åˆ›å»ºå¤–éƒ¨æ–‡ä»¶
-            int ofd = open(p2_ofpath.c_str(), O_WRONLY| O_TRUNC | O_CREAT); //æˆªæ–­å†™å…¥æ–¹å¼æ‰“å¼€å¤–éƒ¨æ–‡ä»¶
-            if (ofd < 0)
-            {
-                send_str << "[ERROR] åˆ›å»ºæ–‡ä»¶å¤±è´¥ï¼š" << p2_ofpath << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // æ‰“å¼€å†…éƒ¨æ–‡ä»¶
-            int ifd = Kernel::Instance().Sys_Open(p1_ifpath, 0x1 | 0x2);
-            if (ifd < 0)
-            {
-                close(ofd);
-                send_str << "[ERROR] æ‰“å¼€æ–‡ä»¶å¤±è´¥ï¼š" << p1_ifpath << endl;
-                sd.send_(send_str);
-                continue;
-            }
-            // å¼€å§‹æ‹·è´ï¼Œä¸€æ¬¡ 256 å­—èŠ‚
-            char buf[256];
-            int all_read_num = 0;
-            int all_write_num = 0;
-            while (true)
-            {
-                memset(buf, 0, sizeof(buf));
-                int read_num = \
-                    Kernel::Instance().Sys_Read(ifd, 256, 256, buf);
-                if (read_num <= 0)
-                {
-                    break;
-                }
-                all_read_num += read_num;
-                int write_num = write(ofd, buf, read_num);
-                if (write_num <= 0)
-                {
-                    send_str << "[ERROR] å†™å…¥æ–‡ä»¶å¤±è´¥ï¼š" << p1_ifpath;
-                    break;
-                }
-                all_write_num += write_num;
-            }
-            send_str << "å…±è¯»å–å­—èŠ‚ï¼š" << all_read_num
-                 << " å…±å†™å…¥å­—èŠ‚ï¼š" << all_write_num << endl;
-            close(ofd);
-            Kernel::Instance().Sys_Close(ifd);
-            sd.send_(send_str);
-            continue;
-        }
-        if (api == "q" || api == "quit"){
-            Kernel::Instance().GetUserManager().Logout();
-            send_str << "ç”¨æˆ·ç™»å‡º\n";
-            sd.send_(send_str);
-            break;
-        }
-        if(api != "" && api != " "){
-            stringstream tishi;
-            tishi = print_head();
-            tishi << "\n" << "æ¸©é¦¨æç¤ºï¼šæ‚¨çš„æŒ‡ä»¤é”™è¯¯ï¼\n";
-            sd.send_(tishi);
-        }
-    }
-
-    close(fd);
-    return (void*)NULL;
+			if (val[0][0] != '/')
+				val[0] = User.curDirPath + val[0];
+			
+			User.userOpen(val[0]);
+		}
+		//ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ
+		else if (opt == "exit")
+			return 0;
+		//¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş
+		else if (opt == "fclose") {
+			in >> val[0];
+			User.userClose(val[0]);
+		}
+		else if (opt == "fseek") {
+			in >> val[0] >> val[1] >> val[2];
+			//ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep
+			if (val[2] == "begin")
+				User.userSeek(val[0], val[1], string("0"));
+			//ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep
+			else if (val[2] == "cur")
+				User.userSeek(val[0], val[1], string("1"));
+			//ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep
+			else if (val[2] == "end")
+				User.userSeek(val[0], val[1], string("2"));
+		}
+		//´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile
+		//´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»
+		else if (opt == "fread") {
+			in >> val[0] >> val[1] >> val[2];
+			User.userRead(val[0], val[1], val[2]);
+		}
+		//´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú
+		else if (opt == "fwrite") {
+			in >> val[0] >> val[1] >> val[2];
+			User.userWrite(val[0], val[1], val[2]);
+		}
+		//É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ
+		else if (opt == "fdelete") {
+			in >> val[0];
+			if (val[0][0] != '/')
+				val[0] = User.curDirPath + val[0];
+			User.userDelete(val[0]);
+		}
+		else if (opt == "test")
+			AutoTest();
+		//ÖØÃüÃûÎÄ¼ş»òÎÄ¼ş¼Ğ
+		else if (opt == "frename") {
+			in >> val[0] >> val[1];
+			User.userRename(val[0], val[1]);
+		}
+		else if (opt == "ftree") {
+			in >> val[0];
+			User.userTree(val[0]);
+		}
+		else if (opt == "help") {
+			in >> val[0];
+			if (val[0] == "" || val[0] == "?") {
+				cout << "[ÃüÁî]:test\t[¹¦ÄÜ]:×Ô¶¯²âÊÔ" << endl
+					<< "[ÃüÁî]:fformat\t[¹¦ÄÜ]:¸ñÊ½»¯ÎÄ¼şÏµÍ³" << endl
+					<< "[ÃüÁî]:ls\t[¹¦ÄÜ]:²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ" << endl
+					<< "[ÃüÁî]:mkdir <dirname>\t[¹¦ÄÜ]:Éú³ÉÎÄ¼ş¼Ğ" << endl
+					<< "[ÃüÁî]:cd <dirname>\t[¹¦ÄÜ]:½øÈëÄ¿Â¼" << endl
+					<< "[ÃüÁî]:fcreate <filename>\t[¹¦ÄÜ]:´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl
+					<< "[ÃüÁî]:fopen <filename>\t[¹¦ÄÜ]:´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl
+					<< "[ÃüÁî]:fwrite <fd> <infile> <size>\t[¹¦ÄÜ]:´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú" << endl
+					<< "[ÃüÁî]:fread <fd> <outfile> <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile" << endl
+					<< "[ÃüÁî]:fread <fd> std <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»" << endl
+					<< "[ÃüÁî]:fseek <fd> <step> begin\t[¹¦ÄÜ]:ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
+					<< "[ÃüÁî]:fseek <fd> <step> cur\t[¹¦ÄÜ]:ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
+					<< "[ÃüÁî]:fseek <fd> <step> end\t[¹¦ÄÜ]:ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
+					<< "[ÃüÁî]:fclose <fd>\t[¹¦ÄÜ]:¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş" << endl
+					<< "[ÃüÁî]:fdelete <filename>\t[¹¦ÄÜ]:É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ" << endl
+					<< "[ÃüÁî]:frename <filename> <filename1>\t[¹¦ÄÜ]:½«ÎÄ¼şflienameÖØÃüÃûÎªfilename1" << endl
+					<< "[ÃüÁî]:ftree <dirname>\t[¹¦ÄÜ]:ÁĞ³ödirnameµÄÎÄ¼şÄ¿Â¼Ê÷" << endl
+					<< "[ÃüÁî]:exit\t[¹¦ÄÜ]:ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ" << endl;
+			}
+			else if (val[0] == "test")
+				cout << "[ÃüÁî]:test\t[¹¦ÄÜ]:×Ô¶¯²âÊÔ" << endl;
+			else if (val[0] == "fformat")
+				cout << "[ÃüÁî]:fformat\t[¹¦ÄÜ]:¸ñÊ½»¯ÎÄ¼şÏµÍ³" << endl;
+			else if (val[0] == "ls")
+				cout << "[ÃüÁî]:ls\t[¹¦ÄÜ]:²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ" << endl;
+			else if (val[0] == "mkdir")
+				cout << "[ÃüÁî]:mkdir <dirname>\t[¹¦ÄÜ]:Éú³ÉÎÄ¼ş¼Ğ" << endl;
+			else if (val[0] == "cd")
+				cout << "[ÃüÁî]:cd <dirname>\t[¹¦ÄÜ]:½øÈëÄ¿Â¼" << endl;
+			else if (val[0] == "fcreate")
+				cout << "[ÃüÁî]:fcreate <filename>\t[¹¦ÄÜ]:´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl;
+			else if (val[0] == "fopen")
+				cout << "[ÃüÁî]:fopen <filename>\t[¹¦ÄÜ]:´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl;
+			else if (val[0] == "fwrite")
+				cout << "[ÃüÁî]:fwrite <fd> <infile> <size>\t[¹¦ÄÜ]:´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú" << endl;
+			else if (val[0] == "fread")
+				cout << "[ÃüÁî]:fread <fd> <outfile> <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile" << endl
+				<< "[ÃüÁî]:fread <fd> std <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»" << endl;
+			else if (val[0] == "fseek")
+				cout << "[ÃüÁî]:fseek <fd> <step> begin\t[¹¦ÄÜ]:ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
+				<< "[ÃüÁî]:fseek <fd> <step> cur\t[¹¦ÄÜ]:ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
+				<< "[ÃüÁî]:fseek <fd> <step> end\t[¹¦ÄÜ]:ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl;
+			else if (val[0] == "fclose")
+				cout << "[ÃüÁî]:fclose <fd>\t[¹¦ÄÜ]:¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş" << endl;
+			else if (val[0] == "fdelete")
+				cout << "[ÃüÁî]:fdelete <filename>\t[¹¦ÄÜ]:É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ" << endl;
+			else if (val[0] == "frename")
+				cout << "[ÃüÁî]:frename <filename> <filename1>\t[¹¦ÄÜ]:½«ÎÄ¼şflienameÖØÃüÃûÎªfilename1" << endl;
+			else if (val[0] == "ftree")
+				cout << "[ÃüÁî]:ftree <dirname>\t[¹¦ÄÜ]:ÁĞ³ödirnameµÄÎÄ¼şÄ¿Â¼Ê÷" << endl;
+			else if (val[0] == "exit")
+				cout << "[ÃüÁî]:exit\t[¹¦ÄÜ]:ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ" << endl;
+		}
+	}
+	return 0;
 }
-
-
-int main()
-{
-    ::printf("size of pointer:%d\n",sizeof(int*));
-    // è¿›è¡Œä¿¡å·å¤„ç†
-    struct sigaction action;
-    action.sa_handler = handle_pipe;
-    sigemptyset(&action.sa_mask);
-    action.sa_flags = 0;
-    sigaction(SIGPIPE, &action, NULL);
-
-    int listenfd, connectfd;    
-    struct sockaddr_in server;
-    struct sockaddr_in client;      
-    int sin_size; 
-    sin_size=sizeof(struct sockaddr_in); 
-
-    // åˆ›å»ºç›‘å¬fd
-    if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {   
-        perror("Creating socket failed.");
-        exit(1);
-    }
-
-    int opt = SO_REUSEADDR;
-    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)); //ä½¿å¾—ç«¯å£é‡Šæ”¾åç«‹é©¬è¢«å¤ç”¨
-    bzero(&server,sizeof(server));  
-    server.sin_family=AF_INET; 
-    server.sin_port=htons(PORT); 
-    server.sin_addr.s_addr = htonl (INADDR_ANY); 
-    // ç»‘å®š
-    if (bind(listenfd, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1) { 
-        perror("Bind error.");
-        exit(1); 
-    }   
-    // ç›‘å¬ 
-    if(listen(listenfd,BACKLOG) == -1){  /* calls listen() */ 
-        perror("listen() error\n"); 
-        exit(1); 
-    }
-    // åˆå§‹åŒ–æ–‡ä»¶ç³»ç»Ÿ
-    Kernel::Instance().Initialize();
-    cout << "[info] ç­‰å¾…ç”¨æˆ·æ¥å…¥..." << endl;
-    // è¿›å…¥é€šä¿¡å¾ªç¯
-    while(1){
-        // accept 
-        if ((connectfd = accept(listenfd,(struct sockaddr *)&client, (socklen_t*)&sin_size))==-1) {
-            perror("accept() error\n"); 
-            continue;
-        }
-        printf("å®¢æˆ·ç«¯æ¥å…¥ï¼š%s\n",inet_ntoa(client.sin_addr) );
-        string str="hello";
-        //send(connectfd,str.c_str(),6,0);
-        pthread_t thread; //å®šä¹‰ä¸€ä¸ªçº¿ç¨‹å·
-        pthread_create(&thread,NULL,start_routine,(void *)&connectfd);
-    }
-    close(listenfd);
-    return 0;
-}
-
-

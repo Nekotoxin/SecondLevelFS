@@ -1,278 +1,147 @@
-// lyx
 #include "BufferManager.h"
-#include "Kernel.h"
-#include<string.h>
-#include <stdio.h>
-#include<iostream>
-using namespace std;
+#include "Common.h"
+
+extern DiskDriver myDiskDriver;
+
+//CacheBlockֻ�õ���������־��B_DONE��B_DELWRI���ֱ��ʾ�Ѿ����IO���ӳ�д�ı�־��
+//����Buffer���κα�־
 BufferManager::BufferManager()
 {
-	//nothing to do here
+	bufferList = new Buf;
+	InitList();
+	diskDriver = &myDiskDriver;
 }
 
 BufferManager::~BufferManager()
 {
-	//nothing to do here
+	Bflush();
+	delete bufferList;
 }
 
-void BufferManager::Initialize()
+void BufferManager::FormatBuffer()
 {
-	cout<<"Initalize..."<<endl;
-	int i;
-	Buf* bp;
-
-	this->bFreeList.b_forw = this->bFreeList.b_back = &(this->bFreeList);
-	// this->bFreeList.av_forw = this->bFreeList.av_back = &(this->bFreeList);
-
-	for(i = 0; i < NBUF; i++)
-	{
-		// 控制的
-		bp = &(this->m_Buf[i]);
-		// bp->b_dev = -1;
-		// 存的
-		bp->b_addr = this->Buffer[i];
-		/* 初始化NODEV队列 */
-		bp->b_back = &(this->bFreeList);
-		bp->b_forw = this->bFreeList.b_forw;
-		// 链表中插入
-		this->bFreeList.b_forw->b_back = bp;
-		this->bFreeList.b_forw = bp;
-		/* 初始化自由队列 */
-		pthread_mutex_init(&bp->buf_lock, NULL);
-		pthread_mutex_lock(&bp->buf_lock);
-		bp->b_flags = Buf::B_BUSY;
-		Brelse(bp);
-
-	}
-	// this->m_DeviceManager = &Kernel::Instance().GetDeviceManager();
-	return;
+	for (int i = 0; i < NBUF; ++i)
+		nBuffer[i].Reset();
+	InitList();
 }
 
-
-Buf* BufferManager::GetBlk(int blkno){
-	
-	Buf*headbp=&this->bFreeList; //取得自有缓存队列的队首地址
-	Buf*bp; //返回的bp 
-	// 查看bFreeList中是否已经有该块的缓存, 有就返回
-	for (bp = headbp->b_forw; bp != headbp; bp = bp->b_forw)
-	{
-		//cout<<"block_no"<<bp->b_blkno<<endl;
-		if (bp->b_blkno != blkno)
-			continue;
-		bp->b_flags |= Buf::B_BUSY;
-		pthread_mutex_lock(&bp->buf_lock);
-		//cout << "在缓存队列中找到对应的缓存，置为busy，GetBlk返回 blkno=" <<blkno<< endl;
-		return bp;
-	}
-
-	// 没有到队头找
-	//bp = headbp->b_forw;
-	int success = false;
-	for (bp = headbp->b_forw; bp != headbp; bp = bp->b_forw)
-	{
-		// 检查该buf是否上锁
-		if(pthread_mutex_trylock(&bp->buf_lock)==0){
-			success = true;
-			break;
+void BufferManager::InitList()
+{
+	for (int i = 0; i < NBUF; ++i) {
+		if (i) 
+			nBuffer[i].forw = nBuffer + i - 1;
+		else {
+			nBuffer[i].forw = bufferList;
+			bufferList->back = nBuffer + i;
 		}
-		printf("[DEBUG] buf已被锁，blkno=%d b_addr=%p\n", bp->b_blkno, bp->b_addr);
-	}
-	if(success == false){
-		bp = headbp->b_forw;
-		printf("[INFO]系统缓存已用完，等待队首缓存解锁...\n");
-		pthread_mutex_lock(&bp->buf_lock); // 等待第一个缓存块解锁。
-		printf("[INFO]系统成功得到队首缓存块...\n");
-	}
-	if (bp->b_flags&Buf::B_DELWRI)
-	{
-		this->Bwrite(bp);                  // 写回磁盘，并解锁
-		pthread_mutex_lock(&bp->buf_lock); // 马上上锁
-	}
-	//注：这里清空了其他所有的标志，只置为busy
-	bp->b_flags = Buf::B_BUSY;
-	//注：我这里的操作是将头节点变成尾节点
-	// bp->b_back->b_forw = bp->b_forw;
-	// bp->b_forw->b_back = bp->b_back;
 
-	// bp->b_back = this->bFreeList.b_back->b_forw;
-	// this->bFreeList.b_back->b_forw = bp;
-	// bp->b_forw = &this->bFreeList;
-	// this->bFreeList.b_back = bp;
-
-	bp->b_blkno = blkno;
-//	cout << "成功分配到可用的缓存，getBlk将成功返回" << endl;
-	return bp;
+		if (i + 1 < NBUF)
+			nBuffer[i].back = nBuffer + i + 1;
+		else {
+			nBuffer[i].back = bufferList;
+			bufferList->forw = nBuffer + i;
+		}
+		nBuffer[i].addr = buffer[i];
+		nBuffer[i].no = i;
+	}
 }
-// 这是干啥的
-// 可能是释放的
-void BufferManager::Brelse(Buf* bp)
+
+//����LRU Cache �㷨��ÿ�δ�ͷ��ȡ����ʹ�ú�ŵ�β��
+void BufferManager::DetachNode(Buf* pb)
 {
-	/* 注意以下操作并没有清除B_DELWRI、B_WRITE、B_READ、B_DONE标志
-	 * B_DELWRI表示虽然将该控制块释放到自由队列里面，但是有可能还没有些到磁盘上。
-	 * B_DONE则是指该缓存的内容正确地反映了存储在或应存储在磁盘上的信息 
-	 */
-	bp->b_flags &= ~(Buf::B_WANTED | Buf::B_BUSY | Buf::B_ASYNC);
-	pthread_mutex_unlock(&bp->buf_lock);
-	//printf("[DEBUG] 释放缓存块 b")
-	return;
+	if (pb->back == NULL)
+		return;
+	pb->forw->back = pb->back;
+	pb->back->forw = pb->forw;
+	pb->back = NULL;
+	pb->forw = NULL;
 }
 
+void BufferManager::InsertTail(Buf* pb)
+{
+	if (pb->back != NULL)
+		return;
+	pb->forw = bufferList->forw;
+	pb->back = bufferList;
+	bufferList->forw->back = pb;
+	bufferList->forw = pb;
+}
 
+//����һ�黺�棬�ӻ��������ȡ�������ڶ�д�豸�ϵĿ�blkno
+Buf* BufferManager::GetBlk(int blkno)
+{
+	Buf* pb;
+	if (map.find(blkno) != map.end()) {
+		pb = map[blkno];
+		DetachNode(pb);
+		return pb;
+	}
+	pb = bufferList->back;
+	if (pb == bufferList) {
+		cout << "�޻����ɹ�ʹ��" << endl;
+		return NULL;
+	}
+	DetachNode(pb);
+	map.erase(pb->blkno);
+	if (pb->flags & Buf::CB_DELWRI)
+		diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+	pb->flags &= ~(Buf::CB_DELWRI | Buf::CB_DONE);
+	pb->blkno = blkno;
+	map[blkno] = pb;
+	return pb;
+}
+
+//�ͷŻ�����ƿ�buf
+void BufferManager::Brelse(Buf* pb)
+{
+	InsertTail(pb);
+}
+
+//��һ�����̿飬blknoΪĿ����̿��߼����
 Buf* BufferManager::Bread(int blkno)
 {
-	Buf* bp;
-	/* 字符块号申请缓存 */
-	bp = this->GetBlk(blkno);
-	/* 如果在设备队列中找到所需缓存，即B_DONE已设置，就不需进行I/O操作 */
-	if(bp->b_flags & Buf::B_DONE)
-	{
-		return bp;
-	}
-	/* 没有找到相应缓存，构成I/O读请求块 */
-	bp->b_flags |= Buf::B_READ;
-	bp->b_wcount = BufferManager::BUFFER_SIZE;
-	// 拷贝到内存
-	memcpy(bp->b_addr,&this->p[BufferManager::BUFFER_SIZE*bp->b_blkno],BufferManager::BUFFER_SIZE);
-	/* 
-	 * 将I/O请求块送入相应设备I/O请求队列，如无其它I/O请求，则将立即执行本次I/O请求；
-	 * 否则等待当前I/O请求执行完毕后，由中断处理程序启动执行此请求。
-	 * 注：Strategy()函数将I/O请求块送入设备请求队列后，不等I/O操作执行完毕，就直接返回。
-	 */
-	// this->m_DeviceManager->GetBlockDevice(Utility::GetMajor(dev)).Strategy(bp);
-	/* 同步读，等待I/O操作结束 */
-	// this->IOWait(bp);
-	return bp;
+	Buf* pb = GetBlk(blkno);
+	if (pb->flags & (Buf::CB_DONE | Buf::CB_DELWRI))
+		return pb;
+	diskDriver->read(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+	pb->flags |= Buf::CB_DONE;
+	return pb;
 }
 
-
-
-void BufferManager::Bwrite(Buf *bp)
+//дһ�����̿�
+void BufferManager::Bwrite(Buf* pb)
 {
-	bp->b_flags &= ~(Buf::B_READ | Buf::B_DONE | Buf::B_ERROR | Buf::B_DELWRI);
-	bp->b_wcount = BufferManager::BUFFER_SIZE;		/* 512字节 */
-
-	memcpy(&this->p[BufferManager::BUFFER_SIZE * bp->b_blkno], bp->b_addr, BufferManager::BUFFER_SIZE);
-	this->Brelse(bp);
-
-	return;
+	pb->flags &= ~(Buf::CB_DELWRI);
+	diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+	pb->flags |= (Buf::CB_DONE);
+	this->Brelse(pb);
 }
 
-void BufferManager::Bdwrite(Buf *bp)
+//�ӳ�д���̿�
+void BufferManager::Bdwrite(Buf* bp)
 {
-	/* 置上B_DONE允许其它进程使用该磁盘块内容 */
-	bp->b_flags |= (Buf::B_DELWRI | Buf::B_DONE);
+	bp->flags |= (Buf::CB_DELWRI | Buf::CB_DONE);
 	this->Brelse(bp);
 	return;
 }
 
-void BufferManager::Bawrite(Buf *bp)
+//��ջ���������
+void BufferManager::Bclear(Buf* bp)
 {
-	/* 标记为异步写 */
-	bp->b_flags |= Buf::B_ASYNC;
-	this->Bwrite(bp);
+	memset(bp->addr, 0, BufferManager::BUFFER_SIZE);
 	return;
 }
 
-void BufferManager::ClrBuf(Buf *bp)
-{
-	int* pInt = (int *)bp->b_addr;
-
-	/* 将缓冲区中数据清零 */
-	for(unsigned int i = 0; i < BufferManager::BUFFER_SIZE / sizeof(int); i++)
-	{
-		pInt[i] = 0;
-	}
-	return;
-}
-/* 队列中延迟写的缓存全部输出到磁盘 */
+//���������ӳ�д�Ļ���ȫ�����������
 void BufferManager::Bflush()
 {
-	cout<<"Bflush"<<endl;
-	Buf* bp;
-	/* 注意：这里之所以要在搜索到一个块之后重新开始搜索，
-	 * 因为在bwite()进入到驱动程序中时有开中断的操作，所以
-	 * 等到bwrite执行完成后，CPU已处于开中断状态，所以很
-	 * 有可能在这期间产生磁盘中断，使得bfreelist队列出现变化，
-	 * 如果这里继续往下搜索，而不是重新开始搜索那么很可能在
-	 * 操作bfreelist队列的时候出现错误。
-	 */
-// loop:
-//	X86Assembly::CLI();
-	for(bp = this->bFreeList.b_forw; bp != &(this->bFreeList); bp = bp->b_forw)
-	{
-		/* 找出自由队列中所有延迟写的块 */
-		if( (bp->b_flags & Buf::B_DELWRI)) //&& (dev == DeviceManager::NODEV || dev == bp->b_dev) )
-		{
-			// 把当前的buf从队列里拿出来（修改前面和后面buf的指针
-			bp->b_back->b_forw = bp->b_forw;
-			bp->b_forw->b_back = bp->b_back;
-			// buf后向指针指向头的前一个？？？为啥
-			bp->b_back = this->bFreeList.b_back->b_forw;
-			// 头的后一个buf的前一个指向buf
-			this->bFreeList.b_back->b_forw = bp;
-			// buf的前向指向头
-			bp->b_forw = &this->bFreeList;
-			// 头的后向是buf
-			this->bFreeList.b_back = bp;
-			// 我们这里没有异步
-			// bp->b_flags |= Buf::B_ASYNC;
-			// this->NotAvail(bp);
-			this->Bwrite(bp);
-			// goto loop;
+	Buf* pb = NULL;
+	for (int i = 0; i < NBUF; ++i) {
+		pb = nBuffer + i;
+		if ((pb->flags & Buf::CB_DELWRI)) {
+			pb->flags &= ~(Buf::CB_DELWRI);
+			diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+			pb->flags |= (Buf::CB_DONE);
 		}
 	}
-	// X86Assembly::STI();
-	return;
 }
-
-
-
-void BufferManager::GetError(Buf* bp)
-{
-	User& u = Kernel::Instance().GetUser();
-
-	if (bp->b_flags & Buf::B_ERROR)
-	{
-		u.u_error = EIO;
-	}
-	return;
-}
-
-// void BufferManager::NotAvail(Buf *bp)
-// {
-// 	X86Assembly::CLI();		/* spl6();  UNIX V6的做法 */
-// 	/* 从自由队列中取出 */
-// 	bp->av_back->av_forw = bp->av_forw;
-// 	bp->av_forw->av_back = bp->av_back;
-// 	/* 设置B_BUSY标志 */
-// 	bp->b_flags |= Buf::B_BUSY;
-// 	X86Assembly::STI();
-// 	return;
-// }
-
-Buf* BufferManager::InCore( int blkno)
-{
-	cout<<"Incore"<<endl;
-	Buf* bp;
-	// Devtab* dp;
-	// short major = Utility::GetMajor(adev);
-	Buf*dp=  &this->bFreeList;
-	// dp = this->m_DeviceManager->GetBlockDevice(major).d_tab;
-	for(bp = dp->b_forw; bp != (Buf *)dp; bp = bp->b_forw)
-	{
-		if(bp->b_blkno == blkno)// && bp->b_dev == adev)
-			return bp;
-	}
-	return NULL;
-}
-
-// Buf& BufferManager::GetSwapBuf()
-// {
-// 	return this->SwBuf;
-// }
-
-Buf& BufferManager::GetBFreeList()
-{
-	return this->bFreeList;
-}
-

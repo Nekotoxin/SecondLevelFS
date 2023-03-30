@@ -1,96 +1,69 @@
+#include "Common.h"
 #include "File.h"
-#include "Kernel.h"
+#include "UserCall.h"
 
-/*==============================class File===================================*/
-File::File()
+extern UserCall myUserCall;
+
+File::File() 
 {
-	this->f_count = 0;
-	this->f_flag = 0;
-	this->f_offset = 0;
-	this->f_inode = NULL;
+	count = 0;
+	inode = NULL;
+	offset = 0;
 }
 
-File::~File()
+File::~File() { }
+
+void File::Reset() 
 {
-	//nothing to do here
+	count = 0;
+	inode = NULL;
+	offset = 0;
 }
 
-/*==============================class OpenFiles===================================*/
-OpenFiles::OpenFiles()
+ProcessOpenFile::ProcessOpenFile() 
+{
+	memset(processOpenFileTable, 0, sizeof(processOpenFileTable));
+}
+
+ProcessOpenFile::~ProcessOpenFile() 
 {
 }
 
-OpenFiles::~OpenFiles()
+//½ø³ÌÇëÇó´ò¿ªÎÄ¼şÊ±£¬ÔÚ´ò¿ªÎÄ¼şÃèÊö·û±íÖĞ·ÖÅäÒ»¸ö¿ÕÏĞ±íÏî
+int ProcessOpenFile::AllocFreeSlot() 
 {
-}
-
-int OpenFiles::AllocFreeSlot()
-{
-	int i;
-	User& u = Kernel::Instance().GetUser();
-	
-	for(i = 0; i < OpenFiles::NOFILES; i++)
-	{
-		/* è¿›ç¨‹æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦è¡¨ä¸­æ‰¾åˆ°ç©ºé—²é¡¹ï¼Œåˆ™è¿”å›ä¹‹ */
-		if(this->ProcessOpenFileTable[i] == NULL)
-		{
-			/* è®¾ç½®æ ¸å¿ƒæ ˆç°åœºä¿æŠ¤åŒºä¸­çš„EAXå¯„å­˜å™¨çš„å€¼ï¼Œå³ç³»ç»Ÿè°ƒç”¨è¿”å›å€¼ */
-			u.u_ar0[User::EAX] = i;
+	for (int i = 0; i < ProcessOpenFile::MAX_FILES; i++)
+		//½ø³Ì´ò¿ªÎÄ¼şÃèÊö·û±íÖĞÕÒµ½¿ÕÏĞÏî£¬Ôò·µ»ØÖ®
+		if (!processOpenFileTable[i]) {
+			myUserCall.ar0[UserCall::EAX] = i;
 			return i;
 		}
-	}
 
-	u.u_ar0[User::EAX] = -1;   /* Open1ï¼Œéœ€è¦ä¸€ä¸ªæ ‡å¿—ã€‚å½“æ‰“å¼€æ–‡ä»¶ç»“æ„åˆ›å»ºå¤±è´¥æ—¶ï¼Œå¯ä»¥å›æ”¶ç³»ç»Ÿèµ„æº*/
-	u.u_error = EMFILE;
+	myUserCall.ar0[UserCall::EAX] = -1; //Open1£¬ĞèÒªÒ»¸ö±êÖ¾¡£µ±´ò¿ªÎÄ¼ş½á¹¹´´½¨Ê§°ÜÊ±£¬¿ÉÒÔ»ØÊÕÏµÍ³×ÊÔ´
+	myUserCall.userErrorCode = UserCall::U_EMFILE;
 	return -1;
 }
 
-int OpenFiles::Clone(int fd)
-{
-	return 0;
-}
-
-File* OpenFiles::GetF(int fd)
+//¸ù¾İÓÃ»§ÏµÍ³µ÷ÓÃÌá¹©µÄÎÄ¼şÃèÊö·û²ÎÊıfd£¬ÕÒµ½¶ÔÓ¦µÄ´ò¿ªÎÄ¼ş¿ØÖÆ¿éFile½á¹¹
+File* ProcessOpenFile::GetF(int fd) 
 {
 	File* pFile;
-	User& u = Kernel::Instance().GetUser();
-	
-	/* å¦‚æœæ‰“å¼€æ–‡ä»¶æè¿°ç¬¦çš„å€¼è¶…å‡ºäº†èŒƒå›´ */
-	if(fd < 0 || fd >= OpenFiles::NOFILES)
-	{
-		u.u_error = EBADF;
+
+	if (fd < 0 || fd >= ProcessOpenFile::MAX_FILES) {
+		myUserCall.userErrorCode = UserCall::U_EBADF;
 		return NULL;
 	}
 
-	pFile = this->ProcessOpenFileTable[fd];
-	if(pFile == NULL)
-	{
-		u.u_error = EBADF;
-	}
-
-	return pFile;	/* å³ä½¿pFile==NULLä¹Ÿè¿”å›å®ƒï¼Œç”±è°ƒç”¨GetFçš„å‡½æ•°æ¥åˆ¤æ–­è¿”å›å€¼ */
+	pFile = this->processOpenFileTable[fd];
+	if (pFile == NULL)
+		myUserCall.userErrorCode = UserCall::U_EBADF;
+	return pFile;
 }
 
-void OpenFiles::SetF(int fd, File* pFile)
+//ÎªÒÑ·ÖÅäµ½µÄ¿ÕÏĞÃèÊö·ûfdºÍÒÑ·ÖÅäµÄ´ò¿ªÎÄ¼ş±íÖĞ¿ÕÏĞFile¶ÔÏó½¨Á¢¹´Á¬¹ØÏµ
+void ProcessOpenFile::SetF(int fd, File* pFile) 
 {
-	if(fd < 0 || fd >= OpenFiles::NOFILES)
-	{
+	if (fd < 0 || fd >= ProcessOpenFile::MAX_FILES)
 		return;
-	}
-	/* è¿›ç¨‹æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦æŒ‡å‘ç³»ç»Ÿæ‰“å¼€æ–‡ä»¶è¡¨ä¸­ç›¸åº”çš„Fileç»“æ„ */
-	this->ProcessOpenFileTable[fd] = pFile;
+	this->processOpenFileTable[fd] = pFile;
 }
-
-/*==============================class IOParameter===================================*/
-IOParameter::IOParameter()
-{
-	this->m_Base = 0;
-	this->m_Count = 0;
-	this->m_Offset = 0;
-}
-
-IOParameter::~IOParameter()
-{
-	//nothing to do here
-}
-

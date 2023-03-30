@@ -1,25 +1,58 @@
-// è´Ÿè´£ä½¿ç”¨LinuxAPIå¯¹æ¨¡æ‹Ÿç£ç›˜æ–‡ä»¶è¿›è¡Œæ“ä½œï¼ˆåŒ…æ‹¬ç£ç›˜çš„åˆå§‹åŒ–ï¼‰
 #pragma once
-#include "FileSystem.h"
-#include "BufferManager.h"
+#define _CRT_SECURE_NO_WARNINGS
+#include <cstdio>
+#include <iostream>
+#include "Common.h"
 
-class DiskDriver
-{
+using namespace std;
+const char diskFileName[] = "myDisk.img";  //´ÅÅÌ¾µÏñÎÄ¼şÃû
+
+class DiskDriver {
 public:
-DiskDriver();
-~DiskDriver();
+	FILE* diskPointer;                     //´ÅÅÌÎÄ¼şÖ¸Õë
 
-void Initialize();
-void quit();
+public:
+	DiskDriver() 
+	{
+		diskPointer = fopen(diskFileName, "rb+");
+	}
+	~DiskDriver() 
+	{
+		if (diskPointer != NULL) {
+			fclose(diskPointer);
+		}
+	}
+	void Reset() 
+	{
+		if (diskPointer != NULL)
+			fclose(diskPointer);
+		diskPointer = fopen(diskFileName, "rb+");
+	}
+	//Ğ´´ÅÅÌº¯Êı
+	void write(const uint8* in_buffer, uint32 in_size, int offset = -1, uint32 origin = SEEK_SET) {
+		if (offset >= 0)
+			fseek(diskPointer, offset, origin);
+		fwrite(in_buffer, in_size, 1, diskPointer);
+		return;
+	}
+	//¶Á´ÅÅÌº¯Êı
+	void read(uint8* out_buffer, uint32 out_size, int offset = -1, uint32 origin = SEEK_SET) {
+		if (offset >= 0)
+			fseek(diskPointer, offset, origin);
+		fread(out_buffer, out_size, 1, diskPointer);
+		return;
+	}
 
-private:
-    void init_spb(SuperBlock &sb);
-    void init_db(char* data);
-    void init_img(int fd);
-    void mmap_img(int fd);
-private:
-    const char* devpath = "c.img";
-    int img_fd; // devpathçš„fdï¼Œæ–‡ä»¶ç³»ç»Ÿæ‰“å¼€æ—¶ openï¼Œå…³é—­æ—¶ close.
-    BufferManager *m_BufferManager; /* FileSystemç±»éœ€è¦ç¼“å­˜ç®¡ç†æ¨¡å—(BufferManager)æä¾›çš„æ¥å£ */
-
+	//¼ì²é¾µÏñÎÄ¼şÊÇ·ñ´æÔÚ
+	bool Exists() 
+	{
+		return diskPointer != NULL;
+	}
+	//´ò¿ª¾µÏñÎÄ¼ş
+	void Construct() 
+	{
+		diskPointer = fopen(diskFileName, "wb+");
+		if (diskPointer == NULL)
+			printf("Disk Construct Error!\n");
+	}
 };

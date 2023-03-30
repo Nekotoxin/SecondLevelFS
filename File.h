@@ -1,103 +1,58 @@
-#ifndef FILE_H
-#define FILE_H
-
+#pragma once
+#define _CRT_SECURE_NO_WARNINGS
 #include "INode.h"
 
-/*
- * æ‰“å¼€æ–‡ä»¶æ§åˆ¶å—Fileç±»ã€‚
- * è¯¥ç»“æ„è®°å½•äº†è¿›ç¨‹æ‰“å¼€æ–‡ä»¶
- * çš„è¯»ã€å†™è¯·æ±‚ç±»å‹ï¼Œæ–‡ä»¶è¯»å†™ä½ç½®ç­‰ç­‰ã€‚
+/*    ´ò¿ªÎÄ¼ş¿ØÖÆ¿éFileÀà¡£
+ * ¸Ã½á¹¹¼ÇÂ¼ÁË½ø³Ì´ò¿ªÎÄ¼şµÄ¶Á¡¢Ğ´ÇëÇóÀàĞÍ£¬ÎÄ¼ş¶ÁĞ´Î»ÖÃµÈµÈ¡£
  */
 class File
 {
 public:
-	/* Enumerate */
-	enum FileFlags
+	enum FileFlags 
 	{
-		FILE_FREAD = 0x1,			/* è¯»è¯·æ±‚ç±»å‹ */
-		FILE_FWRITE = 0x2,			/* å†™è¯·æ±‚ç±»å‹ */
-		FILE_FPIPE = 0x4				/* ç®¡é“ç±»å‹ */
+		FREAD = 0x1,	//¶ÁÇëÇóÀàĞÍ
+		FWRITE = 0x2,	//Ğ´ÇëÇóÀàĞÍ
 	};
-	
-	/* Functions */
+
 public:
-	/* Constructors */
 	File();
-	/* Destructors */
 	~File();
+	void Reset();
 
-	
-	/* Member */
-	unsigned int f_flag;		/* å¯¹æ‰“å¼€æ–‡ä»¶çš„è¯»ã€å†™æ“ä½œè¦æ±‚ */
-	int		f_count;			/* å½“å‰å¼•ç”¨è¯¥æ–‡ä»¶æ§åˆ¶å—çš„è¿›ç¨‹æ•°é‡ */
-	Inode*	f_inode;			/* æŒ‡å‘æ‰“å¼€æ–‡ä»¶çš„å†…å­˜InodeæŒ‡é’ˆ */
-	int		f_offset;			/* æ–‡ä»¶è¯»å†™ä½ç½®æŒ‡é’ˆ */
+	unsigned int flag;	//¶Ô´ò¿ªÎÄ¼şµÄ¶Á¡¢Ğ´²Ù×÷ÒªÇó
+	int	count;		    //µ±Ç°ÒıÓÃ¸ÃÎÄ¼ş¿ØÖÆ¿éµÄ½ø³ÌÊıÁ¿£¬ÈôÎª0Ôò±íÊ¾¸ÃFile¿ÕÏĞ£¬¿ÉÒÔ·ÖÅä×÷ËûÓÃ
+	INode* inode;		//Ö¸Ïò´ò¿ªÎÄ¼şµÄÄÚ´æINodeÖ¸Õë
+	int	offset;		    //ÎÄ¼ş¶ÁĞ´Î»ÖÃÖ¸Õë
 };
 
-
-/*
- * è¿›ç¨‹æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦è¡¨(OpenFiles)çš„å®šä¹‰
- * è¿›ç¨‹çš„uç»“æ„ä¸­åŒ…å«OpenFilesç±»çš„ä¸€ä¸ªå¯¹è±¡ï¼Œ
- * ç»´æŠ¤äº†å½“å‰è¿›ç¨‹çš„æ‰€æœ‰æ‰“å¼€æ–‡ä»¶ã€‚
+/*     ½ø³Ì´ò¿ªÎÄ¼şÃèÊö·û±í(OpenFiles)µÄ¶¨Òå
+ * Î¬»¤ÁËµ±Ç°½ø³ÌµÄËùÓĞ´ò¿ªÎÄ¼ş¡£
  */
-class OpenFiles
-{
-	/* static members */
+class ProcessOpenFile {
 public:
-	static const int NOFILES = 15;	/* è¿›ç¨‹å…è®¸æ‰“å¼€çš„æœ€å¤§æ–‡ä»¶æ•° */
-	
-	/* Functions */
-public:
-	/* Constructors */
-	OpenFiles();
-	/* Destructors */
-	~OpenFiles();
-	
-	/* 
-	 * @comment è¿›ç¨‹è¯·æ±‚æ‰“å¼€æ–‡ä»¶æ—¶ï¼Œåœ¨æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦è¡¨ä¸­åˆ†é…ä¸€ä¸ªç©ºé—²è¡¨é¡¹
-	 */
-	int AllocFreeSlot();
-	
-	/* 
-	 * @comment Dupç³»ç»Ÿè°ƒç”¨æ—¶å¤åˆ¶æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦è¡¨ä¸­çš„æè¿°ç¬¦
-	 */
-	int	Clone(int fd);
-	
-	/* 
-	 * @comment æ ¹æ®ç”¨æˆ·ç³»ç»Ÿè°ƒç”¨æä¾›çš„æ–‡ä»¶æè¿°ç¬¦å‚æ•°fdï¼Œ
-	 * æ‰¾åˆ°å¯¹åº”çš„æ‰“å¼€æ–‡ä»¶æ§åˆ¶å—Fileç»“æ„
-	 */
-	File* GetF(int fd);
-	/* 
-	 * @comment ä¸ºå·²åˆ†é…åˆ°çš„ç©ºé—²æè¿°ç¬¦fdå’Œå·²åˆ†é…çš„æ‰“å¼€æ–‡ä»¶è¡¨ä¸­
-	 * ç©ºé—²Fileå¯¹è±¡å»ºç«‹å‹¾è¿å…³ç³»
-	 */
-	void SetF(int fd, File* pFile);
-	
-	/* Members */
+	static const int MAX_FILES = 100;		//½ø³ÌÔÊĞí´ò¿ªµÄ×î´óÎÄ¼şÊı
+
 private:
-	File *ProcessOpenFileTable[NOFILES];		/* Fileå¯¹è±¡çš„æŒ‡é’ˆæ•°ç»„ï¼ŒæŒ‡å‘ç³»ç»Ÿæ‰“å¼€æ–‡ä»¶è¡¨ä¸­çš„Fileå¯¹è±¡ */
+	File* processOpenFileTable[MAX_FILES];	//File¶ÔÏóµÄÖ¸ÕëÊı×é£¬Ö¸ÏòÏµÍ³´ò¿ªÎÄ¼ş±íÖĞµÄFile¶ÔÏó
+
+public:
+	ProcessOpenFile();
+	~ProcessOpenFile();
+	void Reset()
+	{
+		memset(processOpenFileTable, 0, sizeof(processOpenFileTable));
+	};
+	int AllocFreeSlot();           //½ø³ÌÇëÇó´ò¿ªÎÄ¼şÊ±£¬ÔÚ´ò¿ªÎÄ¼şÃèÊö·û±íÖĞ·ÖÅäÒ»¸ö¿ÕÏĞ±íÏî
+	File* GetF(int fd);            //¸ù¾İÓÃ»§ÏµÍ³µ÷ÓÃÌá¹©µÄÎÄ¼şÃèÊö·û²ÎÊıfd£¬ÕÒµ½¶ÔÓ¦µÄ´ò¿ªÎÄ¼ş¿ØÖÆ¿éFile½á¹¹	
+	void SetF(int fd, File* pFile);//ÎªÒÑ·ÖÅäµ½µÄ¿ÕÏĞÃèÊö·ûfdºÍÒÑ·ÖÅäµÄ´ò¿ªÎÄ¼ş±íÖĞ¿ÕÏĞFile¶ÔÏó½¨Á¢¹´Á¬¹ØÏµ
 };
 
-/*
- * æ–‡ä»¶I/Oçš„å‚æ•°ç±»
- * å¯¹æ–‡ä»¶è¯»ã€å†™æ—¶éœ€ç”¨åˆ°çš„è¯»ã€å†™åç§»é‡ã€
- * å­—èŠ‚æ•°ä»¥åŠç›®æ ‡åŒºåŸŸé¦–åœ°å€å‚æ•°ã€‚
+/*    ÎÄ¼şI/OµÄ²ÎÊıÀà
+ * ¶ÔÎÄ¼ş¶Á¡¢Ğ´Ê±ĞèÓÃµ½µÄ¶Á¡¢Ğ´Æ«ÒÆÁ¿¡¢×Ö½ÚÊıÒÔ¼°Ä¿±êÇøÓòÊ×µØÖ·²ÎÊı¡£
  */
-class IOParameter
-{
-	/* Functions */
+class IOParameter {
 public:
-	/* Constructors */
-	IOParameter();
-	/* Destructors */
-	~IOParameter();
-	
-	/* Members */
-public:
-	unsigned char* m_Base;	/* å½“å‰è¯»ã€å†™ç”¨æˆ·ç›®æ ‡åŒºåŸŸçš„é¦–åœ°å€ */
-	int m_Offset;	/* å½“å‰è¯»ã€å†™æ–‡ä»¶çš„å­—èŠ‚åç§»é‡ */
-	int m_Count;	/* å½“å‰è¿˜å‰©ä½™çš„è¯»ã€å†™å­—èŠ‚æ•°é‡ */
+	unsigned char* base;	//µ±Ç°¶Á¡¢Ğ´ÓÃ»§Ä¿±êÇøÓòµÄÊ×µØÖ·
+	int offset;			    //µ±Ç°¶Á¡¢Ğ´ÎÄ¼şµÄ×Ö½ÚÆ«ÒÆÁ¿
+	int count;			    //µ±Ç°»¹Ê£ÓàµÄ¶Á¡¢Ğ´×Ö½ÚÊıÁ¿
 };
-
-#endif
