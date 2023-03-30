@@ -23,14 +23,14 @@ void OpenFileTable::Reset()
 		sysFileTable[i].Reset();
 }
 
-//×÷ÓÃ£º½ø³Ì´ò¿ªÎÄ¼şÃèÊö·û±íÖĞÕÒµÄ¿ÕÏĞÏîÖ®ÏÂ±êĞ´Èë ar0[EAX]
+//ä½œç”¨ï¼šè¿›ç¨‹æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦è¡¨ä¸­æ‰¾çš„ç©ºé—²é¡¹ä¹‹ä¸‹æ ‡å†™å…¥ ar0[EAX]
 File* OpenFileTable::FAlloc() 
 {
 	int fd = myUserCall.ofiles.AllocFreeSlot();
 	if (fd < 0) 
 		return NULL;
 	for (int i = 0; i < OpenFileTable::MAX_FILES; ++i) {
-		//count == 0±íÊ¾¸ÃÏî¿ÕÏĞ
+		//count == 0è¡¨ç¤ºè¯¥é¡¹ç©ºé—²
 		if (this->sysFileTable[i].count == 0) {
 			myUserCall.ofiles.SetF(fd, &this->sysFileTable[i]);
 			this->sysFileTable[i].count++;
@@ -42,7 +42,7 @@ File* OpenFileTable::FAlloc()
 	return NULL;
 }
 
-//¶Ô´ò¿ªÎÄ¼ş¿ØÖÆ¿éFile½á¹¹µÄÒıÓÃ¼ÆÊıcount¼õ1£¬ÈôÒıÓÃ¼ÆÊıcountÎª0£¬ÔòÊÍ·ÅFile½á¹¹
+//å¯¹æ‰“å¼€æ–‡ä»¶æ§åˆ¶å—Fileç»“æ„çš„å¼•ç”¨è®¡æ•°countå‡1ï¼Œè‹¥å¼•ç”¨è®¡æ•°countä¸º0ï¼Œåˆ™é‡Šæ”¾Fileç»“æ„
 void OpenFileTable::CloseF(File* pFile) 
 {
 	pFile->count--;
@@ -67,7 +67,7 @@ void INodeTable::Reset()
 		m_INodeTable[i].Reset();
 }
 
-//¼ì²é±àºÅÎªinumberµÄÍâ´æINodeÊÇ·ñÓĞÄÚ´æ¿½±´£¬Èç¹ûÓĞÔò·µ»Ø¸ÃÄÚ´æINodeÔÚÄÚ´æINode±íÖĞµÄË÷Òı
+//æ£€æŸ¥ç¼–å·ä¸ºinumberçš„å¤–å­˜INodeæ˜¯å¦æœ‰å†…å­˜æ‹·è´ï¼Œå¦‚æœæœ‰åˆ™è¿”å›è¯¥å†…å­˜INodeåœ¨å†…å­˜INodeè¡¨ä¸­çš„ç´¢å¼•
 int INodeTable::IsLoaded(int inumber) 
 {
 	for (int i = 0; i < NINODE; ++i) 
@@ -76,7 +76,7 @@ int INodeTable::IsLoaded(int inumber)
 	return -1;
 }
 
-//ÔÚÄÚ´æINode±íÖĞÑ°ÕÒÒ»¸ö¿ÕÏĞµÄÄÚ´æINode
+//åœ¨å†…å­˜INodeè¡¨ä¸­å¯»æ‰¾ä¸€ä¸ªç©ºé—²çš„å†…å­˜INode
 INode* INodeTable::GetFreeINode() 
 {
 	for (int i = 0; i < INodeTable::NINODE; i++) 
@@ -85,8 +85,8 @@ INode* INodeTable::GetFreeINode()
 	return NULL;
 }
 
-//¸ù¾İÍâ´æINode±àºÅ»ñÈ¡¶ÔÓ¦INode¡£Èç¹û¸ÃINodeÒÑ¾­ÔÚÄÚ´æÖĞ£¬·µ»Ø¸ÃÄÚ´æINode£»
-//Èç¹û²»ÔÚÄÚ´æÖĞ£¬Ôò½«Æä¶ÁÈëÄÚ´æºóÉÏËø²¢·µ»Ø¸ÃÄÚ´æINode£¬·µ»ØNULL:INode Table OverFlow
+//æ ¹æ®å¤–å­˜INodeç¼–å·è·å–å¯¹åº”INodeã€‚å¦‚æœè¯¥INodeå·²ç»åœ¨å†…å­˜ä¸­ï¼Œè¿”å›è¯¥å†…å­˜INodeï¼›
+//å¦‚æœä¸åœ¨å†…å­˜ä¸­ï¼Œåˆ™å°†å…¶è¯»å…¥å†…å­˜åä¸Šé”å¹¶è¿”å›è¯¥å†…å­˜INodeï¼Œè¿”å›NULL:INode Table OverFlow
 INode* INodeTable::IGet(int inumber) 
 {
 	INode* pINode;
@@ -99,7 +99,7 @@ INode* INodeTable::IGet(int inumber)
 
 	pINode = GetFreeINode();
 	if (NULL == pINode) {
-		cout << "ÄÚ´æ INode ±íÒç³ö!" << endl;
+		cout << "å†…å­˜ INode è¡¨æº¢å‡º!" << endl;
 		myUserCall.userErrorCode = UserCall::U_ENFILE;
 		return NULL;
 	}
@@ -112,32 +112,32 @@ INode* INodeTable::IGet(int inumber)
 	return pINode;
 }
 
-//¼õÉÙ¸ÃÄÚ´æINodeµÄÒıÓÃ¼ÆÊı£¬Èç¹û´ËINodeÒÑ¾­Ã»ÓĞÄ¿Â¼ÏîÖ¸ÏòËü£¬
-//ÇÒÎŞ½ø³ÌÒıÓÃ¸ÃINode£¬ÔòÊÍ·Å´ËÎÄ¼şÕ¼ÓÃµÄ´ÅÅÌ¿é¡£
+//å‡å°‘è¯¥å†…å­˜INodeçš„å¼•ç”¨è®¡æ•°ï¼Œå¦‚æœæ­¤INodeå·²ç»æ²¡æœ‰ç›®å½•é¡¹æŒ‡å‘å®ƒï¼Œ
+//ä¸”æ— è¿›ç¨‹å¼•ç”¨è¯¥INodeï¼Œåˆ™é‡Šæ”¾æ­¤æ–‡ä»¶å ç”¨çš„ç£ç›˜å—ã€‚
 void INodeTable::IPut(INode* pINode) 
 {
-	//µ±Ç°½ø³ÌÎªÒıÓÃ¸ÃÄÚ´æINodeµÄÎ¨Ò»½ø³Ì£¬ÇÒ×¼±¸ÊÍ·Å¸ÃÄÚ´æINode
+	//å½“å‰è¿›ç¨‹ä¸ºå¼•ç”¨è¯¥å†…å­˜INodeçš„å”¯ä¸€è¿›ç¨‹ï¼Œä¸”å‡†å¤‡é‡Šæ”¾è¯¥å†…å­˜INode
 	if (pINode->i_count == 1) {
-		//¸ÃÎÄ¼şÒÑ¾­Ã»ÓĞÄ¿Â¼Â·¾¶Ö¸ÏòËü
+		//è¯¥æ–‡ä»¶å·²ç»æ²¡æœ‰ç›®å½•è·¯å¾„æŒ‡å‘å®ƒ
 		if (pINode->i_nlink <= 0) {
-			//ÊÍ·Å¸ÃÎÄ¼şÕ¼¾İµÄÊı¾İÅÌ¿é
+			//é‡Šæ”¾è¯¥æ–‡ä»¶å æ®çš„æ•°æ®ç›˜å—
 			pINode->ITrunc();
 			pINode->i_mode = 0;
-			//ÊÍ·Å¶ÔÓ¦µÄÍâ´æINode
+			//é‡Šæ”¾å¯¹åº”çš„å¤–å­˜INode
 			this->fileSystem->IFree(pINode->i_number);
 		}
-		//¸üĞÂÍâ´æINodeĞÅÏ¢
+		//æ›´æ–°å¤–å­˜INodeä¿¡æ¯
 		pINode->IUpdate((int)time(NULL));
-		//Çå³ıÄÚ´æINodeµÄËùÓĞ±êÖ¾Î»
+		//æ¸…é™¤å†…å­˜INodeçš„æ‰€æœ‰æ ‡å¿—ä½
 		pINode->i_flag = 0;
-		//ÕâÊÇÄÚ´æinode¿ÕÏĞµÄ±êÖ¾Ö®Ò»£¬ÁíÒ»¸öÊÇi_count == 0
+		//è¿™æ˜¯å†…å­˜inodeç©ºé—²çš„æ ‡å¿—ä¹‹ä¸€ï¼Œå¦ä¸€ä¸ªæ˜¯i_count == 0
 		pINode->i_number = -1;
 	}
 
 	pINode->i_count--;
 }
 
-//½«ËùÓĞ±»ĞŞ¸Ä¹ıµÄÄÚ´æINode¸üĞÂµ½¶ÔÓ¦Íâ´æINodeÖĞ
+//å°†æ‰€æœ‰è¢«ä¿®æ”¹è¿‡çš„å†…å­˜INodeæ›´æ–°åˆ°å¯¹åº”å¤–å­˜INodeä¸­
 void INodeTable::UpdateINodeTable() 
 {
 	for (int i = 0; i < INodeTable::NINODE; ++i) 

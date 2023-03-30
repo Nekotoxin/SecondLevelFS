@@ -8,7 +8,7 @@ typedef unsigned int uint32;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
 
-/* 通用工具
+/* 閫氱敤宸ュ叿
 */
 class Common 
 {

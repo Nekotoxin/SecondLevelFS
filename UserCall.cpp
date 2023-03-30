@@ -7,40 +7,40 @@
 using namespace std;
 
 extern SystemCall mySystemCall;
-//    externÊÇÒ»¸ö¹Ø¼ü×Ö£¬Ëü¸æËß±àÒëÆ÷´æÔÚ×ÅÒ»¸ö±äÁ¿»òÕßÒ»¸öº¯Êı£¬Èç¹ûÔÚµ±Ç°±àÒëÓï¾äµÄÇ°Ãæ
-//ÖĞÃ»ÓĞÕÒµ½ÏàÓ¦µÄ±äÁ¿»òÕßº¯Êı£¬Ò²»áÔÚµ±Ç°ÎÄ¼şµÄºóÃæ»òÕßÆäËüÎÄ¼şÖĞ¶¨Òå
+//    externæ˜¯ä¸€ä¸ªå…³é”®å­—ï¼Œå®ƒå‘Šè¯‰ç¼–è¯‘å™¨å­˜åœ¨ç€ä¸€ä¸ªå˜é‡æˆ–è€…ä¸€ä¸ªå‡½æ•°ï¼Œå¦‚æœåœ¨å½“å‰ç¼–è¯‘è¯­å¥çš„å‰é¢
+//ä¸­æ²¡æœ‰æ‰¾åˆ°ç›¸åº”çš„å˜é‡æˆ–è€…å‡½æ•°ï¼Œä¹Ÿä¼šåœ¨å½“å‰æ–‡ä»¶çš„åé¢æˆ–è€…å…¶å®ƒæ–‡ä»¶ä¸­å®šä¹‰
 
 UserCall::UserCall() 
 {
-	userErrorCode = U_NOERROR;  //´æ·Å´íÎóÂë
+	userErrorCode = U_NOERROR;  //å­˜æ”¾é”™è¯¯ç 
 	systemCall = &mySystemCall; 
 
-	dirp = "/";                                   //ÏµÍ³µ÷ÓÃ²ÎÊı(Ò»°ãÓÃÓÚPathname)µÄÖ¸Õë
-	curDirPath = "/";                             //µ±Ç°¹¤×÷Ä¿Â¼ÍêÕûÂ·¾¶
-	nowDirINodePointer = systemCall->rootDirINode;//Ö¸Ïòµ±Ç°Ä¿Â¼µÄInodeÖ¸Õë
-	paDirINodePointer = NULL;                     //Ö¸Ïò¸¸Ä¿Â¼µÄInodeÖ¸Õë
-	memset(arg, 0, sizeof(arg));                  //Ö¸ÏòºËĞÄÕ»ÏÖ³¡±£»¤ÇøÖĞEAX¼Ä´æÆ÷
+	dirp = "/";                                   //ç³»ç»Ÿè°ƒç”¨å‚æ•°(ä¸€èˆ¬ç”¨äºPathname)çš„æŒ‡é’ˆ
+	curDirPath = "/";                             //å½“å‰å·¥ä½œç›®å½•å®Œæ•´è·¯å¾„
+	nowDirINodePointer = systemCall->rootDirINode;//æŒ‡å‘å½“å‰ç›®å½•çš„InodeæŒ‡é’ˆ
+	paDirINodePointer = NULL;                     //æŒ‡å‘çˆ¶ç›®å½•çš„InodeæŒ‡é’ˆ
+	memset(arg, 0, sizeof(arg));                  //æŒ‡å‘æ ¸å¿ƒæ ˆç°åœºä¿æŠ¤åŒºä¸­EAXå¯„å­˜å™¨
 }
 
 UserCall::~UserCall() {}
 
-//´Ëº¯Êı¸Ä±äUsercall¶ÔÏóµÄdirp(ÏµÍ³µ÷ÓÃ²ÎÊı Ò»°ãÓÃÓÚPathname)Êı¾İ³ÉÔ±
-//Ö»¼ì²éÎÄ¼şÃûÊÇ·ñ¹ı³¤
+//æ­¤å‡½æ•°æ”¹å˜Usercallå¯¹è±¡çš„dirp(ç³»ç»Ÿè°ƒç”¨å‚æ•° ä¸€èˆ¬ç”¨äºPathname)æ•°æ®æˆå‘˜
+//åªæ£€æŸ¥æ–‡ä»¶åæ˜¯å¦è¿‡é•¿
 bool UserCall::checkPathName(string path) 
 {
 	if (path.empty()) {
-		cout << "²ÎÊıÂ·¾¶Îª¿Õ" << endl;
+		cout << "å‚æ•°è·¯å¾„ä¸ºç©º" << endl;
 		return false;
 	}
 
 	if (path[0] == '/' || path.substr(0, 2) != "..")
-		dirp = path;            //ÏµÍ³µ÷ÓÃ²ÎÊı(Ò»°ãÓÃÓÚPathname)µÄÖ¸Õë
+		dirp = path;            //ç³»ç»Ÿè°ƒç”¨å‚æ•°(ä¸€èˆ¬ç”¨äºPathname)çš„æŒ‡é’ˆ
 	else {
 		if (curDirPath.back() != '/')
 			curDirPath += '/';
-		string pre = curDirPath;//µ±Ç°¹¤×÷Ä¿Â¼ÍêÕûÂ·¾¶ cdÃüÁî²Å»á¸Ä±äcurDirPathµÄÖµ
+		string pre = curDirPath;//å½“å‰å·¥ä½œç›®å½•å®Œæ•´è·¯å¾„ cdå‘½ä»¤æ‰ä¼šæ”¹å˜curDirPathçš„å€¼
 		unsigned int p = 0;
-		//¿ÉÒÔ¶àÖØÏà¶ÔÂ·¾¶ .. ../../
+		//å¯ä»¥å¤šé‡ç›¸å¯¹è·¯å¾„ .. ../../
 		for (; pre.length() > 3 && p < path.length() && path.substr(p, 2) == ".."; ) {
 			pre.pop_back();
 			pre.erase(pre.find_last_of('/') + 1);
@@ -57,7 +57,7 @@ bool UserCall::checkPathName(string path)
 		q = dirp.find('/', p);
 		q = Common::min(q, (unsigned int)dirp.length());
 		if (q - p > DirectoryEntry::DIRSIZ) {
-			cout << "ÎÄ¼şÃû»òÎÄ¼ş¼ĞÃû¹ı³¤" << endl;
+			cout << "æ–‡ä»¶åæˆ–æ–‡ä»¶å¤¹åè¿‡é•¿" << endl;
 			return false;
 		}
 	}
@@ -68,7 +68,7 @@ void UserCall::userMkDir(string dirName)
 {
 	if (!checkPathName(dirName))
 		return;
-	arg[1] = INode::IFDIR;//´æ·Åµ±Ç°ÏµÍ³µ÷ÓÃ²ÎÊı ÎÄ¼şÀàĞÍ£ºÄ¿Â¼ÎÄ¼ş
+	arg[1] = INode::IFDIR;//å­˜æ”¾å½“å‰ç³»ç»Ÿè°ƒç”¨å‚æ•° æ–‡ä»¶ç±»å‹ï¼šç›®å½•æ–‡ä»¶
 	systemCall->Creat();
 	checkError();
 }
@@ -119,7 +119,7 @@ void UserCall::__userTree__(string path, int depth)
 			cout << "|   ";
 		cout << "|---" << dirs[i] << endl;
 		__userCd__(nextDir);
-		if (userErrorCode != UserCall::U_NOERROR) {//·ÃÎÊµ½ÎÄ¼ş
+		if (userErrorCode != UserCall::U_NOERROR) {//è®¿é—®åˆ°æ–‡ä»¶
 			userErrorCode = UserCall::U_NOERROR;
 			continue;
 		}
@@ -143,8 +143,8 @@ void UserCall::userTree(string path)
 
 	path = dirp;
 	__userCd__(path);
-	if (userErrorCode != UserCall::U_NOERROR) {//·ÃÎÊµ½ÎÄ¼ş
-		cout << "Ä¿Â¼Â·¾¶²»´æÔÚ£¡" << endl;
+	if (userErrorCode != UserCall::U_NOERROR) {//è®¿é—®åˆ°æ–‡ä»¶
+		cout << "ç›®å½•è·¯å¾„ä¸å­˜åœ¨ï¼" << endl;
 		userErrorCode = UserCall::U_NOERROR;
 		__userCd__(curDir);
 		return;
@@ -173,7 +173,7 @@ void UserCall::userCreate(string fileName)
 {
 	if (!checkPathName(fileName))
 		return;
-	arg[1] = (INode::IREAD | INode::IWRITE);//´æ·Åµ±Ç°ÏµÍ³µ÷ÓÃ²ÎÊı
+	arg[1] = (INode::IREAD | INode::IWRITE);//å­˜æ”¾å½“å‰ç³»ç»Ÿè°ƒç”¨å‚æ•°
 	systemCall->Creat();
 	checkError();
 }
@@ -190,17 +190,17 @@ void UserCall::userOpen(string fileName)
 {
 	if (!checkPathName(fileName))
 		return;
-	arg[1] = (File::FREAD | File::FWRITE);//´æ·Åµ±Ç°ÏµÍ³µ÷ÓÃ²ÎÊı
+	arg[1] = (File::FREAD | File::FWRITE);//å­˜æ”¾å½“å‰ç³»ç»Ÿè°ƒç”¨å‚æ•°
 	systemCall->Open();
 	if (checkError())
 		return;
-	cout << "´ò¿ªÎÄ¼ş³É¹¦£¬·µ»ØµÄÎÄ¼ş¾ä±úfdÎª " << ar0[UserCall::EAX] << endl;
+	cout << "æ‰“å¼€æ–‡ä»¶æˆåŠŸï¼Œè¿”å›çš„æ–‡ä»¶å¥æŸ„fdä¸º " << ar0[UserCall::EAX] << endl;
 }
 
-//´«Èësfd¾ä±ú
+//ä¼ å…¥sfdå¥æŸ„
 void UserCall::userClose(string sfd) 
 {
-	arg[0] = stoi(sfd);//´æ·Åµ±Ç°ÏµÍ³µ÷ÓÃ²ÎÊı
+	arg[0] = stoi(sfd);//å­˜æ”¾å½“å‰ç³»ç»Ÿè°ƒç”¨å‚æ•°
 	systemCall->Close();
 	checkError();
 }
@@ -218,13 +218,13 @@ void UserCall::userWrite(string sfd, string inFile, string size)
 {
 	int fd = stoi(sfd), usize = 0;
 	if (size.empty() || (usize = stoi(size)) < 0) {
-		cout << "²ÎÊı±ØĞë´óÓÚµÈÓÚÁã ! \n";
+		cout << "å‚æ•°å¿…é¡»å¤§äºç­‰äºé›¶ ! \n";
 		return;
 	}
 	char* buffer = new char[usize];
 	fstream fin(inFile, ios::in | ios::binary);
 	if (!fin.is_open()) {
-		cout << "´ò¿ªÎÄ¼ş" << inFile << "Ê§°Ü" << endl;
+		cout << "æ‰“å¼€æ–‡ä»¶" << inFile << "å¤±è´¥" << endl;
 		return;
 	}
 	fin.read(buffer, usize);
@@ -236,7 +236,7 @@ void UserCall::userWrite(string sfd, string inFile, string size)
 
 	if (checkError())
 		return;
-	cout << "³É¹¦Ğ´Èë" << ar0[UserCall::EAX] << "×Ö½Ú" << endl;
+	cout << "æˆåŠŸå†™å…¥" << ar0[UserCall::EAX] << "å­—èŠ‚" << endl;
 	delete[] buffer;
 }
 
@@ -252,7 +252,7 @@ void UserCall::userRead(string sfd, string outFile, string size)
 	if (checkError())
 		return;
 
-	cout << "³É¹¦¶Á³ö" << ar0[UserCall::EAX] << "×Ö½Ú" << endl;
+	cout << "æˆåŠŸè¯»å‡º" << ar0[UserCall::EAX] << "å­—èŠ‚" << endl;
 	if (outFile == "std") {
 		for (uint32 i = 0; i < ar0[UserCall::EAX]; ++i)
 			cout << (char)buffer[i];
@@ -263,7 +263,7 @@ void UserCall::userRead(string sfd, string outFile, string size)
 	else {
 		fstream fout(outFile, ios::out | ios::binary);
 		if (!fout) {
-			cout << "´ò¿ªÎÄ¼ş" << outFile << "Ê§°Ü" << endl;
+			cout << "æ‰“å¼€æ–‡ä»¶" << outFile << "å¤±è´¥" << endl;
 			return;
 		}
 		fout.write(buffer, ar0[UserCall::EAX]);
@@ -278,28 +278,28 @@ bool UserCall::checkError()
 	if (userErrorCode != U_NOERROR) {
 		switch (userErrorCode) {
 		case UserCall::U_ENOENT:
-			cout << "ÕÒ²»µ½ÎÄ¼ş»òÕßÎÄ¼ş¼Ğ" << endl;
+			cout << "æ‰¾ä¸åˆ°æ–‡ä»¶æˆ–è€…æ–‡ä»¶å¤¹" << endl;
 			break;
 		case UserCall::U_EBADF:
-			cout << "ÕÒ²»µ½ÎÄ¼ş¾ä±ú" << endl;
+			cout << "æ‰¾ä¸åˆ°æ–‡ä»¶å¥æŸ„" << endl;
 			break;
 		case UserCall::U_EACCES:
-			cout << "È¨ÏŞ²»×ã" << endl;
+			cout << "æƒé™ä¸è¶³" << endl;
 			break;
 		case UserCall::U_ENOTDIR:
-			cout << "ÎÄ¼ş¼Ğ²»´æÔÚ" << endl;
+			cout << "æ–‡ä»¶å¤¹ä¸å­˜åœ¨" << endl;
 			break;
 		case UserCall::U_ENFILE:
-			cout << "ÎÄ¼ş±íÒç³ö" << endl;
+			cout << "æ–‡ä»¶è¡¨æº¢å‡º" << endl;
 			break;
 		case UserCall::U_EMFILE:
-			cout << "´ò¿ªÎÄ¼ş¹ı¶à" << endl;
+			cout << "æ‰“å¼€æ–‡ä»¶è¿‡å¤š" << endl;
 			break;
 		case UserCall::U_EFBIG:
-			cout << "ÎÄ¼ş¹ı´ó" << endl;
+			cout << "æ–‡ä»¶è¿‡å¤§" << endl;
 			break;
 		case UserCall::U_ENOSPC:
-			cout << "´ÅÅÌ¿Õ¼ä²»×ã" << endl;
+			cout << "ç£ç›˜ç©ºé—´ä¸è¶³" << endl;
 			break;
 		default:
 			break;

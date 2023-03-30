@@ -29,22 +29,22 @@ ProcessOpenFile::~ProcessOpenFile()
 {
 }
 
-//����������ļ�ʱ���ڴ��ļ����������з���һ�����б���
+//进程请求打开文件时，在打开文件描述符表中分配一个空闲表项
 int ProcessOpenFile::AllocFreeSlot() 
 {
 	for (int i = 0; i < ProcessOpenFile::MAX_FILES; i++)
-		//���̴��ļ������������ҵ�������򷵻�֮
+		//进程打开文件描述符表中找到空闲项，则返回之
 		if (!processOpenFileTable[i]) {
 			myUserCall.ar0[UserCall::EAX] = i;
 			return i;
 		}
 
-	myUserCall.ar0[UserCall::EAX] = -1; //Open1����Ҫһ����־�������ļ��ṹ����ʧ��ʱ�����Ի���ϵͳ��Դ
+	myUserCall.ar0[UserCall::EAX] = -1; //Open1，需要一个标志。当打开文件结构创建失败时，可以回收系统资源
 	myUserCall.userErrorCode = UserCall::U_EMFILE;
 	return -1;
 }
 
-//�����û�ϵͳ�����ṩ���ļ�����������fd���ҵ���Ӧ�Ĵ��ļ����ƿ�File�ṹ
+//根据用户系统调用提供的文件描述符参数fd，找到对应的打开文件控制块File结构
 File* ProcessOpenFile::GetF(int fd) 
 {
 	File* pFile;
@@ -60,7 +60,7 @@ File* ProcessOpenFile::GetF(int fd)
 	return pFile;
 }
 
-//Ϊ�ѷ��䵽�Ŀ���������fd���ѷ���Ĵ��ļ����п���File������������ϵ
+//为已分配到的空闲描述符fd和已分配的打开文件表中空闲File对象建立勾连关系
 void ProcessOpenFile::SetF(int fd, File* pFile) 
 {
 	if (fd < 0 || fd >= ProcessOpenFile::MAX_FILES)

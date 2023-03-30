@@ -8,30 +8,30 @@ using namespace std;
 class BufferManager
 {
 public:
-	static const int NBUF = 100;            //»º´æ¿ØÖÆ¿é¡¢»º³åÇøµÄÊıÁ¿
-	static const int BUFFER_SIZE = 512;     //»º³åÇø´óĞ¡¡£ ÒÔ×Ö½ÚÎªµ¥Î»
+	static const int NBUF = 100;            //ç¼“å­˜æ§åˆ¶å—ã€ç¼“å†²åŒºçš„æ•°é‡
+	static const int BUFFER_SIZE = 512;     //ç¼“å†²åŒºå¤§å°ã€‚ ä»¥å­—èŠ‚ä¸ºå•ä½
 
 private:
-	Buf* bufferList;                 //×ÔÓÉ»º´æ¶ÓÁĞ¿ØÖÆ¿é
-	Buf nBuffer[NBUF];               //»º´æ¿ØÖÆ¿éÊı×é
-	unsigned char buffer[NBUF][BUFFER_SIZE];//»º³åÇøÊı×é
+	Buf* bufferList;                 //è‡ªç”±ç¼“å­˜é˜Ÿåˆ—æ§åˆ¶å—
+	Buf nBuffer[NBUF];               //ç¼“å­˜æ§åˆ¶å—æ•°ç»„
+	unsigned char buffer[NBUF][BUFFER_SIZE];//ç¼“å†²åŒºæ•°ç»„
 	unordered_map<int, Buf*> map;
 	DiskDriver* diskDriver;
 
 public:
 	BufferManager();
 	~BufferManager();
-	Buf* GetBlk(int blkno);         //ÉêÇëÒ»¿é»º´æ£¬ÓÃÓÚ¶ÁĞ´Éè±¸ÉÏµÄ¿éblkno
-	void Brelse(Buf* bp);           //ÊÍ·Å»º´æ¿ØÖÆ¿ébuf
-	Buf* Bread(int blkno);          //¶ÁÒ»¸ö´ÅÅÌ¿é£¬blknoÎªÄ¿±ê´ÅÅÌ¿éÂß¼­¿éºÅ
-	void Bwrite(Buf* bp);           //Ğ´Ò»¸ö´ÅÅÌ¿é
-	void Bdwrite(Buf* bp);          //ÑÓ³ÙĞ´´ÅÅÌ¿é
-	void Bclear(Buf* bp);           //Çå¿Õ»º³åÇøÄÚÈİ
-	void Bflush();                         //½«¶ÓÁĞÖĞÑÓ³ÙĞ´µÄ»º´æÈ«²¿Êä³öµ½´ÅÅÌ
-	void FormatBuffer();                   //¸ñÊ½»¯ËùÓĞBuffer
+	Buf* GetBlk(int blkno);         //ç”³è¯·ä¸€å—ç¼“å­˜ï¼Œç”¨äºè¯»å†™è®¾å¤‡ä¸Šçš„å—blkno
+	void Brelse(Buf* bp);           //é‡Šæ”¾ç¼“å­˜æ§åˆ¶å—buf
+	Buf* Bread(int blkno);          //è¯»ä¸€ä¸ªç£ç›˜å—ï¼Œblknoä¸ºç›®æ ‡ç£ç›˜å—é€»è¾‘å—å·
+	void Bwrite(Buf* bp);           //å†™ä¸€ä¸ªç£ç›˜å—
+	void Bdwrite(Buf* bp);          //å»¶è¿Ÿå†™ç£ç›˜å—
+	void Bclear(Buf* bp);           //æ¸…ç©ºç¼“å†²åŒºå†…å®¹
+	void Bflush();                         //å°†é˜Ÿåˆ—ä¸­å»¶è¿Ÿå†™çš„ç¼“å­˜å…¨éƒ¨è¾“å‡ºåˆ°ç£ç›˜
+	void FormatBuffer();                   //æ ¼å¼åŒ–æ‰€æœ‰Buffer
 
 private:
-	void InitList();                 //»º´æ¿ØÖÆ¿é¶ÓÁĞµÄ³õÊ¼»¯
+	void InitList();                 //ç¼“å­˜æ§åˆ¶å—é˜Ÿåˆ—çš„åˆå§‹åŒ–
 	void DetachNode(Buf* pb);
 	void InsertTail(Buf* pb);
 };

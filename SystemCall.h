@@ -7,44 +7,44 @@
 
 /*
 *     SystemCall
-*    ·â×°ÁËÎÄ¼şÏµÍ³µÄ¸÷ÖÖÏµÍ³µ÷ÓÃÔÚºËĞÄÌ¬ÏÂ´¦Àí¹ı³Ì£¬
-* Èç¶ÔÎÄ¼şµÄOpen()¡¢Close()¡¢Read()¡¢Write()µÈµÈ
-* ·â×°ÁË¶ÔÎÄ¼şÏµÍ³·ÃÎÊµÄ¾ßÌåÏ¸½Ú¡£
+*    å°è£…äº†æ–‡ä»¶ç³»ç»Ÿçš„å„ç§ç³»ç»Ÿè°ƒç”¨åœ¨æ ¸å¿ƒæ€ä¸‹å¤„ç†è¿‡ç¨‹ï¼Œ
+* å¦‚å¯¹æ–‡ä»¶çš„Open()ã€Close()ã€Read()ã€Write()ç­‰ç­‰
+* å°è£…äº†å¯¹æ–‡ä»¶ç³»ç»Ÿè®¿é—®çš„å…·ä½“ç»†èŠ‚ã€‚
 */
 class SystemCall
 {
 public:
-	//Ä¿Â¼ËÑË÷Ä£Ê½£¬ÓÃÓÚNameI()º¯Êı
+	//ç›®å½•æœç´¢æ¨¡å¼ï¼Œç”¨äºNameI()å‡½æ•°
 	enum DirectorySearchMode
 	{
-		OPEN = 0,   //ÒÔ´ò¿ªÎÄ¼ş·½Ê½ËÑË÷Ä¿Â¼
-		CREATE = 1, //ÒÔĞÂ½¨ÎÄ¼ş·½Ê½ËÑË÷Ä¿Â¼
-		DELETE = 2  //ÒÔÉ¾³ıÎÄ¼ş·½Ê½ËÑË÷Ä¿Â¼
+		OPEN = 0,   //ä»¥æ‰“å¼€æ–‡ä»¶æ–¹å¼æœç´¢ç›®å½•
+		CREATE = 1, //ä»¥æ–°å»ºæ–‡ä»¶æ–¹å¼æœç´¢ç›®å½•
+		DELETE = 2  //ä»¥åˆ é™¤æ–‡ä»¶æ–¹å¼æœç´¢ç›®å½•
 	};
 
 public:
 
-	INode* rootDirINode;         //¸ùÄ¿Â¼ÄÚ´æINode
-	FileSystem* fileSystem;      //¶ÔÈ«¾Ö¶ÔÏóg_FileSystemµÄÒıÓÃ£¬¸Ã¶ÔÏó¸ºÔğ¹ÜÀíÎÄ¼şÏµÍ³´æ´¢×ÊÔ´
-	INodeTable* inodeTable;      //¶ÔÈ«¾Ö¶ÔÏóg_INodeTableµÄÒıÓÃ£¬¸Ã¶ÔÏó¸ºÔğÄÚ´æINode±íµÄ¹ÜÀí
-	OpenFileTable* openFileTable;//¶ÔÈ«¾Ö¶ÔÏóg_OpenFileTableµÄÒıÓÃ£¬¸Ã¶ÔÏó¸ºÔğ´ò¿ªÎÄ¼ş±íÏîµÄ¹ÜÀí
+	INode* rootDirINode;         //æ ¹ç›®å½•å†…å­˜INode
+	FileSystem* fileSystem;      //å¯¹å…¨å±€å¯¹è±¡g_FileSystemçš„å¼•ç”¨ï¼Œè¯¥å¯¹è±¡è´Ÿè´£ç®¡ç†æ–‡ä»¶ç³»ç»Ÿå­˜å‚¨èµ„æº
+	INodeTable* inodeTable;      //å¯¹å…¨å±€å¯¹è±¡g_INodeTableçš„å¼•ç”¨ï¼Œè¯¥å¯¹è±¡è´Ÿè´£å†…å­˜INodeè¡¨çš„ç®¡ç†
+	OpenFileTable* openFileTable;//å¯¹å…¨å±€å¯¹è±¡g_OpenFileTableçš„å¼•ç”¨ï¼Œè¯¥å¯¹è±¡è´Ÿè´£æ‰“å¼€æ–‡ä»¶è¡¨é¡¹çš„ç®¡ç†
 
 public:
 	SystemCall();
 	~SystemCall();
-	void Open();                          //Open()ÏµÍ³µ÷ÓÃ´¦Àí¹ı³Ì
-	void Creat();                         //Creat()ÏµÍ³µ÷ÓÃ´¦Àí¹ı³Ì
-	void Open1(INode* pINode, int trf);   //Open()¡¢Creat()ÏµÍ³µ÷ÓÃµÄ¹«¹²²¿·Ö
-	void Close();                         //Close()ÏµÍ³µ÷ÓÃ´¦Àí¹ı³Ì                  
-	void Seek();                          //Seek()ÏµÍ³µ÷ÓÃ´¦Àí¹ı³Ì
-	void Read();                          //Read()ÏµÍ³µ÷ÓÃ´¦Àí¹ı³Ì
-	void Write();                         //Write()ÏµÍ³µ÷ÓÃ´¦Àí¹ı³Ì
-	void Rdwr(enum File::FileFlags mode); //¶ÁĞ´ÏµÍ³µ÷ÓÃ¹«¹²²¿·Ö´úÂë
-	INode* NameI(enum DirectorySearchMode mode);//Ä¿Â¼ËÑË÷£¬½«Â·¾¶×ª»¯ÎªÏàÓ¦µÄINode·µ»ØÉÏËøºóµÄINode
-	INode* MakNode(int mode);             //±»Creat()ÏµÍ³µ÷ÓÃÊ¹ÓÃ£¬ÓÃÓÚÎª´´½¨ĞÂÎÄ¼ş·ÖÅäÄÚºË×ÊÔ´
-	void UnLink();                        //È¡ÏûÎÄ¼ş
-	void WriteDir(INode* pINode);         //Ïò¸¸Ä¿Â¼µÄÄ¿Â¼ÎÄ¼şĞ´ÈëÒ»¸öÄ¿Â¼Ïî
-	void ChDir();                         //¸Ä±äµ±Ç°¹¤×÷Ä¿Â¼
-	void Ls();                            //ÁĞ³öµ±Ç°INode½ÚµãµÄÎÄ¼şÏî
-	void Rename(string ori, string cur);  //ÖØÃüÃûÎÄ¼ş¡¢ÎÄ¼ş¼Ğ
+	void Open();                          //Open()ç³»ç»Ÿè°ƒç”¨å¤„ç†è¿‡ç¨‹
+	void Creat();                         //Creat()ç³»ç»Ÿè°ƒç”¨å¤„ç†è¿‡ç¨‹
+	void Open1(INode* pINode, int trf);   //Open()ã€Creat()ç³»ç»Ÿè°ƒç”¨çš„å…¬å…±éƒ¨åˆ†
+	void Close();                         //Close()ç³»ç»Ÿè°ƒç”¨å¤„ç†è¿‡ç¨‹                  
+	void Seek();                          //Seek()ç³»ç»Ÿè°ƒç”¨å¤„ç†è¿‡ç¨‹
+	void Read();                          //Read()ç³»ç»Ÿè°ƒç”¨å¤„ç†è¿‡ç¨‹
+	void Write();                         //Write()ç³»ç»Ÿè°ƒç”¨å¤„ç†è¿‡ç¨‹
+	void Rdwr(enum File::FileFlags mode); //è¯»å†™ç³»ç»Ÿè°ƒç”¨å…¬å…±éƒ¨åˆ†ä»£ç 
+	INode* NameI(enum DirectorySearchMode mode);//ç›®å½•æœç´¢ï¼Œå°†è·¯å¾„è½¬åŒ–ä¸ºç›¸åº”çš„INodeè¿”å›ä¸Šé”åçš„INode
+	INode* MakNode(int mode);             //è¢«Creat()ç³»ç»Ÿè°ƒç”¨ä½¿ç”¨ï¼Œç”¨äºä¸ºåˆ›å»ºæ–°æ–‡ä»¶åˆ†é…å†…æ ¸èµ„æº
+	void UnLink();                        //å–æ¶ˆæ–‡ä»¶
+	void WriteDir(INode* pINode);         //å‘çˆ¶ç›®å½•çš„ç›®å½•æ–‡ä»¶å†™å…¥ä¸€ä¸ªç›®å½•é¡¹
+	void ChDir();                         //æ”¹å˜å½“å‰å·¥ä½œç›®å½•
+	void Ls();                            //åˆ—å‡ºå½“å‰INodeèŠ‚ç‚¹çš„æ–‡ä»¶é¡¹
+	void Rename(string ori, string cur);  //é‡å‘½åæ–‡ä»¶ã€æ–‡ä»¶å¤¹
 };

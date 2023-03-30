@@ -3,44 +3,44 @@
 #include "Common.h"
 #include "Buf.h"
 
-/* ÄÚ´æINode
-*     ÊµÏÖ INode µÄ¸÷ÖÖ²Ù×÷£¬°üÀ¨½«ÎÄ¼şµÄÂß¼­¿éºÅ×ª»»³É¶ÔÓ¦µÄÎï
-* ÀíÅÌ¿éºÅµÈ¹¦ÄÜ¡£
+/* å†…å­˜INode
+*     å®ç° INode çš„å„ç§æ“ä½œï¼ŒåŒ…æ‹¬å°†æ–‡ä»¶çš„é€»è¾‘å—å·è½¬æ¢æˆå¯¹åº”çš„ç‰©
+* ç†ç›˜å—å·ç­‰åŠŸèƒ½ã€‚
 */
 class INode
 {
 public:
-	//INodeFlagÖĞµÄ±êÖ¾Î»
+	//INodeFlagä¸­çš„æ ‡å¿—ä½
 	enum INodeFlag 
 	{
-		IUPD = 0x1,//ÄÚ´æINode±»ĞŞ¸Ä¹ı£¬ĞèÒª¸üĞÂ¶ÔÓ¦Íâ´æINode
-		IACC = 0x2 //ÄÚ´æINode±»·ÃÎÊ¹ı£¬ĞèÒªĞŞ¸Ä×î½üÒ»´Î·ÃÎÊÊ±¼ä
+		IUPD = 0x1,//å†…å­˜INodeè¢«ä¿®æ”¹è¿‡ï¼Œéœ€è¦æ›´æ–°å¯¹åº”å¤–å­˜INode
+		IACC = 0x2 //å†…å­˜INodeè¢«è®¿é—®è¿‡ï¼Œéœ€è¦ä¿®æ”¹æœ€è¿‘ä¸€æ¬¡è®¿é—®æ—¶é—´
 	};
 
-	static const unsigned int IALLOC = 0x8000;    //ÎÄ¼ş±»Ê¹ÓÃ
-	static const unsigned int IFMT = 0x6000;      //ÎÄ¼şÀàĞÍÑÚÂë
-	static const unsigned int IFDIR = 0x4000;     //ÎÄ¼şÀàĞÍ£ºÄ¿Â¼ÎÄ¼ş
-	static const unsigned int ILARG = 0x1000;     //ÎÄ¼ş³¤¶ÈÀàĞÍ£º´óĞÍ»ò¾ŞĞÍÎÄ¼ş
-	static const unsigned int IREAD = 0x100;      //¶ÔÎÄ¼şµÄ¶ÁÈ¨ÏŞ
-	static const unsigned int IWRITE = 0x80;      //¶ÔÎÄ¼şµÄĞ´È¨ÏŞ
+	static const unsigned int IALLOC = 0x8000;    //æ–‡ä»¶è¢«ä½¿ç”¨
+	static const unsigned int IFMT = 0x6000;      //æ–‡ä»¶ç±»å‹æ©ç 
+	static const unsigned int IFDIR = 0x4000;     //æ–‡ä»¶ç±»å‹ï¼šç›®å½•æ–‡ä»¶
+	static const unsigned int ILARG = 0x1000;     //æ–‡ä»¶é•¿åº¦ç±»å‹ï¼šå¤§å‹æˆ–å·¨å‹æ–‡ä»¶
+	static const unsigned int IREAD = 0x100;      //å¯¹æ–‡ä»¶çš„è¯»æƒé™
+	static const unsigned int IWRITE = 0x80;      //å¯¹æ–‡ä»¶çš„å†™æƒé™
 
-	static const int BLOCK_SIZE = 512;                                        //ÎÄ¼şÂß¼­¿é´óĞ¡£º512×Ö½Ú
-	static const int ADDRESS_PER_INDEX_BLOCK = BLOCK_SIZE / sizeof(int);      //Ã¿¸ö¼ä½ÓË÷Òı±í£¨»òË÷Òı¿é£©°üº¬µÄÎïÀíÅÌ¿éºÅ
+	static const int BLOCK_SIZE = 512;                                        //æ–‡ä»¶é€»è¾‘å—å¤§å°ï¼š512å­—èŠ‚
+	static const int ADDRESS_PER_INDEX_BLOCK = BLOCK_SIZE / sizeof(int);      //æ¯ä¸ªé—´æ¥ç´¢å¼•è¡¨ï¼ˆæˆ–ç´¢å¼•å—ï¼‰åŒ…å«çš„ç‰©ç†ç›˜å—å·
 	
-	static const int SMALL_FILE_BLOCK = 6;                                    //Ğ¡ĞÍÎÄ¼ş£ºÖ±½ÓË÷Òı±í×î¶à¿ÉÑ°Ö·µÄÂß¼­¿éºÅ
-	static const int LARGE_FILE_BLOCK = 128 * 2 + 6;                          //´óĞÍÎÄ¼ş£º¾­Ò»´Î¼ä½ÓË÷Òı±í×î¶à¿ÉÑ°Ö·µÄÂß¼­¿éºÅ
-	static const int HUGE_FILE_BLOCK = 128 * 128 * 2 + 128 * 2 + 6;           //¾ŞĞÍÎÄ¼ş£º¾­¶ş´Î¼ä½ÓË÷Òı×î´ó¿ÉÑ°Ö·ÎÄ¼şÂß¼­¿éºÅ
+	static const int SMALL_FILE_BLOCK = 6;                                    //å°å‹æ–‡ä»¶ï¼šç›´æ¥ç´¢å¼•è¡¨æœ€å¤šå¯å¯»å€çš„é€»è¾‘å—å·
+	static const int LARGE_FILE_BLOCK = 128 * 2 + 6;                          //å¤§å‹æ–‡ä»¶ï¼šç»ä¸€æ¬¡é—´æ¥ç´¢å¼•è¡¨æœ€å¤šå¯å¯»å€çš„é€»è¾‘å—å·
+	static const int HUGE_FILE_BLOCK = 128 * 128 * 2 + 128 * 2 + 6;           //å·¨å‹æ–‡ä»¶ï¼šç»äºŒæ¬¡é—´æ¥ç´¢å¼•æœ€å¤§å¯å¯»å€æ–‡ä»¶é€»è¾‘å—å·
     
-	unsigned int i_flag;	//×´Ì¬µÄ±êÖ¾Î»£¬¶¨Òå¼ûenum INodeFlag
-	unsigned int i_mode;	//ÎÄ¼ş¹¤×÷·½Ê½ĞÅÏ¢
-	int		i_count;		//ÒıÓÃ¼ÆÊı
-	int		i_nlink;		//ÎÄ¼şÁª½á¼ÆÊı£¬¼´¸ÃÎÄ¼şÔÚÄ¿Â¼Ê÷ÖĞ²»Í¬Â·¾¶ÃûµÄÊıÁ¿
-	int		i_number;		//*** Íâ´æINodeÇøÖĞµÄ±àºÅ *** 
-	                          //±»¿½±´µ½ÄÚ´æµÄ Inode ÖĞµÄË÷Òı½ÚµãÊı¾İĞèÒªÖªµÀËüÀ´×ÔÓÚÄÄ¸öÍâ´æ DiskInode£¬
-	                          //ÒÔ±ãÓÚ½«À´ÄÚ´æ¸±±¾±»ĞŞ¸ÄÖ®ºó¸üĞÂµ½Íâ´æ¶ÔÓ¦µÄ DiskInode ÖĞÈ¥
-	int		i_size;			//ÎÄ¼ş´óĞ¡£¬×Ö½ÚÎªµ¥Î»
-	int		i_addr[10];		//ÓÃÓÚÎÄ¼şÂß¼­¿éºÅºÍÎïÀí¿éºÅ×ª»»µÄ»ù±¾Ë÷Òı±í
-	int		i_lastr;		//´æ·Å×î½üÒ»´Î¶ÁÈ¡ÎÄ¼şµÄÂß¼­¿éºÅ£¬ÓÃÓÚÅĞ¶ÏÊÇ·ñĞèÒªÔ¤¶Á
+	unsigned int i_flag;	//çŠ¶æ€çš„æ ‡å¿—ä½ï¼Œå®šä¹‰è§enum INodeFlag
+	unsigned int i_mode;	//æ–‡ä»¶å·¥ä½œæ–¹å¼ä¿¡æ¯
+	int		i_count;		//å¼•ç”¨è®¡æ•°
+	int		i_nlink;		//æ–‡ä»¶è”ç»“è®¡æ•°ï¼Œå³è¯¥æ–‡ä»¶åœ¨ç›®å½•æ ‘ä¸­ä¸åŒè·¯å¾„åçš„æ•°é‡
+	int		i_number;		//*** å¤–å­˜INodeåŒºä¸­çš„ç¼–å· *** 
+	                          //è¢«æ‹·è´åˆ°å†…å­˜çš„ Inode ä¸­çš„ç´¢å¼•èŠ‚ç‚¹æ•°æ®éœ€è¦çŸ¥é“å®ƒæ¥è‡ªäºå“ªä¸ªå¤–å­˜ DiskInodeï¼Œ
+	                          //ä»¥ä¾¿äºå°†æ¥å†…å­˜å‰¯æœ¬è¢«ä¿®æ”¹ä¹‹åæ›´æ–°åˆ°å¤–å­˜å¯¹åº”çš„ DiskInode ä¸­å»
+	int		i_size;			//æ–‡ä»¶å¤§å°ï¼Œå­—èŠ‚ä¸ºå•ä½
+	int		i_addr[10];		//ç”¨äºæ–‡ä»¶é€»è¾‘å—å·å’Œç‰©ç†å—å·è½¬æ¢çš„åŸºæœ¬ç´¢å¼•è¡¨
+	int		i_lastr;		//å­˜æ”¾æœ€è¿‘ä¸€æ¬¡è¯»å–æ–‡ä»¶çš„é€»è¾‘å—å·ï¼Œç”¨äºåˆ¤æ–­æ˜¯å¦éœ€è¦é¢„è¯»
 public:
 	INode();
 	~INode();
@@ -53,27 +53,27 @@ public:
 		i_size = 0;
 		memset(i_addr, 0, sizeof(i_addr));
 	}
-	void ReadI();                           //¸ù¾İInode¶ÔÏóÖĞµÄÎïÀí´ÅÅÌ¿éË÷Òı±í£¬¶ÁÈ¡ÏàÓ¦µÄÎÄ¼şÊı¾İ
-	void WriteI();                          //¸ù¾İInode¶ÔÏóÖĞµÄÎïÀí´ÅÅÌ¿éË÷Òı±í£¬½«Êı¾İĞ´ÈëÎÄ¼ş
-	int Bmap(int lbn);                      //½«ÎÄ¼şµÄÂß¼­¿éºÅ×ª»»³É¶ÔÓ¦µÄÎïÀíÅÌ¿éºÅ
-	void IUpdate(int time);                 //¸üĞÂÍâ´æInodeµÄ×îºóµÄ·ÃÎÊÊ±¼ä¡¢ĞŞ¸ÄÊ±¼ä
-	void ITrunc();                          //ÊÍ·ÅInode¶ÔÓ¦ÎÄ¼şÕ¼ÓÃµÄ´ÅÅÌ¿é
-	void Clean();                           //Çå¿ÕInode¶ÔÏóÖĞµÄÊı¾İ
-	void ICopy(Buf* bp, int inumber);//½«°üº¬Íâ´æInode×Ö·û¿éÖĞĞÅÏ¢¿½±´µ½ÄÚ´æInodeÖĞ
+	void ReadI();                           //æ ¹æ®Inodeå¯¹è±¡ä¸­çš„ç‰©ç†ç£ç›˜å—ç´¢å¼•è¡¨ï¼Œè¯»å–ç›¸åº”çš„æ–‡ä»¶æ•°æ®
+	void WriteI();                          //æ ¹æ®Inodeå¯¹è±¡ä¸­çš„ç‰©ç†ç£ç›˜å—ç´¢å¼•è¡¨ï¼Œå°†æ•°æ®å†™å…¥æ–‡ä»¶
+	int Bmap(int lbn);                      //å°†æ–‡ä»¶çš„é€»è¾‘å—å·è½¬æ¢æˆå¯¹åº”çš„ç‰©ç†ç›˜å—å·
+	void IUpdate(int time);                 //æ›´æ–°å¤–å­˜Inodeçš„æœ€åçš„è®¿é—®æ—¶é—´ã€ä¿®æ”¹æ—¶é—´
+	void ITrunc();                          //é‡Šæ”¾Inodeå¯¹åº”æ–‡ä»¶å ç”¨çš„ç£ç›˜å—
+	void Clean();                           //æ¸…ç©ºInodeå¯¹è±¡ä¸­çš„æ•°æ®
+	void ICopy(Buf* bp, int inumber);//å°†åŒ…å«å¤–å­˜Inodeå­—ç¬¦å—ä¸­ä¿¡æ¯æ‹·è´åˆ°å†…å­˜Inodeä¸­
 };
 
-/* ´ÅÅÌINode
-*      ´ÅÅÌÖĞ INode ½á¹¹£¬ÊÇ INode µÄ¼ò»¯°æ±¾
+/* ç£ç›˜INode
+*      ç£ç›˜ä¸­ INode ç»“æ„ï¼Œæ˜¯ INode çš„ç®€åŒ–ç‰ˆæœ¬
 */
-class DiskINode//64×Ö½Ú 
+class DiskINode//64å­—èŠ‚ 
 {
 public:
-	unsigned int d_mode;//×´Ì¬µÄ±êÖ¾Î»£¬¶¨Òå¼ûenum INodeFlag
-	int	d_nlink;		//ÎÄ¼şÁª½á¼ÆÊı£¬¼´¸ÃÎÄ¼şÔÚÄ¿Â¼Ê÷ÖĞ²»Í¬Â·¾¶ÃûµÄÊıÁ¿
-	int	d_size;			//ÎÄ¼ş´óĞ¡£¬×Ö½ÚÎªµ¥Î»
-	int	d_addr[10];		//ÓÃÓÚÎÄ¼şÂß¼­¿éºÅºÍÎïÀí¿éºÅ×ª»»µÄ»ù±¾Ë÷Òı±í
-	int	d_atime;		//×îºó·ÃÎÊÊ±¼ä
-	int	d_mtime;		//×îºóĞŞ¸ÄÊ±¼ä
+	unsigned int d_mode;//çŠ¶æ€çš„æ ‡å¿—ä½ï¼Œå®šä¹‰è§enum INodeFlag
+	int	d_nlink;		//æ–‡ä»¶è”ç»“è®¡æ•°ï¼Œå³è¯¥æ–‡ä»¶åœ¨ç›®å½•æ ‘ä¸­ä¸åŒè·¯å¾„åçš„æ•°é‡
+	int	d_size;			//æ–‡ä»¶å¤§å°ï¼Œå­—èŠ‚ä¸ºå•ä½
+	int	d_addr[10];		//ç”¨äºæ–‡ä»¶é€»è¾‘å—å·å’Œç‰©ç†å—å·è½¬æ¢çš„åŸºæœ¬ç´¢å¼•è¡¨
+	int	d_atime;		//æœ€åè®¿é—®æ—¶é—´
+	int	d_mtime;		//æœ€åä¿®æ”¹æ—¶é—´
 	
 	int padding;
 public:

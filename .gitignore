@@ -4,6 +4,7 @@
 .vscode
 create_remote.sh
 cmake-build-debug
+build
 .test
 .idea
 .vscode

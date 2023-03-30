@@ -6,37 +6,37 @@ using namespace std;
 
 class UserCall {
 public:
-	static const int EAX = 0;//u.ar0[EAX]£»·ÃÎÊÏÖ³¡±£»¤ÇøÖĞEAX¼Ä´æÆ÷µÄÆ«ÒÆÁ¿
+	static const int EAX = 0;//u.ar0[EAX]ï¼›è®¿é—®ç°åœºä¿æŠ¤åŒºä¸­EAXå¯„å­˜å™¨çš„åç§»é‡
 
 	enum ErrorCode {
-		U_NOERROR = 0,//Ã»ÓĞ´íÎó
-		U_ENOENT = 1, //ÕÒ²»µ½ÎÄ¼ş»òÕßÎÄ¼ş¼Ğ
-		U_EBADF = 2,  //ÕÒ²»µ½ÎÄ¼ş¾ä±ú
-		U_EACCES = 3, //È¨ÏŞ²»×ã
-		U_ENOTDIR = 4,//ÎÄ¼ş¼Ğ²»´æÔÚ
-		U_ENFILE = 5, //ÎÄ¼ş±íÒç³ö
-		U_EMFILE = 6, //´ò¿ªÎÄ¼ş¹ı¶à
-		U_EFBIG = 7,  //ÎÄ¼ş¹ı´ó
-		U_ENOSPC = 8  //´ÅÅÌ¿Õ¼ä²»×ã
+		U_NOERROR = 0,//æ²¡æœ‰é”™è¯¯
+		U_ENOENT = 1, //æ‰¾ä¸åˆ°æ–‡ä»¶æˆ–è€…æ–‡ä»¶å¤¹
+		U_EBADF = 2,  //æ‰¾ä¸åˆ°æ–‡ä»¶å¥æŸ„
+		U_EACCES = 3, //æƒé™ä¸è¶³
+		U_ENOTDIR = 4,//æ–‡ä»¶å¤¹ä¸å­˜åœ¨
+		U_ENFILE = 5, //æ–‡ä»¶è¡¨æº¢å‡º
+		U_EMFILE = 6, //æ‰“å¼€æ–‡ä»¶è¿‡å¤š
+		U_EFBIG = 7,  //æ–‡ä»¶è¿‡å¤§
+		U_ENOSPC = 8  //ç£ç›˜ç©ºé—´ä¸è¶³
 	};
 
 public:
-	INode* nowDirINodePointer;        //Ö¸Ïòµ±Ç°Ä¿Â¼µÄInodeÖ¸Õë
-	INode* paDirINodePointer;         //Ö¸Ïò¸¸Ä¿Â¼µÄInodeÖ¸Õë
-	DirectoryEntry dent;              //µ±Ç°Ä¿Â¼µÄÄ¿Â¼Ïî
-	char dbuf[DirectoryEntry::DIRSIZ];//µ±Ç°Â·¾¶·ÖÁ¿
-	string curDirPath;                //µ±Ç°¹¤×÷Ä¿Â¼ÍêÕûÂ·¾¶
-	string dirp;                      //ÏµÍ³µ÷ÓÃ²ÎÊı(Ò»°ãÓÃÓÚPathname)µÄÖ¸Õë
+	INode* nowDirINodePointer;        //æŒ‡å‘å½“å‰ç›®å½•çš„InodeæŒ‡é’ˆ
+	INode* paDirINodePointer;         //æŒ‡å‘çˆ¶ç›®å½•çš„InodeæŒ‡é’ˆ
+	DirectoryEntry dent;              //å½“å‰ç›®å½•çš„ç›®å½•é¡¹
+	char dbuf[DirectoryEntry::DIRSIZ];//å½“å‰è·¯å¾„åˆ†é‡
+	string curDirPath;                //å½“å‰å·¥ä½œç›®å½•å®Œæ•´è·¯å¾„
+	string dirp;                      //ç³»ç»Ÿè°ƒç”¨å‚æ•°(ä¸€èˆ¬ç”¨äºPathname)çš„æŒ‡é’ˆ
 
-	int arg[5];                       //´æ·Åµ±Ç°ÏµÍ³µ÷ÓÃ²ÎÊı
-	/* ÏµÍ³µ÷ÓÃÏà¹Ø³ÉÔ± */
-	uint32 ar0[5];                    //    Ö¸ÏòºËĞÄÕ»ÏÖ³¡±£»¤ÇøÖĞEAX¼Ä´æÆ÷
-                                      //´æ·ÅµÄÕ»µ¥Ôª£¬±¾×Ö¶Î´æ·Å¸ÃÕ»µ¥ÔªµÄµØÖ·¡£
-                                      //ÔÚV6ÖĞr0´æ·ÅÏµÍ³µ÷ÓÃµÄ·µ»ØÖµ¸øÓÃ»§³ÌĞò£¬
-                                      //x86Æ½Ì¨ÉÏÊ¹ÓÃEAX´æ·Å·µ»ØÖµ£¬Ìæ´úu.ar0[R0]
-	ErrorCode userErrorCode;          //´æ·Å´íÎóÂë
-	ProcessOpenFile ofiles;           //½ø³Ì´ò¿ªÎÄ¼şÃèÊö·û±í¶ÔÏó
-	IOParameter IOParam;              //¼ÇÂ¼µ±Ç°¶Á¡¢Ğ´ÎÄ¼şµÄÆ«ÒÆÁ¿£¬ÓÃ»§Ä¿±êÇøÓòºÍÊ£Óà×Ö½ÚÊı²ÎÊı
+	int arg[5];                       //å­˜æ”¾å½“å‰ç³»ç»Ÿè°ƒç”¨å‚æ•°
+	/* ç³»ç»Ÿè°ƒç”¨ç›¸å…³æˆå‘˜ */
+	uint32 ar0[5];                    //    æŒ‡å‘æ ¸å¿ƒæ ˆç°åœºä¿æŠ¤åŒºä¸­EAXå¯„å­˜å™¨
+                                      //å­˜æ”¾çš„æ ˆå•å…ƒï¼Œæœ¬å­—æ®µå­˜æ”¾è¯¥æ ˆå•å…ƒçš„åœ°å€ã€‚
+                                      //åœ¨V6ä¸­r0å­˜æ”¾ç³»ç»Ÿè°ƒç”¨çš„è¿”å›å€¼ç»™ç”¨æˆ·ç¨‹åºï¼Œ
+                                      //x86å¹³å°ä¸Šä½¿ç”¨EAXå­˜æ”¾è¿”å›å€¼ï¼Œæ›¿ä»£u.ar0[R0]
+	ErrorCode userErrorCode;          //å­˜æ”¾é”™è¯¯ç 
+	ProcessOpenFile ofiles;           //è¿›ç¨‹æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦è¡¨å¯¹è±¡
+	IOParameter IOParam;              //è®°å½•å½“å‰è¯»ã€å†™æ–‡ä»¶çš„åç§»é‡ï¼Œç”¨æˆ·ç›®æ ‡åŒºåŸŸå’Œå‰©ä½™å­—èŠ‚æ•°å‚æ•°
 	SystemCall* systemCall;
 	string ls;
 
@@ -54,12 +54,12 @@ public:
 	void userSeek(string fd, string offset, string origin);
 	void userWrite(string fd, string inFile, string size);
 	void userRead(string fd, string outFile, string size);
-	void userRename(string ori, string cur);  //ÖØÃüÃûÎÄ¼ş¡¢ÎÄ¼ş¼Ğ
-	void userTree(string path);               //´òÓ¡Ê÷×´Ä¿Â¼
+	void userRename(string ori, string cur);  //é‡å‘½åæ–‡ä»¶ã€æ–‡ä»¶å¤¹
+	void userTree(string path);               //æ‰“å°æ ‘çŠ¶ç›®å½•
 	
 private:
 	bool checkError();
 	bool checkPathName(string path);
 	void __userCd__(string dirName);
-	void __userTree__(string path, int depth);//ÄÚ²¿´òÓ¡Ê÷×´Ä¿Â¼
+	void __userTree__(string path, int depth);//å†…éƒ¨æ‰“å°æ ‘çŠ¶ç›®å½•
 };

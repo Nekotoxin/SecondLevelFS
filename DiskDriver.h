@@ -5,11 +5,11 @@
 #include "Common.h"
 
 using namespace std;
-const char diskFileName[] = "myDisk.img";  //´ÅÅÌ¾µÏñÎÄ¼şÃû
+const char diskFileName[] = "myDisk.img";  //ç£ç›˜é•œåƒæ–‡ä»¶å
 
 class DiskDriver {
 public:
-	FILE* diskPointer;                     //´ÅÅÌÎÄ¼şÖ¸Õë
+	FILE* diskPointer;                     //ç£ç›˜æ–‡ä»¶æŒ‡é’ˆ
 
 public:
 	DiskDriver() 
@@ -28,14 +28,14 @@ public:
 			fclose(diskPointer);
 		diskPointer = fopen(diskFileName, "rb+");
 	}
-	//Ğ´´ÅÅÌº¯Êı
+	//å†™ç£ç›˜å‡½æ•°
 	void write(const uint8* in_buffer, uint32 in_size, int offset = -1, uint32 origin = SEEK_SET) {
 		if (offset >= 0)
 			fseek(diskPointer, offset, origin);
 		fwrite(in_buffer, in_size, 1, diskPointer);
 		return;
 	}
-	//¶Á´ÅÅÌº¯Êı
+	//è¯»ç£ç›˜å‡½æ•°
 	void read(uint8* out_buffer, uint32 out_size, int offset = -1, uint32 origin = SEEK_SET) {
 		if (offset >= 0)
 			fseek(diskPointer, offset, origin);
@@ -43,12 +43,12 @@ public:
 		return;
 	}
 
-	//¼ì²é¾µÏñÎÄ¼şÊÇ·ñ´æÔÚ
+	//æ£€æŸ¥é•œåƒæ–‡ä»¶æ˜¯å¦å­˜åœ¨
 	bool Exists() 
 	{
 		return diskPointer != NULL;
 	}
-	//´ò¿ª¾µÏñÎÄ¼ş
+	//æ‰“å¼€é•œåƒæ–‡ä»¶
 	void Construct() 
 	{
 		diskPointer = fopen(diskFileName, "wb+");

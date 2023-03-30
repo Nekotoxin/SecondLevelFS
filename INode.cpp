@@ -35,14 +35,14 @@ INode::~INode()
 {
 }
 
-//¸ù¾ÝInode¶ÔÏóÖÐµÄÎïÀí´ÅÅÌ¿éË÷Òý±í£¬¶ÁÈ¡ÏàÓ¦µÄÎÄ¼þÊý¾Ý
+//æ ¹æ®Inodeå¯¹è±¡ä¸­çš„ç‰©ç†ç£ç›˜å—ç´¢å¼•è¡¨ï¼Œè¯»å–ç›¸åº”çš„æ–‡ä»¶æ•°æ®
 void INode::ReadI() 
 {
 	BufferManager& CacheManager = myCacheManager;
 	int lbn, bn;
 	int offset, nbytes;
 	Buf* pCache;
-	//ÐèÒª¶Á×Ö½ÚÊýÎªÁã£¬Ôò·µ»Ø
+	//éœ€è¦è¯»å­—èŠ‚æ•°ä¸ºé›¶ï¼Œåˆ™è¿”å›ž
 	if (0 == myUserCall.IOParam.count)
 		return;
 	this->i_flag |= INode::IACC;
@@ -51,18 +51,18 @@ void INode::ReadI()
 		lbn = bn = myUserCall.IOParam.offset / INode::BLOCK_SIZE;
 		offset = myUserCall.IOParam.offset % INode::BLOCK_SIZE;
 
-		//´«ËÍµ½ÓÃ»§ÇøµÄ×Ö½ÚÊýÁ¿£¬È¡¶ÁÇëÇóµÄÊ£Óà×Ö½ÚÊýÓëµ±Ç°×Ö·û¿éÄÚÓÐÐ§×Ö½ÚÊý½ÏÐ¡Öµ
+		//ä¼ é€åˆ°ç”¨æˆ·åŒºçš„å­—èŠ‚æ•°é‡ï¼Œå–è¯»è¯·æ±‚çš„å‰©ä½™å­—èŠ‚æ•°ä¸Žå½“å‰å­—ç¬¦å—å†…æœ‰æ•ˆå­—èŠ‚æ•°è¾ƒå°å€¼
 		nbytes = Common::min(INode::BLOCK_SIZE - offset, myUserCall.IOParam.count);
 		int remain = this->i_size - myUserCall.IOParam.offset;
 		if (remain <= 0)
 			return;
-		//´«ËÍµÄ×Ö½ÚÊýÁ¿»¹È¡¾öÓÚÊ£ÓàÎÄ¼þµÄ³¤¶È
+		//ä¼ é€çš„å­—èŠ‚æ•°é‡è¿˜å–å†³äºŽå‰©ä½™æ–‡ä»¶çš„é•¿åº¦
 		nbytes = Common::min(nbytes, remain);
 		if ((bn = this->Bmap(lbn)) == 0)
 			return;
 
 		pCache = CacheManager.Bread(bn);
-		//»º´æÖÐÊý¾ÝÆðÊ¼¶ÁÎ»ÖÃ
+		//ç¼“å­˜ä¸­æ•°æ®èµ·å§‹è¯»ä½ç½®
 		unsigned char* start = pCache->addr + offset;
 		memcpy(myUserCall.IOParam.base, start, nbytes);
 		myUserCall.IOParam.base += nbytes;
@@ -73,13 +73,13 @@ void INode::ReadI()
 	}
 }
 
-//¸ù¾ÝInode¶ÔÏóÖÐµÄÎïÀí´ÅÅÌ¿éË÷Òý±í£¬½«Êý¾ÝÐ´ÈëÎÄ¼þ
+//æ ¹æ®Inodeå¯¹è±¡ä¸­çš„ç‰©ç†ç£ç›˜å—ç´¢å¼•è¡¨ï¼Œå°†æ•°æ®å†™å…¥æ–‡ä»¶
 void INode::WriteI() {
 	int lbn, bn;
 	int offset, nbytes;
 	Buf* pCache;
 	this->i_flag |= (INode::IACC | INode::IUPD);
-	//ÐèÒªÐ´×Ö½ÚÊýÎªÁã£¬Ôò·µ»Ø
+	//éœ€è¦å†™å­—èŠ‚æ•°ä¸ºé›¶ï¼Œåˆ™è¿”å›ž
 	if (0 == myUserCall.IOParam.count)
 		return;
 	while (UserCall::U_NOERROR == myUserCall.userErrorCode && myUserCall.IOParam.count) 
@@ -90,11 +90,11 @@ void INode::WriteI() {
 		if ((bn = this->Bmap(lbn)) == 0)
 			return;
 
-		if (INode::BLOCK_SIZE == nbytes) //Èç¹ûÐ´ÈëÊý¾ÝÕýºÃÂúÒ»¸ö×Ö·û¿é£¬ÔòÎªÆä·ÖÅä»º´æ
+		if (INode::BLOCK_SIZE == nbytes) //å¦‚æžœå†™å…¥æ•°æ®æ­£å¥½æ»¡ä¸€ä¸ªå­—ç¬¦å—ï¼Œåˆ™ä¸ºå…¶åˆ†é…ç¼“å­˜
 			pCache = myCacheManager.GetBlk(bn);
-		else //Ð´ÈëÊý¾Ý²»ÂúÒ»¸ö×Ö·û¿é£¬ÏÈ¶ÁºóÐ´£¨¶Á³ö¸Ã×Ö·û¿éÒÔ±£»¤²»ÐèÒªÖØÐ´µÄÊý¾Ý£©
+		else //å†™å…¥æ•°æ®ä¸æ»¡ä¸€ä¸ªå­—ç¬¦å—ï¼Œå…ˆè¯»åŽå†™ï¼ˆè¯»å‡ºè¯¥å­—ç¬¦å—ä»¥ä¿æŠ¤ä¸éœ€è¦é‡å†™çš„æ•°æ®ï¼‰
 			pCache = myCacheManager.Bread(bn);
-		//»º´æÖÐÊý¾ÝµÄÆðÊ¼Ð´Î»ÖÃ Ð´²Ù×÷: ´ÓÓÃ»§Ä¿±êÇø¿½±´Êý¾Ýµ½»º³åÇø
+		//ç¼“å­˜ä¸­æ•°æ®çš„èµ·å§‹å†™ä½ç½® å†™æ“ä½œ: ä»Žç”¨æˆ·ç›®æ ‡åŒºæ‹·è´æ•°æ®åˆ°ç¼“å†²åŒº
 		unsigned char* start = pCache->addr + offset;
 
 		memcpy(start, myUserCall.IOParam.base, nbytes);
@@ -104,16 +104,16 @@ void INode::WriteI() {
 
 		if (myUserCall.userErrorCode != UserCall::U_NOERROR)
 			myCacheManager.Brelse(pCache);
-		//½«»º´æ±ê¼ÇÎªÑÓ³ÙÐ´£¬²»¼±ÓÚ½øÐÐI/O²Ù×÷½«×Ö·û¿éÊä³öµ½´ÅÅÌÉÏ
+		//å°†ç¼“å­˜æ ‡è®°ä¸ºå»¶è¿Ÿå†™ï¼Œä¸æ€¥äºŽè¿›è¡ŒI/Oæ“ä½œå°†å­—ç¬¦å—è¾“å‡ºåˆ°ç£ç›˜ä¸Š
 		myCacheManager.Bdwrite(pCache);
-		//ÆÕÍ¨ÎÄ¼þ³¤¶ÈÔö¼Ó
+		//æ™®é€šæ–‡ä»¶é•¿åº¦å¢žåŠ 
 		if (this->i_size < myUserCall.IOParam.offset)
 			this->i_size = myUserCall.IOParam.offset;
 		this->i_flag |= INode::IUPD;
 	}
 }
 
-//½«°üº¬Íâ´æInode×Ö·û¿éÖÐÐÅÏ¢¿½±´µ½ÄÚ´æInodeÖÐ
+//å°†åŒ…å«å¤–å­˜Inodeå­—ç¬¦å—ä¸­ä¿¡æ¯æ‹·è´åˆ°å†…å­˜Inodeä¸­
 void INode::ICopy(Buf* pb, int inumber)
 {
 	DiskINode& dINode = *(DiskINode*)(pb->addr + (inumber % FileSystem::INODE_NUMBER_PER_SECTOR) * sizeof(DiskINode));
@@ -123,15 +123,15 @@ void INode::ICopy(Buf* pb, int inumber)
 	memcpy(i_addr, dINode.d_addr, sizeof(i_addr));
 }
 
-//½«ÎÄ¼þµÄÂß¼­¿éºÅ×ª»»³É¶ÔÓ¦µÄÎïÀíÅÌ¿éºÅ
+//å°†æ–‡ä»¶çš„é€»è¾‘å—å·è½¬æ¢æˆå¯¹åº”çš„ç‰©ç†ç›˜å—å·
 int INode::Bmap(int lbn) 
 {
-	//Unix V6++µÄÎÄ¼þË÷Òý½á¹¹£º(Ð¡ÐÍ¡¢´óÐÍºÍ¾ÞÐÍÎÄ¼þ)
-	//(1) i_addr[0] - i_addr[5]ÎªÖ±½ÓË÷Òý±í£¬ÎÄ¼þ³¤¶È·¶Î§ÊÇ0 - 6¸öÅÌ¿é£»
-	//(2) i_addr[6] - i_addr[7]´æ·ÅÒ»´Î¼ä½ÓË÷Òý±íËùÔÚ´ÅÅÌ¿éºÅ£¬Ã¿´ÅÅÌ¿é
-	//ÉÏ´æ·Å128¸öÎÄ¼þÊý¾ÝÅÌ¿éºÅ£¬´ËÀàÎÄ¼þ³¤¶È·¶Î§ÊÇ7 - (128 * 2 + 6)¸öÅÌ¿é£»
-	//(3) i_addr[8] - i_addr[9]´æ·Å¶þ´Î¼ä½ÓË÷Òý±íËùÔÚ´ÅÅÌ¿éºÅ£¬Ã¿¸ö¶þ´Î¼ä½Ó
-	//Ë÷Òý±í¼ÇÂ¼128¸öÒ»´Î¼ä½ÓË÷Òý±íËùÔÚ´ÅÅÌ¿éºÅ£¬´ËÀàÎÄ¼þ³¤¶È·¶Î§ÊÇ
+	//Unix V6++çš„æ–‡ä»¶ç´¢å¼•ç»“æž„ï¼š(å°åž‹ã€å¤§åž‹å’Œå·¨åž‹æ–‡ä»¶)
+	//(1) i_addr[0] - i_addr[5]ä¸ºç›´æŽ¥ç´¢å¼•è¡¨ï¼Œæ–‡ä»¶é•¿åº¦èŒƒå›´æ˜¯0 - 6ä¸ªç›˜å—ï¼›
+	//(2) i_addr[6] - i_addr[7]å­˜æ”¾ä¸€æ¬¡é—´æŽ¥ç´¢å¼•è¡¨æ‰€åœ¨ç£ç›˜å—å·ï¼Œæ¯ç£ç›˜å—
+	//ä¸Šå­˜æ”¾128ä¸ªæ–‡ä»¶æ•°æ®ç›˜å—å·ï¼Œæ­¤ç±»æ–‡ä»¶é•¿åº¦èŒƒå›´æ˜¯7 - (128 * 2 + 6)ä¸ªç›˜å—ï¼›
+	//(3) i_addr[8] - i_addr[9]å­˜æ”¾äºŒæ¬¡é—´æŽ¥ç´¢å¼•è¡¨æ‰€åœ¨ç£ç›˜å—å·ï¼Œæ¯ä¸ªäºŒæ¬¡é—´æŽ¥
+	//ç´¢å¼•è¡¨è®°å½•128ä¸ªä¸€æ¬¡é—´æŽ¥ç´¢å¼•è¡¨æ‰€åœ¨ç£ç›˜å—å·ï¼Œæ­¤ç±»æ–‡ä»¶é•¿åº¦èŒƒå›´æ˜¯
 	//(128 * 2 + 6 ) < size <= (128 * 128 * 2 + 128 * 2 + 6)
 	BufferManager& CacheManager = myCacheManager;
 	FileSystem& fileSystem = myFileSystem;
@@ -143,10 +143,10 @@ int INode::Bmap(int lbn)
 		myUserCall.userErrorCode = UserCall::U_EFBIG;
 		return 0;
 	}
-	//Èç¹ûÊÇÐ¡ÐÍÎÄ¼þ£¬´Ó»ù±¾Ë÷Òý±íi_addr[0-5]ÖÐ»ñµÃÎïÀíÅÌ¿éºÅ¼´¿É
+	//å¦‚æžœæ˜¯å°åž‹æ–‡ä»¶ï¼Œä»ŽåŸºæœ¬ç´¢å¼•è¡¨i_addr[0-5]ä¸­èŽ·å¾—ç‰©ç†ç›˜å—å·å³å¯
 	if (lbn < 6) {
 		phyBlkno = this->i_addr[lbn];
-		//Èç¹û¸ÃÂß¼­¿éºÅ»¹Ã»ÓÐÏàÓ¦µÄÎïÀíÅÌ¿éºÅÓëÖ®¶ÔÓ¦£¬Ôò·ÖÅäÒ»¸öÎïÀí¿é
+		//å¦‚æžœè¯¥é€»è¾‘å—å·è¿˜æ²¡æœ‰ç›¸åº”çš„ç‰©ç†ç›˜å—å·ä¸Žä¹‹å¯¹åº”ï¼Œåˆ™åˆ†é…ä¸€ä¸ªç‰©ç†å—
 		if (phyBlkno == 0 && (pFirstCache = fileSystem.Alloc()) != NULL) {
 			phyBlkno = pFirstCache->blkno;
 			CacheManager.Bdwrite(pFirstCache);
@@ -155,16 +155,16 @@ int INode::Bmap(int lbn)
 		}
 		return phyBlkno;
 	}
-	//lbn >= 6 ´óÐÍ¡¢¾ÞÐÍÎÄ¼þ
+	//lbn >= 6 å¤§åž‹ã€å·¨åž‹æ–‡ä»¶
 	if (lbn < INode::LARGE_FILE_BLOCK)
 		index = (lbn - INode::SMALL_FILE_BLOCK) / INode::ADDRESS_PER_INDEX_BLOCK + 6;
-	else //¾ÞÐÍÎÄ¼þ: ³¤¶È½éÓÚ263 - (128 * 128 * 2 + 128 * 2 + 6)¸öÅÌ¿éÖ®¼ä
+	else //å·¨åž‹æ–‡ä»¶: é•¿åº¦ä»‹äºŽ263 - (128 * 128 * 2 + 128 * 2 + 6)ä¸ªç›˜å—ä¹‹é—´
 		index = (lbn - INode::LARGE_FILE_BLOCK) / (INode::ADDRESS_PER_INDEX_BLOCK * INode::ADDRESS_PER_INDEX_BLOCK) + 8;
 
 	phyBlkno = this->i_addr[index];
 	if (phyBlkno)
 		pFirstCache = CacheManager.Bread(phyBlkno);
-	else { //Èô¸ÃÏîÎªÁã£¬Ôò±íÊ¾²»´æÔÚÏàÓ¦µÄ¼ä½ÓË÷Òý±í¿é
+	else { //è‹¥è¯¥é¡¹ä¸ºé›¶ï¼Œåˆ™è¡¨ç¤ºä¸å­˜åœ¨ç›¸åº”çš„é—´æŽ¥ç´¢å¼•è¡¨å—
 		this->i_flag |= INode::IUPD;
 		if ((pFirstCache = fileSystem.Alloc()) == 0)
 			return 0;
@@ -173,8 +173,8 @@ int INode::Bmap(int lbn)
 
 	iTable = (int*)pFirstCache->addr;
 	if (index >= 8) {
-		//¶ÔÓÚ¾ÞÐÍÎÄ¼þµÄÇé¿ö£¬pFirstBufÖÐÊÇ¶þ´Î¼ä½ÓË÷Òý±í£¬
-		//»¹Ðè¸ù¾ÝÂß¼­¿éºÅ£¬¾­ÓÉ¶þ´Î¼ä½ÓË÷Òý±íÕÒµ½Ò»´Î¼ä½ÓË÷Òý±í
+		//å¯¹äºŽå·¨åž‹æ–‡ä»¶çš„æƒ…å†µï¼ŒpFirstBufä¸­æ˜¯äºŒæ¬¡é—´æŽ¥ç´¢å¼•è¡¨ï¼Œ
+		//è¿˜éœ€æ ¹æ®é€»è¾‘å—å·ï¼Œç»ç”±äºŒæ¬¡é—´æŽ¥ç´¢å¼•è¡¨æ‰¾åˆ°ä¸€æ¬¡é—´æŽ¥ç´¢å¼•è¡¨
 		index = ((lbn - INode::LARGE_FILE_BLOCK) / INode::ADDRESS_PER_INDEX_BLOCK) % INode::ADDRESS_PER_INDEX_BLOCK;
 		phyBlkno = iTable[index];
 
@@ -211,28 +211,28 @@ int INode::Bmap(int lbn)
 	return phyBlkno;
 }
 
-//Çå¿ÕInode¶ÔÏóÖÐµÄÊý¾Ý
+//æ¸…ç©ºInodeå¯¹è±¡ä¸­çš„æ•°æ®
 void INode::Clean() 
 {
-	//Inode::Clean()ÌØ¶¨ÓÃÓÚIAlloc()ÖÐÇå¿ÕÐÂ·ÖÅäDiskInodeµÄÔ­ÓÐÊý¾Ý£¬
-	//¼´¾ÉÎÄ¼þÐÅÏ¢¡£Clean()º¯ÊýÖÐ²»Ó¦µ±Çå³ýi_dev, i_number, i_flag, i_count,
-	//ÕâÊÇÊôÓÚÄÚ´æInode¶ø·ÇDiskInode°üº¬µÄ¾ÉÎÄ¼þÐÅÏ¢£¬¶øInodeÀà¹¹Ôìº¯ÊýÐèÒª
-	//½«Æä³õÊ¼»¯ÎªÎÞÐ§Öµ¡£
+	//Inode::Clean()ç‰¹å®šç”¨äºŽIAlloc()ä¸­æ¸…ç©ºæ–°åˆ†é…DiskInodeçš„åŽŸæœ‰æ•°æ®ï¼Œ
+	//å³æ—§æ–‡ä»¶ä¿¡æ¯ã€‚Clean()å‡½æ•°ä¸­ä¸åº”å½“æ¸…é™¤i_dev, i_number, i_flag, i_count,
+	//è¿™æ˜¯å±žäºŽå†…å­˜Inodeè€ŒéžDiskInodeåŒ…å«çš„æ—§æ–‡ä»¶ä¿¡æ¯ï¼Œè€ŒInodeç±»æž„é€ å‡½æ•°éœ€è¦
+	//å°†å…¶åˆå§‹åŒ–ä¸ºæ— æ•ˆå€¼ã€‚
 	this->i_mode = 0;
 	this->i_nlink = 0;
 	this->i_size = 0;
 	memset(i_addr, 0, sizeof(i_addr));
 }
 
-//¸üÐÂÍâ´æInodeµÄ×îºóµÄ·ÃÎÊÊ±¼ä¡¢ÐÞ¸ÄÊ±¼ä
+//æ›´æ–°å¤–å­˜Inodeçš„æœ€åŽçš„è®¿é—®æ—¶é—´ã€ä¿®æ”¹æ—¶é—´
 void INode::IUpdate(int time) 
 {
 	Buf* pCache;
 	DiskINode dINode;
 	FileSystem& fileSystem = myFileSystem;
 	BufferManager& CacheManager = myCacheManager;
-	//µ±IUPDºÍIACC±êÖ¾Ö®Ò»±»ÉèÖÃ£¬²ÅÐèÒª¸üÐÂÏàÓ¦DiskInode
-	//Ä¿Â¼ËÑË÷£¬²»»áÉèÖÃËùÍ¾¾¶µÄÄ¿Â¼ÎÄ¼þµÄIACCºÍIUPD±êÖ¾
+	//å½“IUPDå’ŒIACCæ ‡å¿—ä¹‹ä¸€è¢«è®¾ç½®ï¼Œæ‰éœ€è¦æ›´æ–°ç›¸åº”DiskInode
+	//ç›®å½•æœç´¢ï¼Œä¸ä¼šè®¾ç½®æ‰€é€”å¾„çš„ç›®å½•æ–‡ä»¶çš„IACCå’ŒIUPDæ ‡å¿—
 	if (this->i_flag & (INode::IUPD | INode::IACC)) {
 		pCache = CacheManager.Bread(FileSystem::INODE_START_SECTOR + this->i_number / FileSystem::INODE_NUMBER_PER_SECTOR);
 		dINode.d_mode = this->i_mode;

@@ -3,8 +3,8 @@
 
 extern DiskDriver myDiskDriver;
 
-//CacheBlockÖ»ÓÃµ½ÁËÁ½¸ö±êÖ¾£¬B_DONEºÍB_DELWRI£¬·Ö±ğ±íÊ¾ÒÑ¾­Íê³ÉIOºÍÑÓ³ÙĞ´µÄ±êÖ¾¡£
-//¿ÕÏĞBufferÎŞÈÎºÎ±êÖ¾
+//CacheBlockåªç”¨åˆ°äº†ä¸¤ä¸ªæ ‡å¿—ï¼ŒB_DONEå’ŒB_DELWRIï¼Œåˆ†åˆ«è¡¨ç¤ºå·²ç»å®ŒæˆIOå’Œå»¶è¿Ÿå†™çš„æ ‡å¿—ã€‚
+//ç©ºé—²Bufferæ— ä»»ä½•æ ‡å¿—
 BufferManager::BufferManager()
 {
 	bufferList = new Buf;
@@ -46,7 +46,7 @@ void BufferManager::InitList()
 	}
 }
 
-//²ÉÓÃLRU Cache Ëã·¨£¬Ã¿´Î´ÓÍ·²¿È¡³ö£¬Ê¹ÓÃºó·Åµ½Î²²¿
+//é‡‡ç”¨LRU Cache ç®—æ³•ï¼Œæ¯æ¬¡ä»å¤´éƒ¨å–å‡ºï¼Œä½¿ç”¨åæ”¾åˆ°å°¾éƒ¨
 void BufferManager::DetachNode(Buf* pb)
 {
 	if (pb->back == NULL)
@@ -67,7 +67,7 @@ void BufferManager::InsertTail(Buf* pb)
 	bufferList->forw = pb;
 }
 
-//ÉêÇëÒ»¿é»º´æ£¬´Ó»º´æ¶ÓÁĞÖĞÈ¡³ö£¬ÓÃÓÚ¶ÁĞ´Éè±¸ÉÏµÄ¿éblkno
+//ç”³è¯·ä¸€å—ç¼“å­˜ï¼Œä»ç¼“å­˜é˜Ÿåˆ—ä¸­å–å‡ºï¼Œç”¨äºè¯»å†™è®¾å¤‡ä¸Šçš„å—blkno
 Buf* BufferManager::GetBlk(int blkno)
 {
 	Buf* pb;
@@ -78,7 +78,7 @@ Buf* BufferManager::GetBlk(int blkno)
 	}
 	pb = bufferList->back;
 	if (pb == bufferList) {
-		cout << "ÎŞ»º´æ¿é¿É¹©Ê¹ÓÃ" << endl;
+		cout << "æ— ç¼“å­˜å—å¯ä¾›ä½¿ç”¨" << endl;
 		return NULL;
 	}
 	DetachNode(pb);
@@ -91,13 +91,13 @@ Buf* BufferManager::GetBlk(int blkno)
 	return pb;
 }
 
-//ÊÍ·Å»º´æ¿ØÖÆ¿ébuf
+//é‡Šæ”¾ç¼“å­˜æ§åˆ¶å—buf
 void BufferManager::Brelse(Buf* pb)
 {
 	InsertTail(pb);
 }
 
-//¶ÁÒ»¸ö´ÅÅÌ¿é£¬blknoÎªÄ¿±ê´ÅÅÌ¿éÂß¼­¿éºÅ
+//è¯»ä¸€ä¸ªç£ç›˜å—ï¼Œblknoä¸ºç›®æ ‡ç£ç›˜å—é€»è¾‘å—å·
 Buf* BufferManager::Bread(int blkno)
 {
 	Buf* pb = GetBlk(blkno);
@@ -108,7 +108,7 @@ Buf* BufferManager::Bread(int blkno)
 	return pb;
 }
 
-//Ğ´Ò»¸ö´ÅÅÌ¿é
+//å†™ä¸€ä¸ªç£ç›˜å—
 void BufferManager::Bwrite(Buf* pb)
 {
 	pb->flags &= ~(Buf::CB_DELWRI);
@@ -117,7 +117,7 @@ void BufferManager::Bwrite(Buf* pb)
 	this->Brelse(pb);
 }
 
-//ÑÓ³ÙĞ´´ÅÅÌ¿é
+//å»¶è¿Ÿå†™ç£ç›˜å—
 void BufferManager::Bdwrite(Buf* bp)
 {
 	bp->flags |= (Buf::CB_DELWRI | Buf::CB_DONE);
@@ -125,14 +125,14 @@ void BufferManager::Bdwrite(Buf* bp)
 	return;
 }
 
-//Çå¿Õ»º³åÇøÄÚÈİ
+//æ¸…ç©ºç¼“å†²åŒºå†…å®¹
 void BufferManager::Bclear(Buf* bp)
 {
 	memset(bp->addr, 0, BufferManager::BUFFER_SIZE);
 	return;
 }
 
-//½«¶ÓÁĞÖĞÑÓ³ÙĞ´µÄ»º´æÈ«²¿Êä³öµ½´ÅÅÌ
+//å°†é˜Ÿåˆ—ä¸­å»¶è¿Ÿå†™çš„ç¼“å­˜å…¨éƒ¨è¾“å‡ºåˆ°ç£ç›˜
 void BufferManager::Bflush()
 {
 	Buf* pb = NULL;

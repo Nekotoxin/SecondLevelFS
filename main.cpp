@@ -21,8 +21,8 @@ UserCall myUserCall;
 bool AutoTest()
 {
 	UserCall& User = myUserCall;
-	cout << "×¢Òâ£º×Ô¶¯²âÊÔ²»°üº¬¸ñÊ½»¯²Ù×÷" << endl;
-	cout << "ÓÉÓÚ²âÊÔ³ÌĞòÖĞµÄÎÄ¼ş¾ä±úĞ´¶¨£¬ËùÒÔÈç¹ûÖ®Ç°´ò¿ª¹ıÎÄ¼ş¿ÉÄÜ»áÖ´ĞĞ³ö´í£¬½¨ÒéµÚÒ»²½¾Í×Ô¶¯²âÊÔ" << endl;
+	cout << "æ³¨æ„ï¼šè‡ªåŠ¨æµ‹è¯•ä¸åŒ…å«æ ¼å¼åŒ–æ“ä½œ" << endl;
+	cout << "ç”±äºæµ‹è¯•ç¨‹åºä¸­çš„æ–‡ä»¶å¥æŸ„å†™å®šï¼Œæ‰€ä»¥å¦‚æœä¹‹å‰æ‰“å¼€è¿‡æ–‡ä»¶å¯èƒ½ä¼šæ‰§è¡Œå‡ºé”™ï¼Œå»ºè®®ç¬¬ä¸€æ­¥å°±è‡ªåŠ¨æµ‹è¯•" << endl;
 	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /bin" << endl;
 	User.userMkDir("/bin");
 	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /etc" << endl;
@@ -119,7 +119,7 @@ bool AutoTest()
 	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ftree /" << endl;
 	User.userTree("/");
 
-	cout << "×Ô¶¯²âÊÔ½áÊø" << endl << endl;
+	cout << "è‡ªåŠ¨æµ‹è¯•ç»“æŸ" << endl << endl;
 	return true;
 }
 
@@ -128,28 +128,28 @@ int main()
 	UserCall& User = myUserCall;
 	cout << "***************************************************************************************" << endl
 		<< "*                                                                                     *" << endl
-		<< "*                                   ÀàUnixÎÄ¼şÏµÍ³                                    *" << endl
+		<< "*                                   ç±»Unixæ–‡ä»¶ç³»ç»Ÿ                                    *" << endl
 		<< "*                                                                                     *" << endl
-		<< "* [²Ù×÷ËµÃ÷]:                                                                         *" << endl
-		<< "* [ÃüÁî]:help <op_name>\t[¹¦ÄÜ]:ÃüÁîÌáÊ¾                                               *" << endl
-		<< "* [ÃüÁî]:test\t[¹¦ÄÜ]:×Ô¶¯²âÊÔ                                                       *" << endl
-		<< "* [ÃüÁî]:fformat\t[¹¦ÄÜ]:¸ñÊ½»¯ÎÄ¼şÏµÍ³                                         *" << endl
-		<< "* [ÃüÁî]:ls\t[¹¦ÄÜ]:²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ                                               *" << endl
-		<< "* [ÃüÁî]:mkdir <dirname>\t[¹¦ÄÜ]:Éú³ÉÎÄ¼ş¼Ğ                                     *" << endl
-		<< "* [ÃüÁî]:cd <dirname>\t[¹¦ÄÜ]:½øÈëÄ¿Â¼                                               *" << endl
-		<< "* [ÃüÁî]:fcreate <filename>\t[¹¦ÄÜ]:´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş                     *" << endl
-		<< "* [ÃüÁî]:fopen <filename>\t[¹¦ÄÜ]:´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş                     *" << endl
-		<< "* [ÃüÁî]:fwrite <fd> <infile> <size>\t[¹¦ÄÜ]:´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú       *" << endl
-		<< "* [ÃüÁî]:fread <fd> <outfile> <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile    *" << endl
-		<< "* [ÃüÁî]:fread <fd> std <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»               *" << endl
-		<< "* [ÃüÁî]:fseek <fd> <step> begin\t[¹¦ÄÜ]:ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep        *" << endl
-		<< "* [ÃüÁî]:fseek <fd> <step> cur\t[¹¦ÄÜ]:ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep                  *" << endl
-		<< "* [ÃüÁî]:fseek <fd> <step> end\t[¹¦ÄÜ]:ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep                  *" << endl
-		<< "* [ÃüÁî]:fclose <fd>\t[¹¦ÄÜ]:¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş                                 *" << endl
-		<< "* [ÃüÁî]:fdelete <filename>\t[¹¦ÄÜ]:É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ       *" << endl
-		<< "* [ÃüÁî]:frename <filename> <filename1>\t[¹¦ÄÜ]:½«ÎÄ¼şflienameÖØÃüÃûÎªfilename1        *" << endl
-		<< "* [ÃüÁî]:ftree <dirname>\t[¹¦ÄÜ]:ÁĞ³ödirnameµÄÎÄ¼şÄ¿Â¼Ê÷                        *" << endl
-		<< "* [ÃüÁî]:exit \t[¹¦ÄÜ]:ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ                                 *" << endl
+		<< "* [æ“ä½œè¯´æ˜]:                                                                         *" << endl
+		<< "* [å‘½ä»¤]:help <op_name>\t[åŠŸèƒ½]:å‘½ä»¤æç¤º                                               *" << endl
+		<< "* [å‘½ä»¤]:test\t[åŠŸèƒ½]:è‡ªåŠ¨æµ‹è¯•                                                       *" << endl
+		<< "* [å‘½ä»¤]:fformat\t[åŠŸèƒ½]:æ ¼å¼åŒ–æ–‡ä»¶ç³»ç»Ÿ                                         *" << endl
+		<< "* [å‘½ä»¤]:ls\t[åŠŸèƒ½]:æŸ¥çœ‹å½“å‰ç›®å½•å†…å®¹                                               *" << endl
+		<< "* [å‘½ä»¤]:mkdir <dirname>\t[åŠŸèƒ½]:ç”Ÿæˆæ–‡ä»¶å¤¹                                     *" << endl
+		<< "* [å‘½ä»¤]:cd <dirname>\t[åŠŸèƒ½]:è¿›å…¥ç›®å½•                                               *" << endl
+		<< "* [å‘½ä»¤]:fcreate <filename>\t[åŠŸèƒ½]:åˆ›å»ºæ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶                     *" << endl
+		<< "* [å‘½ä»¤]:fopen <filename>\t[åŠŸèƒ½]:æ‰“å¼€æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶                     *" << endl
+		<< "* [å‘½ä»¤]:fwrite <fd> <infile> <size>\t[åŠŸèƒ½]:ä»infileè¾“å…¥ï¼Œå†™å…¥fdæ–‡ä»¶sizeå­—èŠ‚       *" << endl
+		<< "* [å‘½ä»¤]:fread <fd> <outfile> <size>\t[åŠŸèƒ½]:ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°outfile    *" << endl
+		<< "* [å‘½ä»¤]:fread <fd> std <size>\t[åŠŸèƒ½]:ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°å±å¹•               *" << endl
+		<< "* [å‘½ä»¤]:fseek <fd> <step> begin\t[åŠŸèƒ½]:ä»¥beginæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step        *" << endl
+		<< "* [å‘½ä»¤]:fseek <fd> <step> cur\t[åŠŸèƒ½]:ä»¥curæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step                  *" << endl
+		<< "* [å‘½ä»¤]:fseek <fd> <step> end\t[åŠŸèƒ½]:ä»¥endæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step                  *" << endl
+		<< "* [å‘½ä»¤]:fclose <fd>\t[åŠŸèƒ½]:å…³é—­æ–‡ä»¶å¥æŸ„ä¸ºfdçš„æ–‡ä»¶                                 *" << endl
+		<< "* [å‘½ä»¤]:fdelete <filename>\t[åŠŸèƒ½]:åˆ é™¤æ–‡ä»¶æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶æˆ–è€…æ–‡ä»¶å¤¹       *" << endl
+		<< "* [å‘½ä»¤]:frename <filename> <filename1>\t[åŠŸèƒ½]:å°†æ–‡ä»¶flienameé‡å‘½åä¸ºfilename1        *" << endl
+		<< "* [å‘½ä»¤]:ftree <dirname>\t[åŠŸèƒ½]:åˆ—å‡ºdirnameçš„æ–‡ä»¶ç›®å½•æ ‘                        *" << endl
+		<< "* [å‘½ä»¤]:exit \t[åŠŸèƒ½]:é€€å‡ºç³»ç»Ÿï¼Œå¹¶å°†ç¼“å­˜å†…å®¹å­˜è‡³ç£ç›˜                                 *" << endl
 		<< "***************************************************************************************" << endl;
 
 	string line, opt, val[3];
@@ -164,7 +164,7 @@ int main()
 		in >> opt;
 		val[0] = val[1] = val[2] = "";
 		
-		//¸ñÊ½»¯ÎÄ¼şÏµÍ³
+		//æ ¼å¼åŒ–æ–‡ä»¶ç³»ç»Ÿ
 		if (opt == "fformat") {
 			//Us.userCd("/");
 			myOpenFileTable.Reset();
@@ -172,32 +172,32 @@ int main()
 			myCacheManager.FormatBuffer();
 			myFileSystem.FormatDevice();
 			//myUserCall.ofiles.Reset();
-			cout << "¸ñÊ½»¯Íê±Ï£¬ÎÄ¼şÏµÍ³ÒÑÍË³ö£¬ÇëÖØĞÂÆô¶¯£¡" << endl;
+			cout << "æ ¼å¼åŒ–å®Œæ¯•ï¼Œæ–‡ä»¶ç³»ç»Ÿå·²é€€å‡ºï¼Œè¯·é‡æ–°å¯åŠ¨ï¼" << endl;
 			return 0;
 		}
-		//²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ
+		//æŸ¥çœ‹å½“å‰ç›®å½•å†…å®¹
 		else if (opt == "ls")
 			User.userLs();
-		//Éú³ÉÎÄ¼ş¼Ğ
+		//ç”Ÿæˆæ–‡ä»¶å¤¹
 		else if (opt == "mkdir") {
 			in >> val[0];
 			if (val[0][0] != '/')
 				val[0] = User.curDirPath + val[0];
 			User.userMkDir(val[0]);
 		}
-		//½øÈëÄ¿Â¼
+		//è¿›å…¥ç›®å½•
 		else if (opt == "cd") {
 			in >> val[0];
 			User.userCd(val[0]);
 		}
-		//´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş
+		//åˆ›å»ºæ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶
 		else if (opt == "fcreate") {
 			in >> val[0];
 			if (val[0][0] != '/')
 				val[0] = User.curDirPath + val[0];
 			User.userCreate(val[0]);
 		}
-		//´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş
+		//æ‰“å¼€æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶
 		else if (opt == "fopen") {
 			in >> val[0];
 			if (myUserCall.ar0[UserCall::EAX] == 0) {
@@ -209,38 +209,38 @@ int main()
 			
 			User.userOpen(val[0]);
 		}
-		//ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ
+		//é€€å‡ºç³»ç»Ÿï¼Œå¹¶å°†ç¼“å­˜å†…å®¹å­˜è‡³ç£ç›˜
 		else if (opt == "exit")
 			return 0;
-		//¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş
+		//å…³é—­æ–‡ä»¶å¥æŸ„ä¸ºfdçš„æ–‡ä»¶
 		else if (opt == "fclose") {
 			in >> val[0];
 			User.userClose(val[0]);
 		}
 		else if (opt == "fseek") {
 			in >> val[0] >> val[1] >> val[2];
-			//ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep
+			//ä»¥beginæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step
 			if (val[2] == "begin")
 				User.userSeek(val[0], val[1], string("0"));
-			//ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep
+			//ä»¥curæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step
 			else if (val[2] == "cur")
 				User.userSeek(val[0], val[1], string("1"));
-			//ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep
+			//ä»¥endæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step
 			else if (val[2] == "end")
 				User.userSeek(val[0], val[1], string("2"));
 		}
-		//´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile
-		//´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»
+		//ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°outfile
+		//ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°å±å¹•
 		else if (opt == "fread") {
 			in >> val[0] >> val[1] >> val[2];
 			User.userRead(val[0], val[1], val[2]);
 		}
-		//´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú
+		//ä»infileè¾“å…¥ï¼Œå†™å…¥fdæ–‡ä»¶sizeå­—èŠ‚
 		else if (opt == "fwrite") {
 			in >> val[0] >> val[1] >> val[2];
 			User.userWrite(val[0], val[1], val[2]);
 		}
-		//É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ
+		//åˆ é™¤æ–‡ä»¶æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶æˆ–è€…æ–‡ä»¶å¤¹
 		else if (opt == "fdelete") {
 			in >> val[0];
 			if (val[0][0] != '/')
@@ -249,7 +249,7 @@ int main()
 		}
 		else if (opt == "test")
 			AutoTest();
-		//ÖØÃüÃûÎÄ¼ş»òÎÄ¼ş¼Ğ
+		//é‡å‘½åæ–‡ä»¶æˆ–æ–‡ä»¶å¤¹
 		else if (opt == "frename") {
 			in >> val[0] >> val[1];
 			User.userRename(val[0], val[1]);
@@ -261,58 +261,58 @@ int main()
 		else if (opt == "help") {
 			in >> val[0];
 			if (val[0] == "" || val[0] == "?") {
-				cout << "[ÃüÁî]:test\t[¹¦ÄÜ]:×Ô¶¯²âÊÔ" << endl
-					<< "[ÃüÁî]:fformat\t[¹¦ÄÜ]:¸ñÊ½»¯ÎÄ¼şÏµÍ³" << endl
-					<< "[ÃüÁî]:ls\t[¹¦ÄÜ]:²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ" << endl
-					<< "[ÃüÁî]:mkdir <dirname>\t[¹¦ÄÜ]:Éú³ÉÎÄ¼ş¼Ğ" << endl
-					<< "[ÃüÁî]:cd <dirname>\t[¹¦ÄÜ]:½øÈëÄ¿Â¼" << endl
-					<< "[ÃüÁî]:fcreate <filename>\t[¹¦ÄÜ]:´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl
-					<< "[ÃüÁî]:fopen <filename>\t[¹¦ÄÜ]:´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl
-					<< "[ÃüÁî]:fwrite <fd> <infile> <size>\t[¹¦ÄÜ]:´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú" << endl
-					<< "[ÃüÁî]:fread <fd> <outfile> <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile" << endl
-					<< "[ÃüÁî]:fread <fd> std <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»" << endl
-					<< "[ÃüÁî]:fseek <fd> <step> begin\t[¹¦ÄÜ]:ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
-					<< "[ÃüÁî]:fseek <fd> <step> cur\t[¹¦ÄÜ]:ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
-					<< "[ÃüÁî]:fseek <fd> <step> end\t[¹¦ÄÜ]:ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
-					<< "[ÃüÁî]:fclose <fd>\t[¹¦ÄÜ]:¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş" << endl
-					<< "[ÃüÁî]:fdelete <filename>\t[¹¦ÄÜ]:É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ" << endl
-					<< "[ÃüÁî]:frename <filename> <filename1>\t[¹¦ÄÜ]:½«ÎÄ¼şflienameÖØÃüÃûÎªfilename1" << endl
-					<< "[ÃüÁî]:ftree <dirname>\t[¹¦ÄÜ]:ÁĞ³ödirnameµÄÎÄ¼şÄ¿Â¼Ê÷" << endl
-					<< "[ÃüÁî]:exit\t[¹¦ÄÜ]:ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ" << endl;
+				cout << "[å‘½ä»¤]:test\t[åŠŸèƒ½]:è‡ªåŠ¨æµ‹è¯•" << endl
+					<< "[å‘½ä»¤]:fformat\t[åŠŸèƒ½]:æ ¼å¼åŒ–æ–‡ä»¶ç³»ç»Ÿ" << endl
+					<< "[å‘½ä»¤]:ls\t[åŠŸèƒ½]:æŸ¥çœ‹å½“å‰ç›®å½•å†…å®¹" << endl
+					<< "[å‘½ä»¤]:mkdir <dirname>\t[åŠŸèƒ½]:ç”Ÿæˆæ–‡ä»¶å¤¹" << endl
+					<< "[å‘½ä»¤]:cd <dirname>\t[åŠŸèƒ½]:è¿›å…¥ç›®å½•" << endl
+					<< "[å‘½ä»¤]:fcreate <filename>\t[åŠŸèƒ½]:åˆ›å»ºæ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶" << endl
+					<< "[å‘½ä»¤]:fopen <filename>\t[åŠŸèƒ½]:æ‰“å¼€æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶" << endl
+					<< "[å‘½ä»¤]:fwrite <fd> <infile> <size>\t[åŠŸèƒ½]:ä»infileè¾“å…¥ï¼Œå†™å…¥fdæ–‡ä»¶sizeå­—èŠ‚" << endl
+					<< "[å‘½ä»¤]:fread <fd> <outfile> <size>\t[åŠŸèƒ½]:ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°outfile" << endl
+					<< "[å‘½ä»¤]:fread <fd> std <size>\t[åŠŸèƒ½]:ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°å±å¹•" << endl
+					<< "[å‘½ä»¤]:fseek <fd> <step> begin\t[åŠŸèƒ½]:ä»¥beginæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step" << endl
+					<< "[å‘½ä»¤]:fseek <fd> <step> cur\t[åŠŸèƒ½]:ä»¥curæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step" << endl
+					<< "[å‘½ä»¤]:fseek <fd> <step> end\t[åŠŸèƒ½]:ä»¥endæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step" << endl
+					<< "[å‘½ä»¤]:fclose <fd>\t[åŠŸèƒ½]:å…³é—­æ–‡ä»¶å¥æŸ„ä¸ºfdçš„æ–‡ä»¶" << endl
+					<< "[å‘½ä»¤]:fdelete <filename>\t[åŠŸèƒ½]:åˆ é™¤æ–‡ä»¶æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶æˆ–è€…æ–‡ä»¶å¤¹" << endl
+					<< "[å‘½ä»¤]:frename <filename> <filename1>\t[åŠŸèƒ½]:å°†æ–‡ä»¶flienameé‡å‘½åä¸ºfilename1" << endl
+					<< "[å‘½ä»¤]:ftree <dirname>\t[åŠŸèƒ½]:åˆ—å‡ºdirnameçš„æ–‡ä»¶ç›®å½•æ ‘" << endl
+					<< "[å‘½ä»¤]:exit\t[åŠŸèƒ½]:é€€å‡ºç³»ç»Ÿï¼Œå¹¶å°†ç¼“å­˜å†…å®¹å­˜è‡³ç£ç›˜" << endl;
 			}
 			else if (val[0] == "test")
-				cout << "[ÃüÁî]:test\t[¹¦ÄÜ]:×Ô¶¯²âÊÔ" << endl;
+				cout << "[å‘½ä»¤]:test\t[åŠŸèƒ½]:è‡ªåŠ¨æµ‹è¯•" << endl;
 			else if (val[0] == "fformat")
-				cout << "[ÃüÁî]:fformat\t[¹¦ÄÜ]:¸ñÊ½»¯ÎÄ¼şÏµÍ³" << endl;
+				cout << "[å‘½ä»¤]:fformat\t[åŠŸèƒ½]:æ ¼å¼åŒ–æ–‡ä»¶ç³»ç»Ÿ" << endl;
 			else if (val[0] == "ls")
-				cout << "[ÃüÁî]:ls\t[¹¦ÄÜ]:²é¿´µ±Ç°Ä¿Â¼ÄÚÈİ" << endl;
+				cout << "[å‘½ä»¤]:ls\t[åŠŸèƒ½]:æŸ¥çœ‹å½“å‰ç›®å½•å†…å®¹" << endl;
 			else if (val[0] == "mkdir")
-				cout << "[ÃüÁî]:mkdir <dirname>\t[¹¦ÄÜ]:Éú³ÉÎÄ¼ş¼Ğ" << endl;
+				cout << "[å‘½ä»¤]:mkdir <dirname>\t[åŠŸèƒ½]:ç”Ÿæˆæ–‡ä»¶å¤¹" << endl;
 			else if (val[0] == "cd")
-				cout << "[ÃüÁî]:cd <dirname>\t[¹¦ÄÜ]:½øÈëÄ¿Â¼" << endl;
+				cout << "[å‘½ä»¤]:cd <dirname>\t[åŠŸèƒ½]:è¿›å…¥ç›®å½•" << endl;
 			else if (val[0] == "fcreate")
-				cout << "[ÃüÁî]:fcreate <filename>\t[¹¦ÄÜ]:´´½¨ÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl;
+				cout << "[å‘½ä»¤]:fcreate <filename>\t[åŠŸèƒ½]:åˆ›å»ºæ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶" << endl;
 			else if (val[0] == "fopen")
-				cout << "[ÃüÁî]:fopen <filename>\t[¹¦ÄÜ]:´ò¿ªÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş" << endl;
+				cout << "[å‘½ä»¤]:fopen <filename>\t[åŠŸèƒ½]:æ‰“å¼€æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶" << endl;
 			else if (val[0] == "fwrite")
-				cout << "[ÃüÁî]:fwrite <fd> <infile> <size>\t[¹¦ÄÜ]:´ÓinfileÊäÈë£¬Ğ´ÈëfdÎÄ¼şsize×Ö½Ú" << endl;
+				cout << "[å‘½ä»¤]:fwrite <fd> <infile> <size>\t[åŠŸèƒ½]:ä»infileè¾“å…¥ï¼Œå†™å…¥fdæ–‡ä»¶sizeå­—èŠ‚" << endl;
 			else if (val[0] == "fread")
-				cout << "[ÃüÁî]:fread <fd> <outfile> <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½outfile" << endl
-				<< "[ÃüÁî]:fread <fd> std <size>\t[¹¦ÄÜ]:´ÓfdÎÄ¼ş¶ÁÈ¡size×Ö½Ú£¬Êä³öµ½ÆÁÄ»" << endl;
+				cout << "[å‘½ä»¤]:fread <fd> <outfile> <size>\t[åŠŸèƒ½]:ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°outfile" << endl
+				<< "[å‘½ä»¤]:fread <fd> std <size>\t[åŠŸèƒ½]:ä»fdæ–‡ä»¶è¯»å–sizeå­—èŠ‚ï¼Œè¾“å‡ºåˆ°å±å¹•" << endl;
 			else if (val[0] == "fseek")
-				cout << "[ÃüÁî]:fseek <fd> <step> begin\t[¹¦ÄÜ]:ÒÔbeginÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
-				<< "[ÃüÁî]:fseek <fd> <step> cur\t[¹¦ÄÜ]:ÒÔcurÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl
-				<< "[ÃüÁî]:fseek <fd> <step> end\t[¹¦ÄÜ]:ÒÔendÄ£Ê½°ÑfdÎÄ¼şÖ¸ÕëÆ«ÒÆstep" << endl;
+				cout << "[å‘½ä»¤]:fseek <fd> <step> begin\t[åŠŸèƒ½]:ä»¥beginæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step" << endl
+				<< "[å‘½ä»¤]:fseek <fd> <step> cur\t[åŠŸèƒ½]:ä»¥curæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step" << endl
+				<< "[å‘½ä»¤]:fseek <fd> <step> end\t[åŠŸèƒ½]:ä»¥endæ¨¡å¼æŠŠfdæ–‡ä»¶æŒ‡é’ˆåç§»step" << endl;
 			else if (val[0] == "fclose")
-				cout << "[ÃüÁî]:fclose <fd>\t[¹¦ÄÜ]:¹Ø±ÕÎÄ¼ş¾ä±úÎªfdµÄÎÄ¼ş" << endl;
+				cout << "[å‘½ä»¤]:fclose <fd>\t[åŠŸèƒ½]:å…³é—­æ–‡ä»¶å¥æŸ„ä¸ºfdçš„æ–‡ä»¶" << endl;
 			else if (val[0] == "fdelete")
-				cout << "[ÃüÁî]:fdelete <filename>\t[¹¦ÄÜ]:É¾³ıÎÄ¼şÎÄ¼şÃûÎªfilenameµÄÎÄ¼ş»òÕßÎÄ¼ş¼Ğ" << endl;
+				cout << "[å‘½ä»¤]:fdelete <filename>\t[åŠŸèƒ½]:åˆ é™¤æ–‡ä»¶æ–‡ä»¶åä¸ºfilenameçš„æ–‡ä»¶æˆ–è€…æ–‡ä»¶å¤¹" << endl;
 			else if (val[0] == "frename")
-				cout << "[ÃüÁî]:frename <filename> <filename1>\t[¹¦ÄÜ]:½«ÎÄ¼şflienameÖØÃüÃûÎªfilename1" << endl;
+				cout << "[å‘½ä»¤]:frename <filename> <filename1>\t[åŠŸèƒ½]:å°†æ–‡ä»¶flienameé‡å‘½åä¸ºfilename1" << endl;
 			else if (val[0] == "ftree")
-				cout << "[ÃüÁî]:ftree <dirname>\t[¹¦ÄÜ]:ÁĞ³ödirnameµÄÎÄ¼şÄ¿Â¼Ê÷" << endl;
+				cout << "[å‘½ä»¤]:ftree <dirname>\t[åŠŸèƒ½]:åˆ—å‡ºdirnameçš„æ–‡ä»¶ç›®å½•æ ‘" << endl;
 			else if (val[0] == "exit")
-				cout << "[ÃüÁî]:exit\t[¹¦ÄÜ]:ÍË³öÏµÍ³£¬²¢½«»º´æÄÚÈİ´æÖÁ´ÅÅÌ" << endl;
+				cout << "[å‘½ä»¤]:exit\t[åŠŸèƒ½]:é€€å‡ºç³»ç»Ÿï¼Œå¹¶å°†ç¼“å­˜å†…å®¹å­˜è‡³ç£ç›˜" << endl;
 		}
 	}
 	return 0;

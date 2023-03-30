@@ -14,16 +14,16 @@ SystemCall::SystemCall()
 	fileSystem = &myFileSystem;
 	openFileTable = &myOpenFileTable;
 	inodeTable = &myINodeTable;
-	rootDirINode = inodeTable->IGet(FileSystem::ROOT_INODE_NO);//¸ù¾İÍâ´æINode±àºÅ»ñÈ¡¶ÔÓ¦INode¡£Èç¹û¸ÃINodeÒÑ¾­ÔÚÄÚ´æÖĞ£¬·µ»Ø¸ÃÄÚ´æINode£»
-		                                                         //Èç¹û²»ÔÚÄÚ´æÖĞ£¬Ôò½«Æä¶ÁÈëÄÚ´æºóÉÏËø²¢·µ»Ø¸ÃÄÚ´æINode
-	                                                             //ÎÄ¼şÏµÍ³¸ùÄ¿Â¼Íâ´æINode±àºÅ
-	rootDirINode->i_count += 0xff;//ÒıÓÃ¼ÆÊı                            
+	rootDirINode = inodeTable->IGet(FileSystem::ROOT_INODE_NO);//æ ¹æ®å¤–å­˜INodeç¼–å·è·å–å¯¹åº”INodeã€‚å¦‚æœè¯¥INodeå·²ç»åœ¨å†…å­˜ä¸­ï¼Œè¿”å›è¯¥å†…å­˜INodeï¼›
+		                                                         //å¦‚æœä¸åœ¨å†…å­˜ä¸­ï¼Œåˆ™å°†å…¶è¯»å…¥å†…å­˜åä¸Šé”å¹¶è¿”å›è¯¥å†…å­˜INode
+	                                                             //æ–‡ä»¶ç³»ç»Ÿæ ¹ç›®å½•å¤–å­˜INodeç¼–å·
+	rootDirINode->i_count += 0xff;//å¼•ç”¨è®¡æ•°                            
 }
 
 SystemCall::~SystemCall() { }
 
-//¹¦ÄÜ£º´ò¿ªÎÄ¼ş
-//Ğ§¹û£º½¨Á¢´ò¿ªÎÄ¼ş½á¹¹£¬ÄÚ´æi½Úµã¿ªËø ¡¢i_count ÎªÕıÊı£¨i_count ++£©
+//åŠŸèƒ½ï¼šæ‰“å¼€æ–‡ä»¶
+//æ•ˆæœï¼šå»ºç«‹æ‰“å¼€æ–‡ä»¶ç»“æ„ï¼Œå†…å­˜ièŠ‚ç‚¹å¼€é” ã€i_count ä¸ºæ­£æ•°ï¼ˆi_count ++ï¼‰
 void SystemCall::Open() 
 {
 	INode* pINode = this->NameI(SystemCall::OPEN);
@@ -32,15 +32,15 @@ void SystemCall::Open()
 	this->Open1(pINode, 0);
 }
 
-//Creat()ÏµÍ³µ÷ÓÃ´¦Àí¹ı³Ì
+//Creat()ç³»ç»Ÿè°ƒç”¨å¤„ç†è¿‡ç¨‹
 void SystemCall::Creat() 
 {
 	INode* pINode;
 
-	int newACCMode = myUserCall.arg[1];//´æ·Åµ±Ç°ÏµÍ³µ÷ÓÃ²ÎÊı ÎÄ¼şÀàĞÍ£ºÄ¿Â¼ÎÄ¼ş
-	//ËÑË÷Ä¿Â¼µÄÄ£Ê½Îª1£¬±íÊ¾´´½¨£»Èô¸¸Ä¿Â¼²»¿ÉĞ´£¬³ö´í·µ»Ø
+	int newACCMode = myUserCall.arg[1];//å­˜æ”¾å½“å‰ç³»ç»Ÿè°ƒç”¨å‚æ•° æ–‡ä»¶ç±»å‹ï¼šç›®å½•æ–‡ä»¶
+	//æœç´¢ç›®å½•çš„æ¨¡å¼ä¸º1ï¼Œè¡¨ç¤ºåˆ›å»ºï¼›è‹¥çˆ¶ç›®å½•ä¸å¯å†™ï¼Œå‡ºé”™è¿”å›
 	pINode = this->NameI(SystemCall::CREATE);
-	//Ã»ÓĞÕÒµ½ÏàÓ¦µÄINode£¬»òNameI³ö´í
+	//æ²¡æœ‰æ‰¾åˆ°ç›¸åº”çš„INodeï¼Œæˆ–NameIå‡ºé”™
 	if (NULL == pINode) {
 		if (myUserCall.userErrorCode)
 			return;
@@ -48,91 +48,91 @@ void SystemCall::Creat()
 		pINode = this->MakNode(newACCMode);
 		if (NULL == pINode)
 			return;
-		//Èç¹û´´½¨µÄÃû×Ö²»´æÔÚ£¬Ê¹ÓÃ²ÎÊıtrf = 2À´µ÷ÓÃopen1()
+		//å¦‚æœåˆ›å»ºçš„åå­—ä¸å­˜åœ¨ï¼Œä½¿ç”¨å‚æ•°trf = 2æ¥è°ƒç”¨open1()
 		this->Open1(pINode, 2);
 		return;
 	}
-	//Èç¹ûNameI()ËÑË÷µ½ÒÑ¾­´æÔÚÒª´´½¨µÄÎÄ¼ş£¬ÔòÇå¿Õ¸ÃÎÄ¼ş£¨ÓÃËã·¨ITrunc()£©
+	//å¦‚æœNameI()æœç´¢åˆ°å·²ç»å­˜åœ¨è¦åˆ›å»ºçš„æ–‡ä»¶ï¼Œåˆ™æ¸…ç©ºè¯¥æ–‡ä»¶ï¼ˆç”¨ç®—æ³•ITrunc()ï¼‰
 	this->Open1(pINode, 1);
 	pINode->i_mode |= newACCMode;
 }
 
-//Ä¿Â¼ËÑË÷£¬½«Â·¾¶×ª»¯ÎªÏàÓ¦µÄINode·µ»ØÉÏËøºóµÄINode
-//·µ»ØNULL±íÊ¾Ä¿Â¼ËÑË÷Ê§°Ü£¬·ñÔòÊÇ¸ùÖ¸Õë£¬Ö¸ÏòÎÄ¼şµÄÄÚ´æ´ò¿ªi½Úµã £¬ÉÏËøµÄÄÚ´æi½Úµã
+//ç›®å½•æœç´¢ï¼Œå°†è·¯å¾„è½¬åŒ–ä¸ºç›¸åº”çš„INodeè¿”å›ä¸Šé”åçš„INode
+//è¿”å›NULLè¡¨ç¤ºç›®å½•æœç´¢å¤±è´¥ï¼Œå¦åˆ™æ˜¯æ ¹æŒ‡é’ˆï¼ŒæŒ‡å‘æ–‡ä»¶çš„å†…å­˜æ‰“å¼€ièŠ‚ç‚¹ ï¼Œä¸Šé”çš„å†…å­˜ièŠ‚ç‚¹
 INode* SystemCall::NameI(enum DirectorySearchMode mode) 
 {
 	INode* pINode = myUserCall.nowDirINodePointer;
 	Buf* pCache;
-	int freeEntryOffset; //ÒÔ´´½¨ÎÄ¼şÄ£Ê½ËÑË÷Ä¿Â¼Ê±£¬¼ÇÂ¼¿ÕÏĞÄ¿Â¼ÏîµÄÆ«ÒÆÁ¿
+	int freeEntryOffset; //ä»¥åˆ›å»ºæ–‡ä»¶æ¨¡å¼æœç´¢ç›®å½•æ—¶ï¼Œè®°å½•ç©ºé—²ç›®å½•é¡¹çš„åç§»é‡
 	unsigned int index = 0, nindex = 0;
 
-	//Èç¹û¸ÃÂ·¾¶ÊÇ'/'¿ªÍ·µÄ£¬´Ó¸ùÄ¿Â¼¿ªÊ¼ËÑË÷£¬·ñÔò´Ó½ø³Ìµ±Ç°¹¤×÷Ä¿Â¼¿ªÊ¼ËÑË÷
+	//å¦‚æœè¯¥è·¯å¾„æ˜¯'/'å¼€å¤´çš„ï¼Œä»æ ¹ç›®å½•å¼€å§‹æœç´¢ï¼Œå¦åˆ™ä»è¿›ç¨‹å½“å‰å·¥ä½œç›®å½•å¼€å§‹æœç´¢
 	if ('/' == myUserCall.dirp[0]) {
 		nindex = ++index + 1;
 		pINode = this->rootDirINode;
 	}
-	//Íâ²ãÑ­»·Ã¿´Î´¦ÀípathnameÖĞÒ»¶ÎÂ·¾¶·ÖÁ¿
+	//å¤–å±‚å¾ªç¯æ¯æ¬¡å¤„ç†pathnameä¸­ä¸€æ®µè·¯å¾„åˆ†é‡
 	while (1) {
-		//Èç¹û³ö´íÔòÊÍ·Åµ±Ç°ËÑË÷µ½µÄÄ¿Â¼ÎÄ¼şInode£¬²¢ÍË³ö
+		//å¦‚æœå‡ºé”™åˆ™é‡Šæ”¾å½“å‰æœç´¢åˆ°çš„ç›®å½•æ–‡ä»¶Inodeï¼Œå¹¶é€€å‡º
 		if (myUserCall.userErrorCode != UserCall::U_NOERROR)
 			break;
-		//Õû¸öÂ·¾¶ËÑË÷Íê±Ï£¬·µ»ØÏàÓ¦InodeÖ¸Õë¡£Ä¿Â¼ËÑË÷³É¹¦·µ»Ø
+		//æ•´ä¸ªè·¯å¾„æœç´¢å®Œæ¯•ï¼Œè¿”å›ç›¸åº”InodeæŒ‡é’ˆã€‚ç›®å½•æœç´¢æˆåŠŸè¿”å›
 		if (nindex >= myUserCall.dirp.length())
 			return pINode;
-		//Èç¹ûÒª½øĞĞËÑË÷µÄ²»ÊÇÄ¿Â¼ÎÄ¼ş£¬ÊÍ·ÅÏà¹ØInode×ÊÔ´ÔòÍË³ö
-		if ((pINode->i_mode & INode::IFMT) != INode::IFDIR) {//ÎÄ¼şÀàĞÍ£ºÄ¿Â¼ÎÄ¼ş
-			myUserCall.userErrorCode = UserCall::U_ENOTDIR;//ÎÄ¼ş¼Ğ²»´æÔÚ
+		//å¦‚æœè¦è¿›è¡Œæœç´¢çš„ä¸æ˜¯ç›®å½•æ–‡ä»¶ï¼Œé‡Šæ”¾ç›¸å…³Inodeèµ„æºåˆ™é€€å‡º
+		if ((pINode->i_mode & INode::IFMT) != INode::IFDIR) {//æ–‡ä»¶ç±»å‹ï¼šç›®å½•æ–‡ä»¶
+			myUserCall.userErrorCode = UserCall::U_ENOTDIR;//æ–‡ä»¶å¤¹ä¸å­˜åœ¨
 			break;
 		}
 
-		//½«PathnameÖĞµ±Ç°×¼±¸½øĞĞÆ¥ÅäµÄÂ·¾¶·ÖÁ¿¿½±´µ½u.u_dbuf[]ÖĞ£¬±ãÓÚºÍÄ¿Â¼Ïî½øĞĞ±È½Ï¡£
+		//å°†Pathnameä¸­å½“å‰å‡†å¤‡è¿›è¡ŒåŒ¹é…çš„è·¯å¾„åˆ†é‡æ‹·è´åˆ°u.u_dbuf[]ä¸­ï¼Œä¾¿äºå’Œç›®å½•é¡¹è¿›è¡Œæ¯”è¾ƒã€‚
 		nindex = myUserCall.dirp.find_first_of('/', index);
 		memset(myUserCall.dbuf, 0, sizeof(myUserCall.dbuf));
 		memcpy(myUserCall.dbuf, myUserCall.dirp.data() + index, (nindex == (unsigned int)string::npos ? myUserCall.dirp.length() : nindex) - index);
 		index = nindex + 1;
-		//ÄÚ²ãÑ­»·²¿·Ö¶ÔÓÚu.u_dbuf[]ÖĞµÄÂ·¾¶Ãû·ÖÁ¿£¬Öğ¸öËÑÑ°Æ¥ÅäµÄÄ¿Â¼Ïî
+		//å†…å±‚å¾ªç¯éƒ¨åˆ†å¯¹äºu.u_dbuf[]ä¸­çš„è·¯å¾„ååˆ†é‡ï¼Œé€ä¸ªæœå¯»åŒ¹é…çš„ç›®å½•é¡¹
 		myUserCall.IOParam.offset = 0;
-		//ÉèÖÃÎªÄ¿Â¼Ïî¸öÊı £¬º¬¿Õ°×µÄÄ¿Â¼Ïî
+		//è®¾ç½®ä¸ºç›®å½•é¡¹ä¸ªæ•° ï¼Œå«ç©ºç™½çš„ç›®å½•é¡¹
 		myUserCall.IOParam.count = pINode->i_size / sizeof(DirectoryEntry);
 		freeEntryOffset = 0;
 		pCache = NULL;
 		while (1) {
-			/* ¶ÔÄ¿Â¼ÏîÒÑ¾­ËÑË÷Íê±Ï */
+			/* å¯¹ç›®å½•é¡¹å·²ç»æœç´¢å®Œæ¯• */
 			if (0 == myUserCall.IOParam.count) {
 				if (NULL != pCache)
 					myCacheManager.Brelse(pCache);
-				//Èç¹ûÊÇ´´½¨ĞÂÎÄ¼ş
+				//å¦‚æœæ˜¯åˆ›å»ºæ–°æ–‡ä»¶
 				if (SystemCall::CREATE == mode && nindex >= myUserCall.dirp.length()) {
-					//½«¸¸Ä¿Â¼InodeÖ¸Õë±£´æÆğÀ´£¬ÒÔºóĞ´Ä¿Â¼ÏîWriteDir()º¯Êı»áÓÃµ½
+					//å°†çˆ¶ç›®å½•InodeæŒ‡é’ˆä¿å­˜èµ·æ¥ï¼Œä»¥åå†™ç›®å½•é¡¹WriteDir()å‡½æ•°ä¼šç”¨åˆ°
 					myUserCall.paDirINodePointer = pINode;
-					if (freeEntryOffset) //´Ë±äÁ¿´æ·ÅÁË¿ÕÏĞÄ¿Â¼ÏîÎ»ÓÚÄ¿Â¼ÎÄ¼şÖĞµÄÆ«ÒÆÁ¿
-						myUserCall.IOParam.offset = freeEntryOffset - sizeof(DirectoryEntry); //½«¿ÕÏĞÄ¿Â¼ÏîÆ«ÒÆÁ¿´æÈëuÇøÖĞ£¬Ğ´Ä¿Â¼ÏîWriteDir()»áÓÃµ½
-					else //ÎÊÌâ£ºÎªºÎif·ÖÖ§Ã»ÓĞÖÃIUPD±êÖ¾£¿  ÕâÊÇÒòÎªÎÄ¼şµÄ³¤¶ÈÃ»ÓĞ±äÑ½
+					if (freeEntryOffset) //æ­¤å˜é‡å­˜æ”¾äº†ç©ºé—²ç›®å½•é¡¹ä½äºç›®å½•æ–‡ä»¶ä¸­çš„åç§»é‡
+						myUserCall.IOParam.offset = freeEntryOffset - sizeof(DirectoryEntry); //å°†ç©ºé—²ç›®å½•é¡¹åç§»é‡å­˜å…¥uåŒºä¸­ï¼Œå†™ç›®å½•é¡¹WriteDir()ä¼šç”¨åˆ°
+					else //é—®é¢˜ï¼šä¸ºä½•ifåˆ†æ”¯æ²¡æœ‰ç½®IUPDæ ‡å¿—ï¼Ÿ  è¿™æ˜¯å› ä¸ºæ–‡ä»¶çš„é•¿åº¦æ²¡æœ‰å˜å‘€
 						pINode->i_flag |= INode::IUPD;
-					//ÕÒµ½¿ÉÒÔĞ´ÈëµÄ¿ÕÏĞÄ¿Â¼ÏîÎ»ÖÃ£¬NameI()º¯Êı·µ»Ø
+					//æ‰¾åˆ°å¯ä»¥å†™å…¥çš„ç©ºé—²ç›®å½•é¡¹ä½ç½®ï¼ŒNameI()å‡½æ•°è¿”å›
 					return NULL;
 				}
-				//Ä¿Â¼ÏîËÑË÷Íê±Ï¶øÃ»ÓĞÕÒµ½Æ¥ÅäÏî£¬ÊÍ·ÅÏà¹ØInode×ÊÔ´£¬²¢ÍË³ö
+				//ç›®å½•é¡¹æœç´¢å®Œæ¯•è€Œæ²¡æœ‰æ‰¾åˆ°åŒ¹é…é¡¹ï¼Œé‡Šæ”¾ç›¸å…³Inodeèµ„æºï¼Œå¹¶é€€å‡º
 				myUserCall.userErrorCode = UserCall::U_ENOENT;
 				goto out;
 			}
-			//ÒÑ¶ÁÍêÄ¿Â¼ÎÄ¼şµÄµ±Ç°ÅÌ¿é£¬ĞèÒª¶ÁÈëÏÂÒ»Ä¿Â¼ÏîÊı¾İÅÌ¿é
+			//å·²è¯»å®Œç›®å½•æ–‡ä»¶çš„å½“å‰ç›˜å—ï¼Œéœ€è¦è¯»å…¥ä¸‹ä¸€ç›®å½•é¡¹æ•°æ®ç›˜å—
 			if (0 == myUserCall.IOParam.offset % INode::BLOCK_SIZE) {
 				if (pCache)
 					myCacheManager.Brelse(pCache);
-				//¼ÆËãÒª¶ÁµÄÎïÀíÅÌ¿éºÅ
+				//è®¡ç®—è¦è¯»çš„ç‰©ç†ç›˜å—å·
 				int phyBlkno = pINode->Bmap(myUserCall.IOParam.offset / INode::BLOCK_SIZE);
 				pCache = myCacheManager.Bread(phyBlkno);
 			}
-			//Ã»ÓĞ¶ÁÍêµ±Ç°Ä¿Â¼ÏîÅÌ¿é£¬Ôò¶ÁÈ¡ÏÂÒ»Ä¿Â¼ÏîÖÁu.u_dent
+			//æ²¡æœ‰è¯»å®Œå½“å‰ç›®å½•é¡¹ç›˜å—ï¼Œåˆ™è¯»å–ä¸‹ä¸€ç›®å½•é¡¹è‡³u.u_dent
 			memcpy(&myUserCall.dent, pCache->addr + (myUserCall.IOParam.offset % INode::BLOCK_SIZE), sizeof(myUserCall.dent));
 			myUserCall.IOParam.offset += sizeof(DirectoryEntry);
 			myUserCall.IOParam.count--;
-			//Èç¹ûÊÇ¿ÕÏĞÄ¿Â¼Ïî£¬¼ÇÂ¼¸ÃÏîÎ»ÓÚÄ¿Â¼ÎÄ¼şÖĞÆ«ÒÆÁ¿
+			//å¦‚æœæ˜¯ç©ºé—²ç›®å½•é¡¹ï¼Œè®°å½•è¯¥é¡¹ä½äºç›®å½•æ–‡ä»¶ä¸­åç§»é‡
 			if (0 == myUserCall.dent.m_ino) {
 				if (0 == freeEntryOffset)
 					freeEntryOffset = myUserCall.IOParam.offset;
-				//Ìø¹ı¿ÕÏĞÄ¿Â¼Ïî£¬¼ÌĞø±È½ÏÏÂÒ»Ä¿Â¼Ïî
+				//è·³è¿‡ç©ºé—²ç›®å½•é¡¹ï¼Œç»§ç»­æ¯”è¾ƒä¸‹ä¸€ç›®å½•é¡¹
 				continue;
 			}
 
@@ -140,20 +140,20 @@ INode* SystemCall::NameI(enum DirectorySearchMode mode)
 				break;
 		}
 
-		//´ÓÄÚ²ãÄ¿Â¼ÏîÆ¥ÅäÑ­»·ÌøÖÁ´Ë´¦£¬ËµÃ÷pathnameÖĞµ±Ç°Â·¾¶·ÖÁ¿Æ¥Åä³É¹¦ÁË£¬»¹ĞèÆ¥ÅäpathnameÖĞÏÂÒ»Â·¾¶·ÖÁ¿£¬Ö±ÖÁÓöµ½'\0'½áÊø
+		//ä»å†…å±‚ç›®å½•é¡¹åŒ¹é…å¾ªç¯è·³è‡³æ­¤å¤„ï¼Œè¯´æ˜pathnameä¸­å½“å‰è·¯å¾„åˆ†é‡åŒ¹é…æˆåŠŸäº†ï¼Œè¿˜éœ€åŒ¹é…pathnameä¸­ä¸‹ä¸€è·¯å¾„åˆ†é‡ï¼Œç›´è‡³é‡åˆ°'\0'ç»“æŸ
 		if (pCache)
 			myCacheManager.Brelse(pCache);
 
-		//Èç¹ûÊÇÉ¾³ı²Ù×÷£¬Ôò·µ»Ø¸¸Ä¿Â¼Inode£¬¶øÒªÉ¾³ıÎÄ¼şµÄInodeºÅÔÚu.u_dent.m_inoÖĞ
+		//å¦‚æœæ˜¯åˆ é™¤æ“ä½œï¼Œåˆ™è¿”å›çˆ¶ç›®å½•Inodeï¼Œè€Œè¦åˆ é™¤æ–‡ä»¶çš„Inodeå·åœ¨u.u_dent.m_inoä¸­
 		if (SystemCall::DELETE == mode && nindex >= myUserCall.dirp.length())
 			return pINode;
 
-		//Æ¥ÅäÄ¿Â¼Ïî³É¹¦£¬ÔòÊÍ·Åµ±Ç°Ä¿Â¼Inode£¬¸ù¾İÆ¥Åä³É¹¦µÄÄ¿Â¼Ïîm_ino×Ö¶Î»ñÈ¡ÏàÓ¦ÏÂÒ»¼¶Ä¿Â¼»òÎÄ¼şµÄInode
+		//åŒ¹é…ç›®å½•é¡¹æˆåŠŸï¼Œåˆ™é‡Šæ”¾å½“å‰ç›®å½•Inodeï¼Œæ ¹æ®åŒ¹é…æˆåŠŸçš„ç›®å½•é¡¹m_inoå­—æ®µè·å–ç›¸åº”ä¸‹ä¸€çº§ç›®å½•æˆ–æ–‡ä»¶çš„Inode
 		this->inodeTable->IPut(pINode);
 		pINode = this->inodeTable->IGet(myUserCall.dent.m_ino);
-		//»Øµ½Íâ²ãWhile(true)Ñ­»·£¬¼ÌĞøÆ¥ÅäPathnameÖĞÏÂÒ»Â·¾¶·ÖÁ¿
+		//å›åˆ°å¤–å±‚While(true)å¾ªç¯ï¼Œç»§ç»­åŒ¹é…Pathnameä¸­ä¸‹ä¸€è·¯å¾„åˆ†é‡
 
-		if (NULL == pINode) //»ñÈ¡Ê§°Ü
+		if (NULL == pINode) //è·å–å¤±è´¥
 			return NULL;
 	}
 
@@ -162,45 +162,45 @@ out:
 	return NULL;
 }
 
-//trf == 0ÓÉopenµ÷ÓÃ
-//trf == 1ÓÉcreatµ÷ÓÃ£¬creatÎÄ¼şµÄÊ±ºòËÑË÷µ½Í¬ÎÄ¼şÃûµÄÎÄ¼ş
-//trf == 2ÓÉcreatµ÷ÓÃ£¬creatÎÄ¼şµÄÊ±ºòÎ´ËÑË÷µ½Í¬ÎÄ¼şÃûµÄÎÄ¼ş£¬ÕâÊÇÎÄ¼ş´´½¨Ê±¸üÒ»°ãµÄÇé¿ö
-//mode²ÎÊı£º´ò¿ªÎÄ¼şÄ£Ê½£¬±íÊ¾ÎÄ¼ş²Ù×÷ÊÇ ¶Á¡¢Ğ´»¹ÊÇ¶ÁĞ´
+//trf == 0ç”±openè°ƒç”¨
+//trf == 1ç”±creatè°ƒç”¨ï¼Œcreatæ–‡ä»¶çš„æ—¶å€™æœç´¢åˆ°åŒæ–‡ä»¶åçš„æ–‡ä»¶
+//trf == 2ç”±creatè°ƒç”¨ï¼Œcreatæ–‡ä»¶çš„æ—¶å€™æœªæœç´¢åˆ°åŒæ–‡ä»¶åçš„æ–‡ä»¶ï¼Œè¿™æ˜¯æ–‡ä»¶åˆ›å»ºæ—¶æ›´ä¸€èˆ¬çš„æƒ…å†µ
+//modeå‚æ•°ï¼šæ‰“å¼€æ–‡ä»¶æ¨¡å¼ï¼Œè¡¨ç¤ºæ–‡ä»¶æ“ä½œæ˜¯ è¯»ã€å†™è¿˜æ˜¯è¯»å†™
 void SystemCall::Open1(INode* pINode, int trf) 
 {
-	//ÔÚcreatÎÄ¼şµÄÊ±ºòËÑË÷µ½Í¬ÎÄ¼şÃûµÄÎÄ¼ş£¬ÊÍ·Å¸ÃÎÄ¼şËùÕ¼¾İµÄËùÓĞÅÌ¿é
+	//åœ¨creatæ–‡ä»¶çš„æ—¶å€™æœç´¢åˆ°åŒæ–‡ä»¶åçš„æ–‡ä»¶ï¼Œé‡Šæ”¾è¯¥æ–‡ä»¶æ‰€å æ®çš„æ‰€æœ‰ç›˜å—
 	if (1 == trf)
-		pINode->ITrunc();//ÊÍ·ÅInode¶ÔÓ¦ÎÄ¼şÕ¼ÓÃµÄ´ÅÅÌ¿é
-	//·ÖÅä´ò¿ªÎÄ¼ş¿ØÖÆ¿éFile½á¹¹
-	File* pFile = this->openFileTable->FAlloc();//ÔÚÏµÍ³´ò¿ªÎÄ¼ş±íÖĞ·ÖÅäÒ»¸ö¿ÕÏĞµÄFile½á¹¹
+		pINode->ITrunc();//é‡Šæ”¾Inodeå¯¹åº”æ–‡ä»¶å ç”¨çš„ç£ç›˜å—
+	//åˆ†é…æ‰“å¼€æ–‡ä»¶æ§åˆ¶å—Fileç»“æ„
+	File* pFile = this->openFileTable->FAlloc();//åœ¨ç³»ç»Ÿæ‰“å¼€æ–‡ä»¶è¡¨ä¸­åˆ†é…ä¸€ä¸ªç©ºé—²çš„Fileç»“æ„
 	if (NULL == pFile) {
 		this->inodeTable->IPut(pINode);
 		return;
 	}
 	pFile->inode = pINode;
 
-	//Îª´ò¿ª»òÕß´´½¨ÎÄ¼şµÄ¸÷ÖÖ×ÊÔ´¶¼ÒÑ³É¹¦·ÖÅä£¬º¯Êı·µ»Ø
+	//ä¸ºæ‰“å¼€æˆ–è€…åˆ›å»ºæ–‡ä»¶çš„å„ç§èµ„æºéƒ½å·²æˆåŠŸåˆ†é…ï¼Œå‡½æ•°è¿”å›
 	if (myUserCall.userErrorCode == 0)
 		return;
-	else { //Èç¹û³ö´íÔòÊÍ·Å×ÊÔ´
-		//ÊÍ·Å´ò¿ªÎÄ¼şÃèÊö·û
+	else { //å¦‚æœå‡ºé”™åˆ™é‡Šæ”¾èµ„æº
+		//é‡Šæ”¾æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦
 		int fd = myUserCall.ar0[UserCall::EAX];
 		if (fd != -1) {
 			myUserCall.ofiles.SetF(fd, NULL);
-			//µİ¼õFile½á¹¹ºÍInodeµÄÒıÓÃ¼ÆÊı ,File½á¹¹Ã»ÓĞËø f_countÎª0¾ÍÊÇÊÍ·ÅFile½á¹¹ÁË
+			//é€’å‡Fileç»“æ„å’ŒInodeçš„å¼•ç”¨è®¡æ•° ,Fileç»“æ„æ²¡æœ‰é” f_countä¸º0å°±æ˜¯é‡Šæ”¾Fileç»“æ„äº†
 			pFile->count--;
 		}
 		this->inodeTable->IPut(pINode);
 	}
 }
 
-//±»Creat()ÏµÍ³µ÷ÓÃÊ¹ÓÃ£¬ÓÃÓÚÎª´´½¨ĞÂÎÄ¼ş·ÖÅäÄÚºË×ÊÔ´
-//ÎªĞÂ´´½¨µÄÎÄ¼şĞ´ĞÂµÄi½ÚµãºÍ¸¸Ä¿Â¼ÖĞĞÂµÄÄ¿Â¼Ïî(ÏàÓ¦²ÎÊıÔÚUser½á¹¹ÖĞ)
-//·µ»ØµÄpINodeÊÇÉÏÁËËøµÄÄÚ´æi½Úµã£¬ÆäÖĞµÄi_countÊÇ 1
+//è¢«Creat()ç³»ç»Ÿè°ƒç”¨ä½¿ç”¨ï¼Œç”¨äºä¸ºåˆ›å»ºæ–°æ–‡ä»¶åˆ†é…å†…æ ¸èµ„æº
+//ä¸ºæ–°åˆ›å»ºçš„æ–‡ä»¶å†™æ–°çš„ièŠ‚ç‚¹å’Œçˆ¶ç›®å½•ä¸­æ–°çš„ç›®å½•é¡¹(ç›¸åº”å‚æ•°åœ¨Userç»“æ„ä¸­)
+//è¿”å›çš„pINodeæ˜¯ä¸Šäº†é”çš„å†…å­˜ièŠ‚ç‚¹ï¼Œå…¶ä¸­çš„i_countæ˜¯ 1
 INode* SystemCall::MakNode(int mode) 
 {
 	INode* pINode;
-	//·ÖÅäÒ»¸ö¿ÕÏĞDiskInode£¬ÀïÃæÄÚÈİÒÑÈ«²¿Çå¿Õ
+	//åˆ†é…ä¸€ä¸ªç©ºé—²DiskInodeï¼Œé‡Œé¢å†…å®¹å·²å…¨éƒ¨æ¸…ç©º
 	pINode = this->fileSystem->IAlloc();
 	if (NULL == pINode)
 		return NULL;
@@ -208,23 +208,23 @@ INode* SystemCall::MakNode(int mode)
 	pINode->i_flag = (INode::IACC | INode::IUPD);
 	pINode->i_mode = mode | INode::IALLOC;
 	pINode->i_nlink = 1;
-	//½«Ä¿Â¼ÏîĞ´Èëu.u_u_dent£¬ËæºóĞ´ÈëÄ¿Â¼ÎÄ¼ş
+	//å°†ç›®å½•é¡¹å†™å…¥u.u_u_dentï¼Œéšåå†™å…¥ç›®å½•æ–‡ä»¶
 	this->WriteDir(pINode);
 	return pINode;
 }
 
-//Ïò¸¸Ä¿Â¼µÄÄ¿Â¼ÎÄ¼şĞ´ÈëÒ»¸öÄ¿Â¼Ïî
-//°ÑÊôÓÚ×Ô¼ºµÄÄ¿Â¼ÏîĞ´½ø¸¸Ä¿Â¼£¬ĞŞ¸Ä¸¸Ä¿Â¼ÎÄ¼şµÄi½Úµã ¡¢½«ÆäĞ´»Ø´ÅÅÌ¡£
+//å‘çˆ¶ç›®å½•çš„ç›®å½•æ–‡ä»¶å†™å…¥ä¸€ä¸ªç›®å½•é¡¹
+//æŠŠå±äºè‡ªå·±çš„ç›®å½•é¡¹å†™è¿›çˆ¶ç›®å½•ï¼Œä¿®æ”¹çˆ¶ç›®å½•æ–‡ä»¶çš„ièŠ‚ç‚¹ ã€å°†å…¶å†™å›ç£ç›˜ã€‚
 void SystemCall::WriteDir(INode* pINode) 
 {
-	//ÉèÖÃÄ¿Â¼ÏîÖĞINode±àºÅ²¿·Ö
+	//è®¾ç½®ç›®å½•é¡¹ä¸­INodeç¼–å·éƒ¨åˆ†
 	myUserCall.dent.m_ino = pINode->i_number;
-	//ÉèÖÃÄ¿Â¼ÏîÖĞpathname·ÖÁ¿²¿·Ö
+	//è®¾ç½®ç›®å½•é¡¹ä¸­pathnameåˆ†é‡éƒ¨åˆ†
 	memcpy(myUserCall.dent.name, myUserCall.dbuf, DirectoryEntry::DIRSIZ);
 
 	myUserCall.IOParam.count = DirectoryEntry::DIRSIZ + 4;
 	myUserCall.IOParam.base = (unsigned char*)&myUserCall.dent;
-	//½«Ä¿Â¼ÏîĞ´Èë¸¸Ä¿Â¼ÎÄ¼ş
+	//å°†ç›®å½•é¡¹å†™å…¥çˆ¶ç›®å½•æ–‡ä»¶
 	myUserCall.paDirINodePointer->WriteI();
 	this->inodeTable->IPut(myUserCall.paDirINodePointer);
 }
@@ -233,18 +233,18 @@ void SystemCall::WriteDir(INode* pINode)
 void SystemCall::Close() 
 {
 	int fd = myUserCall.arg[0];
-	//»ñÈ¡´ò¿ªÎÄ¼ş¿ØÖÆ¿éFile½á¹¹
+	//è·å–æ‰“å¼€æ–‡ä»¶æ§åˆ¶å—Fileç»“æ„
 	File* pFile = myUserCall.ofiles.GetF(fd);
 	if (NULL == pFile)
 		return;
-	//ÊÍ·Å´ò¿ªÎÄ¼şÃèÊö·ûfd£¬µİ¼õFile½á¹¹ÒıÓÃ¼ÆÊı
+	//é‡Šæ”¾æ‰“å¼€æ–‡ä»¶æè¿°ç¬¦fdï¼Œé€’å‡Fileç»“æ„å¼•ç”¨è®¡æ•°
 	myUserCall.ofiles.SetF(fd, NULL);
 	this->openFileTable->CloseF(pFile);
 }
 
 void SystemCall::UnLink() 
 {
-	//×¢ÒâÉ¾³ıÎÄ¼ş¼ĞÓĞ´ÅÅÌĞ¹Â¶
+	//æ³¨æ„åˆ é™¤æ–‡ä»¶å¤¹æœ‰ç£ç›˜æ³„éœ²
 	INode* pINode;
 	INode* pDeleteINode;
 	pDeleteINode = this->NameI(SystemCall::DELETE);
@@ -254,14 +254,14 @@ void SystemCall::UnLink()
 	pINode = this->inodeTable->IGet(myUserCall.dent.m_ino);
 	if (NULL == pINode)
 		return;
-	//Ğ´ÈëÇåÁãºóµÄÄ¿Â¼Ïî
+	//å†™å…¥æ¸…é›¶åçš„ç›®å½•é¡¹
 	myUserCall.IOParam.offset -= (DirectoryEntry::DIRSIZ + 4);
 	myUserCall.IOParam.base = (unsigned char*)&myUserCall.dent;
 	myUserCall.IOParam.count = DirectoryEntry::DIRSIZ + 4;
 
 	myUserCall.dent.m_ino = 0;
 	pDeleteINode->WriteI();
-	//ĞŞ¸ÄinodeÏî
+	//ä¿®æ”¹inodeé¡¹
 	pINode->i_nlink--;
 	pINode->i_flag |= INode::IUPD;
 
@@ -276,60 +276,60 @@ void SystemCall::Seek()
 
 	pFile = myUserCall.ofiles.GetF(fd);
 	if (NULL == pFile)
-		return; //ÈôFILE²»´æÔÚ£¬GetFÓĞÉè³ö´íÂë
+		return; //è‹¥FILEä¸å­˜åœ¨ï¼ŒGetFæœ‰è®¾å‡ºé”™ç 
 
 	int offset = myUserCall.arg[1];
 
 	switch (myUserCall.arg[2]) {
 	case 0:
-		//¶ÁĞ´Î»ÖÃÉèÖÃÎªoffset
+		//è¯»å†™ä½ç½®è®¾ç½®ä¸ºoffset
 		pFile->offset = offset;
 		break;
 	case 1:
-		//¶ÁĞ´Î»ÖÃ¼Óoffset(¿ÉÕı¿É¸º)
+		//è¯»å†™ä½ç½®åŠ offset(å¯æ­£å¯è´Ÿ)
 		pFile->offset += offset;
 		break;
 	case 2:
-		//¶ÁĞ´Î»ÖÃµ÷ÕûÎªÎÄ¼ş³¤¶È¼Óoffset
+		//è¯»å†™ä½ç½®è°ƒæ•´ä¸ºæ–‡ä»¶é•¿åº¦åŠ offset
 		pFile->offset = pFile->inode->i_size + offset;
 		break;
 	default:
 		break;
 	}
-	cout << "ÎÄ¼şÖ¸Õë³É¹¦ÒÆ¶¯µ½ " << pFile->offset << endl;
+	cout << "æ–‡ä»¶æŒ‡é’ˆæˆåŠŸç§»åŠ¨åˆ° " << pFile->offset << endl;
 }
 
 void SystemCall::Read() 
 {
-	//Ö±½Óµ÷ÓÃRdwr()º¯Êı¼´¿É
+	//ç›´æ¥è°ƒç”¨Rdwr()å‡½æ•°å³å¯
 	this->Rdwr(File::FREAD);
 }
 
 void SystemCall::Write() 
 {
-	//Ö±½Óµ÷ÓÃRdwr()º¯Êı¼´¿É
+	//ç›´æ¥è°ƒç”¨Rdwr()å‡½æ•°å³å¯
 	this->Rdwr(File::FWRITE);
 }
 
 void SystemCall::Rdwr(enum File::FileFlags mode) 
 {
 	File* pFile;
-	//¸ù¾İRead()/Write()µÄÏµÍ³µ÷ÓÃ²ÎÊıfd»ñÈ¡´ò¿ªÎÄ¼ş¿ØÖÆ¿é½á¹¹
+	//æ ¹æ®Read()/Write()çš„ç³»ç»Ÿè°ƒç”¨å‚æ•°fdè·å–æ‰“å¼€æ–‡ä»¶æ§åˆ¶å—ç»“æ„
 	pFile = myUserCall.ofiles.GetF(myUserCall.arg[0]);
-	if (NULL == pFile) //²»´æÔÚ¸Ã´ò¿ªÎÄ¼ş£¬GetFÒÑ¾­ÉèÖÃ¹ı³ö´íÂë£¬ËùÒÔÕâÀï²»ĞèÒªÔÙÉèÖÃÁË
+	if (NULL == pFile) //ä¸å­˜åœ¨è¯¥æ‰“å¼€æ–‡ä»¶ï¼ŒGetFå·²ç»è®¾ç½®è¿‡å‡ºé”™ç ï¼Œæ‰€ä»¥è¿™é‡Œä¸éœ€è¦å†è®¾ç½®äº†
 		return;
 
-	myUserCall.IOParam.base = (unsigned char*)myUserCall.arg[1]; //Ä¿±ê»º³åÇøÊ×Ö·
-	myUserCall.IOParam.count = myUserCall.arg[2];                //ÒªÇó¶Á/Ğ´µÄ×Ö½ÚÊı
+	myUserCall.IOParam.base = (unsigned char*)myUserCall.arg[1]; //ç›®æ ‡ç¼“å†²åŒºé¦–å€
+	myUserCall.IOParam.count = myUserCall.arg[2];                //è¦æ±‚è¯»/å†™çš„å­—èŠ‚æ•°
 
-	myUserCall.IOParam.offset = pFile->offset; //ÉèÖÃÎÄ¼şÆğÊ¼¶ÁÎ»ÖÃ
+	myUserCall.IOParam.offset = pFile->offset; //è®¾ç½®æ–‡ä»¶èµ·å§‹è¯»ä½ç½®
 	if (File::FREAD == mode)
 		pFile->inode->ReadI();
 	else
 		pFile->inode->WriteI();
-	//¸ù¾İ¶ÁĞ´×ÖÊı£¬ÒÆ¶¯ÎÄ¼ş¶ÁĞ´Æ«ÒÆÖ¸Õë
+	//æ ¹æ®è¯»å†™å­—æ•°ï¼Œç§»åŠ¨æ–‡ä»¶è¯»å†™åç§»æŒ‡é’ˆ
 	pFile->offset += (myUserCall.arg[2] - myUserCall.IOParam.count);
-	//·µ»ØÊµ¼Ê¶ÁĞ´µÄ×Ö½ÚÊı£¬ĞŞ¸Ä´æ·ÅÏµÍ³µ÷ÓÃ·µ»ØÖµµÄºËĞÄÕ»µ¥Ôª
+	//è¿”å›å®é™…è¯»å†™çš„å­—èŠ‚æ•°ï¼Œä¿®æ”¹å­˜æ”¾ç³»ç»Ÿè°ƒç”¨è¿”å›å€¼çš„æ ¸å¿ƒæ ˆå•å…ƒ
 	myUserCall.ar0[UserCall::EAX] = myUserCall.arg[2] - myUserCall.IOParam.count;
 }
 
@@ -390,14 +390,14 @@ void SystemCall::Rename(string ori, string cur)
 		myCacheManager.Brelse(pCache);
 }
 
-//¸Ä±äµ±Ç°¹¤×÷Ä¿Â¼
+//æ”¹å˜å½“å‰å·¥ä½œç›®å½•
 void SystemCall::ChDir() 
 {
 	INode* pINode;
 	pINode = this->NameI(SystemCall::OPEN);
 	if (NULL == pINode)
 		return;
-	//ËÑË÷µ½µÄÎÄ¼ş²»ÊÇÄ¿Â¼ÎÄ¼ş
+	//æœç´¢åˆ°çš„æ–‡ä»¶ä¸æ˜¯ç›®å½•æ–‡ä»¶
 	if ((pINode->i_mode & INode::IFMT) != INode::IFDIR) {
 		myUserCall.userErrorCode = UserCall::U_ENOTDIR;
 		this->inodeTable->IPut(pINode);
@@ -405,10 +405,10 @@ void SystemCall::ChDir()
 	}
 
 	myUserCall.nowDirINodePointer = pINode;
-	//Â·¾¶²»ÊÇ´Ó¸ùÄ¿Â¼'/'¿ªÊ¼£¬ÔòÔÚÏÖÓĞu.u_curdirºóÃæ¼ÓÉÏµ±Ç°Â·¾¶·ÖÁ¿
+	//è·¯å¾„ä¸æ˜¯ä»æ ¹ç›®å½•'/'å¼€å§‹ï¼Œåˆ™åœ¨ç°æœ‰u.u_curdiråé¢åŠ ä¸Šå½“å‰è·¯å¾„åˆ†é‡
 	if (myUserCall.dirp[0] != '/')
 		myUserCall.curDirPath += myUserCall.dirp;
-	else //Èç¹ûÊÇ´Ó¸ùÄ¿Â¼'/'¿ªÊ¼£¬ÔòÈ¡´úÔ­ÓĞ¹¤×÷Ä¿Â¼
+	else //å¦‚æœæ˜¯ä»æ ¹ç›®å½•'/'å¼€å§‹ï¼Œåˆ™å–ä»£åŸæœ‰å·¥ä½œç›®å½•
 		myUserCall.curDirPath = myUserCall.dirp;
 	if (myUserCall.curDirPath.back() != '/')
 		myUserCall.curDirPath.push_back('/');

@@ -31,7 +31,7 @@ FileSystem::~FileSystem()
 	superBlock = NULL;
 }
 
-//¸ñÊ½»¯SuperBlock
+//æ ¼å¼åŒ–SuperBlock
 void FileSystem::FormatSuperBlock() 
 {
 	superBlock->s_isize = FileSystem::INODE_SECTOR_NUMBER;
@@ -43,10 +43,10 @@ void FileSystem::FormatSuperBlock()
 	time((time_t*)&superBlock->s_time);
 }
 
-//¸ñÊ½»¯Õû¸öÎÄ¼şÏµÍ³
+//æ ¼å¼åŒ–æ•´ä¸ªæ–‡ä»¶ç³»ç»Ÿ
 void FileSystem::FormatDevice() 
 {
-	FormatSuperBlock();//¸ñÊ½»¯SuperBlockÇø
+	FormatSuperBlock();//æ ¼å¼åŒ–SuperBlockåŒº
 	diskDriver->Construct();
 	diskDriver->write((uint8*)(superBlock), sizeof(SuperBlock), 0);
 
@@ -77,14 +77,14 @@ void FileSystem::FormatDevice()
 	diskDriver->write((uint8*)(superBlock), sizeof(SuperBlock), 0);
 }
 
-//ÏµÍ³³õÊ¼»¯Ê±¶ÁÈëSuperBlock
+//ç³»ç»Ÿåˆå§‹åŒ–æ—¶è¯»å…¥SuperBlock
 void FileSystem::LoadSuperBlock() 
 {
 	fseek(diskDriver->diskPointer, 0, 0);
 	diskDriver->read((uint8*)(superBlock), sizeof(SuperBlock), 0);
 }
 
-//½«SuperBlock¶ÔÏóµÄÄÚ´æ¸±±¾¸üĞÂµ½´æ´¢Éè±¸µÄSuperBlockÖĞÈ¥
+//å°†SuperBlockå¯¹è±¡çš„å†…å­˜å‰¯æœ¬æ›´æ–°åˆ°å­˜å‚¨è®¾å¤‡çš„SuperBlockä¸­å»
 void FileSystem::Update() {
 	Buf* pCache;
 	superBlock->s_fmod = 0;
@@ -99,23 +99,23 @@ void FileSystem::Update() {
 	this->cacheManager->Bflush();
 }
 
-//ÔÚ´æ´¢Éè±¸ÉÏ·ÖÅä¿ÕÏĞ´ÅÅÌ¿é
+//åœ¨å­˜å‚¨è®¾å¤‡ä¸Šåˆ†é…ç©ºé—²ç£ç›˜å—
 Buf* FileSystem::Alloc()
 {
 	int blkno;
 	Buf* pCache;
-	//´ÓË÷Òı±í¡°Õ»¶¥¡±»ñÈ¡¿ÕÏĞ´ÅÅÌ¿é±àºÅ
+	//ä»ç´¢å¼•è¡¨â€œæ ˆé¡¶â€è·å–ç©ºé—²ç£ç›˜å—ç¼–å·
 	blkno = superBlock->s_free[--superBlock->s_nfree];
 
-	//Èô»ñÈ¡´ÅÅÌ¿é±àºÅÎªÁã£¬Ôò±íÊ¾ÒÑ·ÖÅä¾¡ËùÓĞµÄ¿ÕÏĞ´ÅÅÌ¿é
+	//è‹¥è·å–ç£ç›˜å—ç¼–å·ä¸ºé›¶ï¼Œåˆ™è¡¨ç¤ºå·²åˆ†é…å°½æ‰€æœ‰çš„ç©ºé—²ç£ç›˜å—
 	if (blkno <= 0) {
 		superBlock->s_nfree = 0;
 		myUserCall.userErrorCode = UserCall::U_ENOSPC;
 		return NULL;
 	}
 
-	//Õ»ÒÑ¿Õ£¬ĞÂ·ÖÅäµ½¿ÕÏĞ´ÅÅÌ¿éÖĞ¼ÇÂ¼ÁËÏÂÒ»×é¿ÕÏĞ´ÅÅÌ¿éµÄ±àºÅ
-    //½«ÏÂÒ»×é¿ÕÏĞ´ÅÅÌ¿éµÄ±àºÅ¶ÁÈëSuperBlockµÄ¿ÕÏĞ´ÅÅÌ¿éË÷Òı±ís_free[100]ÖĞ
+	//æ ˆå·²ç©ºï¼Œæ–°åˆ†é…åˆ°ç©ºé—²ç£ç›˜å—ä¸­è®°å½•äº†ä¸‹ä¸€ç»„ç©ºé—²ç£ç›˜å—çš„ç¼–å·
+    //å°†ä¸‹ä¸€ç»„ç©ºé—²ç£ç›˜å—çš„ç¼–å·è¯»å…¥SuperBlockçš„ç©ºé—²ç£ç›˜å—ç´¢å¼•è¡¨s_free[100]ä¸­
 	if (superBlock->s_nfree <= 0) {
 		pCache = this->cacheManager->Bread(blkno);
 		int* p = (int*)pCache->addr;
@@ -130,13 +130,13 @@ Buf* FileSystem::Alloc()
 	return pCache;
 }
 
-//ÔÚ´æ´¢Éè±¸devÉÏ·ÖÅäÒ»¸ö¿ÕÏĞÍâ´æINode£¬Ò»°ãÓÃÓÚ´´½¨ĞÂµÄÎÄ¼ş
+//åœ¨å­˜å‚¨è®¾å¤‡devä¸Šåˆ†é…ä¸€ä¸ªç©ºé—²å¤–å­˜INodeï¼Œä¸€èˆ¬ç”¨äºåˆ›å»ºæ–°çš„æ–‡ä»¶
 INode* FileSystem::IAlloc() 
 {
 	Buf* pCache;
 	INode* pINode;
 	int ino;
-	//SuperBlockÖ±½Ó¹ÜÀíµÄ¿ÕÏĞInodeË÷Òı±íÒÑ¿Õ£¬±ØĞëµ½´ÅÅÌÉÏËÑË÷¿ÕÏĞInode
+	//SuperBlockç›´æ¥ç®¡ç†çš„ç©ºé—²Inodeç´¢å¼•è¡¨å·²ç©ºï¼Œå¿…é¡»åˆ°ç£ç›˜ä¸Šæœç´¢ç©ºé—²Inode
 	if (superBlock->s_ninode <= 0) {
 		ino = -1;
 		for (int i = 0; i < superBlock->s_isize; ++i) {
@@ -147,8 +147,8 @@ INode* FileSystem::IAlloc()
 				int mode = *(p + j * FileSystem::INODE_SIZE / sizeof(int));
 				if (mode)
 					continue;
-				//Èç¹ûÍâ´æinodeµÄi_mode == 0£¬´ËÊ±²¢²»ÄÜÈ·¶¨¸ÃinodeÊÇ¿ÕÏĞµÄ£¬
-			    //ÒòÎªÓĞ¿ÉÄÜÊÇÄÚ´æinodeÃ»ÓĞĞ´µ½´ÅÅÌÉÏ, ËùÒÔÒª¼ÌĞøËÑË÷ÄÚ´æinodeÖĞÊÇ·ñÓĞÏàÓ¦µÄÏî
+				//å¦‚æœå¤–å­˜inodeçš„i_mode == 0ï¼Œæ­¤æ—¶å¹¶ä¸èƒ½ç¡®å®šè¯¥inodeæ˜¯ç©ºé—²çš„ï¼Œ
+			    //å› ä¸ºæœ‰å¯èƒ½æ˜¯å†…å­˜inodeæ²¡æœ‰å†™åˆ°ç£ç›˜ä¸Š, æ‰€ä»¥è¦ç»§ç»­æœç´¢å†…å­˜inodeä¸­æ˜¯å¦æœ‰ç›¸åº”çš„é¡¹
 				if (myINodeTable.IsLoaded(ino) == -1) {
 					superBlock->s_inode[superBlock->s_ninode++] = ino;
 					if (superBlock->s_ninode >= SuperBlock::MAX_NUMBER_INODE)
@@ -168,7 +168,7 @@ INode* FileSystem::IAlloc()
 	ino = superBlock->s_inode[--superBlock->s_ninode];
 	pINode = myINodeTable.IGet(ino);
 	if (NULL == pINode) {
-		cout << "ÎŞ¿ÕÏĞÄÚ´æ´æ´¢INode" << endl;
+		cout << "æ— ç©ºé—²å†…å­˜å­˜å‚¨INode" << endl;
 		return NULL;
 	}
 
@@ -177,7 +177,7 @@ INode* FileSystem::IAlloc()
 	return pINode;
 }
 
-//ÊÍ·Å±àºÅÎªnumberµÄÍâ´æINode£¬Ò»°ãÓÃÓÚÉ¾³ıÎÄ¼ş
+//é‡Šæ”¾ç¼–å·ä¸ºnumberçš„å¤–å­˜INodeï¼Œä¸€èˆ¬ç”¨äºåˆ é™¤æ–‡ä»¶
 void FileSystem::IFree(int number) 
 {
 	if (superBlock->s_ninode >= SuperBlock::MAX_NUMBER_INODE)
@@ -186,7 +186,7 @@ void FileSystem::IFree(int number)
 	superBlock->s_fmod = 1;
 }
 
-//ÊÍ·Å´æ´¢Éè±¸devÉÏ±àºÅÎªblknoµÄ´ÅÅÌ¿é
+//é‡Šæ”¾å­˜å‚¨è®¾å¤‡devä¸Šç¼–å·ä¸ºblknoçš„ç£ç›˜å—
 void FileSystem::Free(int blkno) 
 {
 	Buf* pCache;
