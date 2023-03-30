@@ -9,7 +9,7 @@ add_executable(SecondLevelFS
         Buf.h
         BufferManager.cpp
         BufferManager.h
-        Common.h
+        Utility.h
         DiskDriver.h
         File.cpp
         File.h
@@ -20,8 +20,8 @@ add_executable(SecondLevelFS
         main.cpp
         OpenFileManager.cpp
         OpenFileManager.h
-        SystemCall.cpp
-        SystemCall.h
+        FileManager.cpp
+        FileManager.h
         UserCall.cpp
         UserCall.h)
 

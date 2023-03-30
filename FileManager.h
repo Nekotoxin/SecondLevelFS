@@ -1,17 +1,17 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
-#include "Common.h"
+#include "Utility.h"
 #include "FileSystem.h"
 #include "INode.h"
 #include "OpenFileManager.h"
 
 /*
-*     SystemCall
+*     FileManager
 *    封装了文件系统的各种系统调用在核心态下处理过程，
 * 如对文件的Open()、Close()、Read()、Write()等等
 * 封装了对文件系统访问的具体细节。
 */
-class SystemCall
+class FileManager
 {
 public:
 	//目录搜索模式，用于NameI()函数
@@ -30,8 +30,8 @@ public:
 	OpenFileTable* openFileTable;//对全局对象g_OpenFileTable的引用，该对象负责打开文件表项的管理
 
 public:
-	SystemCall();
-	~SystemCall();
+	FileManager();
+	~FileManager();
 	void Open();                          //Open()系统调用处理过程
 	void Creat();                         //Creat()系统调用处理过程
 	void Open1(INode* pINode, int trf);   //Open()、Creat()系统调用的公共部分

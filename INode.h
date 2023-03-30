@@ -1,6 +1,6 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
-#include "Common.h"
+#include "Utility.h"
 #include "Buf.h"
 
 /* 内存INode

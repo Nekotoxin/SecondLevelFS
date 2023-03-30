@@ -1,12 +1,12 @@
-#include "SystemCall.h"
+#include "FileManager.h"
 #include "UserCall.h"
-#include "Common.h"
+#include "Utility.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
 using namespace std;
 
-extern SystemCall mySystemCall;
+extern FileManager mySystemCall;
 //    extern是一个关键字，它告诉编译器存在着一个变量或者一个函数，如果在当前编译语句的前面
 //中没有找到相应的变量或者函数，也会在当前文件的后面或者其它文件中定义
 
@@ -55,7 +55,7 @@ bool UserCall::checkPathName(string path)
 
 	for (unsigned int p = 0, q = 0; p < dirp.length(); p = q + 1) {
 		q = dirp.find('/', p);
-		q = Common::min(q, (unsigned int)dirp.length());
+		q = Utility::min(q, (unsigned int)dirp.length());
 		if (q - p > DirectoryEntry::DIRSIZ) {
 			cout << "文件名或文件夹名过长" << endl;
 			return false;

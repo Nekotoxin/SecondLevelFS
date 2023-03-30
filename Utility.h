@@ -10,7 +10,7 @@ typedef unsigned char uint8;
 
 /* 通用工具
 */
-class Common 
+class Utility
 {
 public:
 	static int min(int a, int b)

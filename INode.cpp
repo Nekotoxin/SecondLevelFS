@@ -1,4 +1,4 @@
-#include "Common.h"
+#include "Utility.h"
 #include "INode.h"
 #include "FileSystem.h"
 #include "UserCall.h"
@@ -52,12 +52,12 @@ void INode::ReadI()
 		offset = myUserCall.IOParam.offset % INode::BLOCK_SIZE;
 
 		//传送到用户区的字节数量，取读请求的剩余字节数与当前字符块内有效字节数较小值
-		nbytes = Common::min(INode::BLOCK_SIZE - offset, myUserCall.IOParam.count);
+		nbytes = Utility::min(INode::BLOCK_SIZE - offset, myUserCall.IOParam.count);
 		int remain = this->i_size - myUserCall.IOParam.offset;
 		if (remain <= 0)
 			return;
 		//传送的字节数量还取决于剩余文件的长度
-		nbytes = Common::min(nbytes, remain);
+		nbytes = Utility::min(nbytes, remain);
 		if ((bn = this->Bmap(lbn)) == 0)
 			return;
 
@@ -86,7 +86,7 @@ void INode::WriteI() {
 	{
 		lbn = myUserCall.IOParam.offset / INode::BLOCK_SIZE;
 		offset = myUserCall.IOParam.offset % INode::BLOCK_SIZE;
-		nbytes = Common::min(INode::BLOCK_SIZE - offset, myUserCall.IOParam.count);
+		nbytes = Utility::min(INode::BLOCK_SIZE - offset, myUserCall.IOParam.count);
 		if ((bn = this->Bmap(lbn)) == 0)
 			return;
 

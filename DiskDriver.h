@@ -2,7 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <iostream>
-#include "Common.h"
+#include "Utility.h"
 
 using namespace std;
 const char diskFileName[] = "myDisk.img";  //磁盘镜像文件名

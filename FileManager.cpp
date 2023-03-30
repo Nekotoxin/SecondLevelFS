@@ -1,5 +1,5 @@
-#include "Common.h"
-#include "SystemCall.h"
+#include "Utility.h"
+#include "FileManager.h"
 #include "BufferManager.h"
 #include "UserCall.h"
 
@@ -9,7 +9,7 @@ extern FileSystem myFileSystem;
 extern INodeTable myINodeTable;
 extern UserCall myUserCall;
 
-SystemCall::SystemCall() 
+FileManager::FileManager()
 {
 	fileSystem = &myFileSystem;
 	openFileTable = &myOpenFileTable;
@@ -20,26 +20,26 @@ SystemCall::SystemCall()
 	rootDirINode->i_count += 0xff;//引用计数                            
 }
 
-SystemCall::~SystemCall() { }
+FileManager::~FileManager() { }
 
 //功能：打开文件
 //效果：建立打开文件结构，内存i节点开锁 、i_count 为正数（i_count ++）
-void SystemCall::Open() 
+void FileManager::Open()
 {
-	INode* pINode = this->NameI(SystemCall::OPEN);
+	INode* pINode = this->NameI(FileManager::OPEN);
 	if (pINode == NULL)
 		return;
 	this->Open1(pINode, 0);
 }
 
 //Creat()系统调用处理过程
-void SystemCall::Creat() 
+void FileManager::Creat()
 {
 	INode* pINode;
 
 	int newACCMode = myUserCall.arg[1];//存放当前系统调用参数 文件类型：目录文件
 	//搜索目录的模式为1，表示创建；若父目录不可写，出错返回
-	pINode = this->NameI(SystemCall::CREATE);
+	pINode = this->NameI(FileManager::CREATE);
 	//没有找到相应的INode，或NameI出错
 	if (NULL == pINode) {
 		if (myUserCall.userErrorCode)
@@ -59,7 +59,7 @@ void SystemCall::Creat()
 
 //目录搜索，将路径转化为相应的INode返回上锁后的INode
 //返回NULL表示目录搜索失败，否则是根指针，指向文件的内存打开i节点 ，上锁的内存i节点
-INode* SystemCall::NameI(enum DirectorySearchMode mode) 
+INode* FileManager::NameI(enum DirectorySearchMode mode)
 {
 	INode* pINode = myUserCall.nowDirINodePointer;
 	Buf* pCache;
@@ -102,7 +102,7 @@ INode* SystemCall::NameI(enum DirectorySearchMode mode)
 				if (NULL != pCache)
 					myCacheManager.Brelse(pCache);
 				//如果是创建新文件
-				if (SystemCall::CREATE == mode && nindex >= myUserCall.dirp.length()) {
+				if (FileManager::CREATE == mode && nindex >= myUserCall.dirp.length()) {
 					//将父目录Inode指针保存起来，以后写目录项WriteDir()函数会用到
 					myUserCall.paDirINodePointer = pINode;
 					if (freeEntryOffset) //此变量存放了空闲目录项位于目录文件中的偏移量
@@ -145,7 +145,7 @@ INode* SystemCall::NameI(enum DirectorySearchMode mode)
 			myCacheManager.Brelse(pCache);
 
 		//如果是删除操作，则返回父目录Inode，而要删除文件的Inode号在u.u_dent.m_ino中
-		if (SystemCall::DELETE == mode && nindex >= myUserCall.dirp.length())
+		if (FileManager::DELETE == mode && nindex >= myUserCall.dirp.length())
 			return pINode;
 
 		//匹配目录项成功，则释放当前目录Inode，根据匹配成功的目录项m_ino字段获取相应下一级目录或文件的Inode
@@ -166,7 +166,7 @@ out:
 //trf == 1由creat调用，creat文件的时候搜索到同文件名的文件
 //trf == 2由creat调用，creat文件的时候未搜索到同文件名的文件，这是文件创建时更一般的情况
 //mode参数：打开文件模式，表示文件操作是 读、写还是读写
-void SystemCall::Open1(INode* pINode, int trf) 
+void FileManager::Open1(INode* pINode, int trf)
 {
 	//在creat文件的时候搜索到同文件名的文件，释放该文件所占据的所有盘块
 	if (1 == trf)
@@ -197,7 +197,7 @@ void SystemCall::Open1(INode* pINode, int trf)
 //被Creat()系统调用使用，用于为创建新文件分配内核资源
 //为新创建的文件写新的i节点和父目录中新的目录项(相应参数在User结构中)
 //返回的pINode是上了锁的内存i节点，其中的i_count是 1
-INode* SystemCall::MakNode(int mode) 
+INode* FileManager::MakNode(int mode)
 {
 	INode* pINode;
 	//分配一个空闲DiskInode，里面内容已全部清空
@@ -215,7 +215,7 @@ INode* SystemCall::MakNode(int mode)
 
 //向父目录的目录文件写入一个目录项
 //把属于自己的目录项写进父目录，修改父目录文件的i节点 、将其写回磁盘。
-void SystemCall::WriteDir(INode* pINode) 
+void FileManager::WriteDir(INode* pINode)
 {
 	//设置目录项中INode编号部分
 	myUserCall.dent.m_ino = pINode->i_number;
@@ -230,7 +230,7 @@ void SystemCall::WriteDir(INode* pINode)
 }
 
 
-void SystemCall::Close() 
+void FileManager::Close()
 {
 	int fd = myUserCall.arg[0];
 	//获取打开文件控制块File结构
@@ -242,12 +242,12 @@ void SystemCall::Close()
 	this->openFileTable->CloseF(pFile);
 }
 
-void SystemCall::UnLink() 
+void FileManager::UnLink()
 {
 	//注意删除文件夹有磁盘泄露
 	INode* pINode;
 	INode* pDeleteINode;
-	pDeleteINode = this->NameI(SystemCall::DELETE);
+	pDeleteINode = this->NameI(FileManager::DELETE);
 	if (NULL == pDeleteINode)
 		return;
 
@@ -269,7 +269,7 @@ void SystemCall::UnLink()
 	this->inodeTable->IPut(pINode);
 }
 
-void SystemCall::Seek() 
+void FileManager::Seek()
 {
 	File* pFile;
 	int fd = myUserCall.arg[0];
@@ -299,19 +299,19 @@ void SystemCall::Seek()
 	cout << "文件指针成功移动到 " << pFile->offset << endl;
 }
 
-void SystemCall::Read() 
+void FileManager::Read()
 {
 	//直接调用Rdwr()函数即可
 	this->Rdwr(File::FREAD);
 }
 
-void SystemCall::Write() 
+void FileManager::Write()
 {
 	//直接调用Rdwr()函数即可
 	this->Rdwr(File::FWRITE);
 }
 
-void SystemCall::Rdwr(enum File::FileFlags mode) 
+void FileManager::Rdwr(enum File::FileFlags mode)
 {
 	File* pFile;
 	//根据Read()/Write()的系统调用参数fd获取打开文件控制块结构
@@ -333,7 +333,7 @@ void SystemCall::Rdwr(enum File::FileFlags mode)
 	myUserCall.ar0[UserCall::EAX] = myUserCall.arg[2] - myUserCall.IOParam.count;
 }
 
-void SystemCall::Ls() 
+void FileManager::Ls()
 {
 	INode* pINode = myUserCall.nowDirINodePointer;
 	Buf* pCache = NULL;
@@ -361,7 +361,7 @@ void SystemCall::Ls()
 		myCacheManager.Brelse(pCache);
 }
 
-void SystemCall::Rename(string ori, string cur)
+void FileManager::Rename(string ori, string cur)
 {
 	INode* pINode = myUserCall.nowDirINodePointer;
 	Buf* pCache = NULL;
@@ -391,10 +391,10 @@ void SystemCall::Rename(string ori, string cur)
 }
 
 //改变当前工作目录
-void SystemCall::ChDir() 
+void FileManager::ChDir()
 {
 	INode* pINode;
-	pINode = this->NameI(SystemCall::OPEN);
+	pINode = this->NameI(FileManager::OPEN);
 	if (NULL == pINode)
 		return;
 	//搜索到的文件不是目录文件

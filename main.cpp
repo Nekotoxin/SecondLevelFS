@@ -2,7 +2,7 @@
 #include "DiskDriver.h"
 #include "BufferManager.h"
 #include "OpenFileManager.h"
-#include "SystemCall.h"
+#include "FileManager.h"
 #include "UserCall.h"
 #include <iostream>
 #include <sstream>
@@ -15,7 +15,7 @@ OpenFileTable myOpenFileTable;
 SuperBlock mySuperBlock;
 FileSystem myFileSystem;
 INodeTable myINodeTable;
-SystemCall mySystemCall;
+FileManager mySystemCall;
 UserCall myUserCall;
 
 bool AutoTest()
@@ -23,100 +23,100 @@ bool AutoTest()
 	UserCall& User = myUserCall;
 	cout << "注意：自动测试不包含格式化操作" << endl;
 	cout << "由于测试程序中的文件句柄写定，所以如果之前打开过文件可能会执行出错，建议第一步就自动测试" << endl;
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /bin" << endl;
+	cout << "shell " << User.curDirPath << " > " << "mkdir /bin" << endl;
 	User.userMkDir("/bin");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /etc" << endl;
+	cout << "shell " << User.curDirPath << " > " << "mkdir /etc" << endl;
 	User.userMkDir("/etc");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home" << endl;
+	cout << "shell " << User.curDirPath << " > " << "mkdir /home" << endl;
 	User.userMkDir("/home");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /dev" << endl;
+	cout << "shell " << User.curDirPath << " > " << "mkdir /dev" << endl;
 	User.userMkDir("/dev");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ls" << endl;
+	cout << "shell " << User.curDirPath << " > " << "ls" << endl;
 	User.userLs();
 
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home/texts" << endl;
+	cout << "shell " << User.curDirPath << " > " << "mkdir /home/texts" << endl;
 	User.userMkDir("/home/texts");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home/reports" << endl;
+	cout << "shell " << User.curDirPath << " > " << "mkdir /home/reports" << endl;
 	User.userMkDir("/home/reports");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /home/photos" << endl;
+	cout << "shell " << User.curDirPath << " > " << "mkdir /home/photos" << endl;
 	User.userMkDir("/home/photos");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ftree /" << endl;
+	cout << "shell " << User.curDirPath << " > " << "ftree /" << endl;
 	User.userTree("/");
 
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /home/texts" << endl;
+	cout << "shell " << User.curDirPath << " > " << "cd /home/texts" << endl;
 	User.userCd("/home/texts");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate Readme.txt" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fcreate Readme.txt" << endl;
 	User.userCreate("Readme.txt");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen Readme.txt" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fopen Readme.txt" << endl;
 	User.userOpen("Readme.txt");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 8 Readme.txt 2609" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fwrite 8 Readme.txt 2609" << endl;
 	User.userWrite("8", "Readme.txt", "2609");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 8 0 begin" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fseek 8 0 begin" << endl;
 	User.userSeek("8", "0", "0");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 8 ReadmeOut.txt 2609" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fread 8 ReadmeOut.txt 2609" << endl;
 	User.userRead("8", "ReadmeOut.txt", "2609");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 8" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fclose 8" << endl;
 	User.userClose("8");
 
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /home/reports" << endl;
+	cout << "shell " << User.curDirPath << " > " << "cd /home/reports" << endl;
 	User.userCd("/home/reports");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate Report.pdf" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fcreate Report.pdf" << endl;
 	User.userCreate("Report.pdf");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen Report.pdf" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fopen Report.pdf" << endl;
 	User.userOpen("Report.pdf");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 9 Report.pdf 1604288" << endl; 
+	cout << "shell " << User.curDirPath << " > " << "fwrite 9 Report.pdf 1604288" << endl; 
 	User.userWrite("9", "Report.pdf", "1604288");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 9 0 begin" << endl; 
+	cout << "shell " << User.curDirPath << " > " << "fseek 9 0 begin" << endl; 
 	User.userSeek("9", "0", "0");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 9 ReportOut.pdf 1604288" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fread 9 ReportOut.pdf 1604288" << endl;
 	User.userRead("9", "ReportOut.pdf", "1604288");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 9" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fclose 9" << endl;
 	User.userClose("9");
 
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /home/photos" << endl;
+	cout << "shell " << User.curDirPath << " > " << "cd /home/photos" << endl;
 	User.userCd("/home/photos");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate DennisRitchie.jpg" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fcreate DennisRitchie.jpg" << endl;
 	User.userCreate("DennisRitchie.jpg");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen DennisRitchie.jpg" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fopen DennisRitchie.jpg" << endl;
 	User.userOpen("DennisRitchie.jpg");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 10 DennisRitchie.jpg 7402" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fwrite 10 DennisRitchie.jpg 7402" << endl;
 	User.userWrite("10", "DennisRitchie.jpg", "7402");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 10 DennisRitchieOut.jpg 7402" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fread 10 DennisRitchieOut.jpg 7402" << endl;
 	User.userSeek("10", "0", "0");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 10" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fclose 10" << endl;
 	User.userRead("10", "DennisRitchieOut.jpg", "7402");
 
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "mkdir /test" << endl; 
+	cout << "shell " << User.curDirPath << " > " << "mkdir /test" << endl; 
 	User.userMkDir("/test");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /test" << endl; 
+	cout << "shell " << User.curDirPath << " > " << "cd /test" << endl; 
 	User.userCd("/test");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fcreate Jerry" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fcreate Jerry" << endl;
 	User.userCreate("Jerry");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fopen Jerry" << endl; 
+	cout << "shell " << User.curDirPath << " > " << "fopen Jerry" << endl; 
 	User.userOpen("Jerry");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 13 input.txt 800" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fwrite 13 input.txt 800" << endl;
 	User.userWrite("13", "input.txt", "800");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 13 500 begin" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fseek 13 500 begin" << endl;
 	User.userSeek("13", "500", "0");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 13 std 500" << endl; 
+	cout << "shell " << User.curDirPath << " > " << "fread 13 std 500" << endl; 
 	User.userRead("13", "std", "500");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fseek 13 500 begin" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fseek 13 500 begin" << endl;
 	User.userSeek("13", "500", "0");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fread 13 abc.txt 500" << endl; 
+	cout << "shell " << User.curDirPath << " > " << "fread 13 abc.txt 500" << endl; 
 	User.userRead("13", "abc.txt", "500");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fwrite 13 abc.txt 300" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fwrite 13 abc.txt 300" << endl;
 	User.userWrite("13", "abc.txt", "300");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "fclose 13" << endl;
+	cout << "shell " << User.curDirPath << " > " << "fclose 13" << endl;
 	User.userClose("13");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ftree /" << endl;
+	cout << "shell " << User.curDirPath << " > " << "ftree /" << endl;
 	User.userTree("/");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "cd /test" << endl;
+	cout << "shell " << User.curDirPath << " > " << "cd /test" << endl;
 	User.userCd("/test");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "frename Jerry Larry" << endl;
+	cout << "shell " << User.curDirPath << " > " << "frename Jerry Larry" << endl;
 	User.userRename("Jerry", "Larry");
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ls" << endl;
+	cout << "shell " << User.curDirPath << " > " << "ls" << endl;
 	User.userLs();
-	cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ " << "ftree /" << endl;
+	cout << "shell " << User.curDirPath << " > " << "ftree /" << endl;
 	User.userTree("/");
 
 	cout << "自动测试结束" << endl << endl;
@@ -155,7 +155,7 @@ int main()
 	string line, opt, val[3];
 	while (true) 
 	{
-		cout << "[1853790-ZZH-OS " << User.curDirPath << " ]$ ";
+		cout << "shell " << User.curDirPath << " > ";
 		getline(cin, line);
 		if (line.size() == 0) 
 			continue;
