@@ -209,8 +209,8 @@ SuperBlock *FileSystem::GetFS() {
 }
 
 SuperBlock::SuperBlock() {
-    pthread_mutex_init(&s_ilock,NULL);
-    pthread_mutex_init(&s_flock,NULL);
+    pthread_mutex_init(&s_ilock, NULL);
+    pthread_mutex_init(&s_flock, NULL);
 }
 
 SuperBlock::~SuperBlock() {

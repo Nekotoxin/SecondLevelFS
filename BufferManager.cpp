@@ -9,14 +9,14 @@ BufferManager::BufferManager() {
 }
 
 void BufferManager::Initialize() {
-    m_bufferList = new Buf;
+    m_bufList = new Buf;
     InitList();
     m_diskDriver = &Kernel::Instance().GetDiskDriver();
 }
 
 BufferManager::~BufferManager() {
     Bflush();
-    delete m_bufferList;
+    delete m_bufList;
 }
 
 void BufferManager::FormatBuffer() {
@@ -30,15 +30,15 @@ void BufferManager::InitList() {
         if (i)
             m_Buf[i].forw = m_Buf + i - 1;
         else {
-            m_Buf[i].forw = m_bufferList;
-            m_bufferList->back = m_Buf + i;
+            m_Buf[i].forw = m_bufList;
+            m_bufList->back = m_Buf + i;
         }
 
         if (i + 1 < NBUF)
             m_Buf[i].back = m_Buf + i + 1;
         else {
-            m_Buf[i].back = m_bufferList;
-            m_bufferList->forw = m_Buf + i;
+            m_Buf[i].back = m_bufList;
+            m_bufList->forw = m_Buf + i;
         }
         m_Buf[i].addr = buffer[i];
         m_Buf[i].no = i;
@@ -57,29 +57,28 @@ void BufferManager::DetachNode(Buf *pb) {
 }
 
 
-
 //申请一块缓存，从缓存队列中取出，用于读写设备上的块blkno
 Buf *BufferManager::GetBlk(int blkno) {
     Buf *pb;
-    if (map.find(blkno) != map.end()) {
-        pb = map[blkno];
+    if (m_blknoBufMap.find(blkno) != m_blknoBufMap.end()) {
+        pb = m_blknoBufMap[blkno];
         pthread_mutex_lock(&pb->buf_lock); // P操作, 加锁
         DetachNode(pb);
         return pb;
     }
-    pb = m_bufferList->back;
-    if (pb == m_bufferList) {
+    pb = m_bufList->back;
+    if (pb == m_bufList) {
         cout << "无缓存块可供使用" << endl;
         return NULL;
     }
     pthread_mutex_lock(&pb->buf_lock); // P操作, 加锁
     DetachNode(pb);
-    map.erase(pb->blkno);
+    m_blknoBufMap.erase(pb->blkno);
     if (pb->flags & Buf::B_DELWRI)
         m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
     pb->flags &= ~(Buf::B_DELWRI | Buf::B_DONE);
     pb->blkno = blkno;
-    map[blkno] = pb;
+    m_blknoBufMap[blkno] = pb;
     return pb;
 }
 
@@ -87,10 +86,10 @@ Buf *BufferManager::GetBlk(int blkno) {
 void BufferManager::Brelse(Buf *pb) {
     if (pb->back != NULL)
         return;
-    pb->forw = m_bufferList->forw;
-    pb->back = m_bufferList;
-    m_bufferList->forw->back = pb;
-    m_bufferList->forw = pb;
+    pb->forw = m_bufList->forw;
+    pb->back = m_bufList;
+    m_bufList->forw->back = pb;
+    m_bufList->forw = pb;
     pthread_mutex_unlock(&pb->buf_lock); // V操作, 解锁
 }
 

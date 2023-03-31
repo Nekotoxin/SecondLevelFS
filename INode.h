@@ -12,14 +12,13 @@
 class INode {
 public:
     /* i_flag中标志位 */
-    enum INodeFlag
-    {
-        ILOCK = 0x1,		/* 索引节点上锁 */
-        IUPD  = 0x2,		/* 内存inode被修改过，需要更新相应外存inode */
-        IACC  = 0x4,		/* 内存inode被访问过，需要修改最近一次访问时间 */
-        IMOUNT = 0x8,		/* 内存inode用于挂载子文件系统 */
-        IWANT = 0x10,		/* 有进程正在等待该内存inode被解锁，清ILOCK标志时，要唤醒这种进程 */
-        ITEXT = 0x20		/* 内存inode对应进程图像的正文段 */
+    enum INodeFlag {
+        ILOCK = 0x1,        /* 索引节点上锁 */
+        IUPD = 0x2,        /* 内存inode被修改过，需要更新相应外存inode */
+        IACC = 0x4,        /* 内存inode被访问过，需要修改最近一次访问时间 */
+        IMOUNT = 0x8,        /* 内存inode用于挂载子文件系统 */
+        IWANT = 0x10,        /* 有进程正在等待该内存inode被解锁，清ILOCK标志时，要唤醒这种进程 */
+        ITEXT = 0x20        /* 内存inode对应进程图像的正文段 */
     };
 
     static const unsigned int IALLOC = 0x8000;    //文件被使用
@@ -47,7 +46,7 @@ public:
     int i_addr[10];        //用于文件逻辑块号和物理块号转换的基本索引表
     int i_lastr;        //存放最近一次读取文件的逻辑块号，用于判断是否需要预读
 
-    pthread_mutex_t mutex;	/*互斥锁*/
+    pthread_mutex_t mutex;    /*互斥锁*/
 public:
     INode();
 
