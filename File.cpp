@@ -18,16 +18,16 @@ void File::Reset() {
     offset = 0;
 }
 
-ProcessOpenFile::ProcessOpenFile() {
+OpenFiles::OpenFiles() {
     memset(processOpenFileTable, 0, sizeof(processOpenFileTable));
 }
 
-ProcessOpenFile::~ProcessOpenFile() {
+OpenFiles::~OpenFiles() {
 }
 
 //进程请求打开文件时，在打开文件描述符表中分配一个空闲表项
-int ProcessOpenFile::AllocFreeSlot() {
-    for (int i = 0; i < ProcessOpenFile::MAX_FILES; i++)
+int OpenFiles::AllocFreeSlot() {
+    for (int i = 0; i < OpenFiles::MAX_FILES; i++)
         //进程打开文件描述符表中找到空闲项，则返回之
         if (!processOpenFileTable[i]) {
             g_UserCall.ar0[UserCall::EAX] = i;
@@ -40,10 +40,10 @@ int ProcessOpenFile::AllocFreeSlot() {
 }
 
 //根据用户系统调用提供的文件描述符参数fd，找到对应的打开文件控制块File结构
-File *ProcessOpenFile::GetF(int fd) {
+File *OpenFiles::GetF(int fd) {
     File *pFile;
 
-    if (fd < 0 || fd >= ProcessOpenFile::MAX_FILES) {
+    if (fd < 0 || fd >= OpenFiles::MAX_FILES) {
         g_UserCall.userErrorCode = UserCall::U_EBADF;
         return NULL;
     }
@@ -55,8 +55,8 @@ File *ProcessOpenFile::GetF(int fd) {
 }
 
 //为已分配到的空闲描述符fd和已分配的打开文件表中空闲File对象建立勾连关系
-void ProcessOpenFile::SetF(int fd, File *pFile) {
-    if (fd < 0 || fd >= ProcessOpenFile::MAX_FILES)
+void OpenFiles::SetF(int fd, File *pFile) {
+    if (fd < 0 || fd >= OpenFiles::MAX_FILES)
         return;
     this->processOpenFileTable[fd] = pFile;
 }

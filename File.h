@@ -29,7 +29,7 @@ public:
 /*     进程打开文件描述符表(OpenFiles)的定义
  * 维护了当前进程的所有打开文件。
  */
-class ProcessOpenFile {
+class OpenFiles {
 public:
     static const int MAX_FILES = 100;        //进程允许打开的最大文件数
 
@@ -37,9 +37,9 @@ private:
     File *processOpenFileTable[MAX_FILES];    //File对象的指针数组，指向系统打开文件表中的File对象
 
 public:
-    ProcessOpenFile();
+    OpenFiles();
 
-    ~ProcessOpenFile();
+    ~OpenFiles();
 
     void Reset() {
         memset(processOpenFileTable, 0, sizeof(processOpenFileTable));

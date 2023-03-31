@@ -37,7 +37,7 @@ public:
     //在V6中r0存放系统调用的返回值给用户程序，
     //x86平台上使用EAX存放返回值，替代u.ar0[R0]
     ErrorCode userErrorCode;          //存放错误码
-    ProcessOpenFile ofiles;           //进程打开文件描述符表对象
+    OpenFiles ofiles;           //进程打开文件描述符表对象
     IOParameter IOParam;              //记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数
     FileManager *m_fileManager;
     string ls;
