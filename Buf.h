@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <pthread.h>
 
 using namespace std;
 
@@ -34,6 +35,7 @@ public:
     unsigned char *addr;  //指向该缓存控制块所管理的缓冲区的首地址
     int blkno;              //磁盘逻辑块号
     int no;
+//    pthread_mutex_t buf_lock;
 
     Buf() {
         flags = 0;

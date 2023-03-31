@@ -13,8 +13,8 @@ public:
     static const int BUFFER_SIZE = 512;     //缓冲区大小。 以字节为单位
 
 private:
-    Buf *bufferList;                 //自由缓存队列控制块
-    Buf nBuffer[NBUF];               //缓存控制块数组
+    Buf *m_bufferList;                 //自由缓存队列控制块
+    Buf m_Buf[NBUF];               //缓存控制块数组
     unsigned char buffer[NBUF][BUFFER_SIZE];//缓冲区数组
     unordered_map<int, Buf *> map;
     DiskDriver *m_diskDriver;
@@ -38,6 +38,4 @@ public:
 private:
     void InitList();                 //缓存控制块队列的初始化
     void DetachNode(Buf *pb);
-
-    void InsertTail(Buf *pb);
 };

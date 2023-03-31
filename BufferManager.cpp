@@ -9,39 +9,43 @@ BufferManager::BufferManager() {
 }
 
 void BufferManager::Initialize() {
-    bufferList = new Buf;
+    m_bufferList = new Buf;
     InitList();
     m_diskDriver = &Kernel::Instance().GetDiskDriver();
 }
 
 BufferManager::~BufferManager() {
     Bflush();
-    delete bufferList;
+    delete m_bufferList;
 }
 
 void BufferManager::FormatBuffer() {
     for (int i = 0; i < NBUF; ++i)
-        nBuffer[i].Reset();
+        m_Buf[i].Reset();
     InitList();
 }
 
 void BufferManager::InitList() {
     for (int i = 0; i < NBUF; ++i) {
         if (i)
-            nBuffer[i].forw = nBuffer + i - 1;
+            m_Buf[i].forw = m_Buf + i - 1;
         else {
-            nBuffer[i].forw = bufferList;
-            bufferList->back = nBuffer + i;
+            m_Buf[i].forw = m_bufferList;
+            m_bufferList->back = m_Buf + i;
         }
 
         if (i + 1 < NBUF)
-            nBuffer[i].back = nBuffer + i + 1;
+            m_Buf[i].back = m_Buf + i + 1;
         else {
-            nBuffer[i].back = bufferList;
-            bufferList->forw = nBuffer + i;
+            m_Buf[i].back = m_bufferList;
+            m_bufferList->forw = m_Buf + i;
         }
-        nBuffer[i].addr = buffer[i];
-        nBuffer[i].no = i;
+        m_Buf[i].addr = buffer[i];
+        m_Buf[i].no = i;
+//        pthread_mutex_init(&m_Buf[i].buf_lock, NULL);
+//        pthread_mutex_lock(&m_Buf[i].buf_lock);
+//        m_Buf[i].flags = Buf::BufFlag::B_BUSY;
+//        Brelse(&m_Buf[i]);
     }
 }
 
@@ -55,14 +59,7 @@ void BufferManager::DetachNode(Buf *pb) {
     pb->forw = NULL;
 }
 
-void BufferManager::InsertTail(Buf *pb) {
-    if (pb->back != NULL)
-        return;
-    pb->forw = bufferList->forw;
-    pb->back = bufferList;
-    bufferList->forw->back = pb;
-    bufferList->forw = pb;
-}
+
 
 //申请一块缓存，从缓存队列中取出，用于读写设备上的块blkno
 Buf *BufferManager::GetBlk(int blkno) {
@@ -72,8 +69,8 @@ Buf *BufferManager::GetBlk(int blkno) {
         DetachNode(pb);
         return pb;
     }
-    pb = bufferList->back;
-    if (pb == bufferList) {
+    pb = m_bufferList->back;
+    if (pb == m_bufferList) {
         cout << "无缓存块可供使用" << endl;
         return NULL;
     }
@@ -89,7 +86,12 @@ Buf *BufferManager::GetBlk(int blkno) {
 
 //释放缓存控制块buf
 void BufferManager::Brelse(Buf *pb) {
-    InsertTail(pb);
+    if (pb->back != NULL)
+        return;
+    pb->forw = m_bufferList->forw;
+    pb->back = m_bufferList;
+    m_bufferList->forw->back = pb;
+    m_bufferList->forw = pb;
 }
 
 //读一个磁盘块，blkno为目标磁盘块逻辑块号
@@ -127,7 +129,7 @@ void BufferManager::Bclear(Buf *bp) {
 void BufferManager::Bflush() {
     Buf *pb = NULL;
     for (int i = 0; i < NBUF; ++i) {
-        pb = nBuffer + i;
+        pb = m_Buf + i;
         if ((pb->flags & Buf::B_DELWRI)) {
             pb->flags &= ~(Buf::B_DELWRI);
             m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
