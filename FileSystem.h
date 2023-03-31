@@ -25,7 +25,7 @@ public:
 
     int s_fmod;                    //内存中super block副本被修改标志，意味着需要更新外存对应的Super Block
     int s_time;                    //最近一次更新时间
-    int padding[50];            //填充使SuperBlock块大小等于1024字节，占据2个扇区
+    int padding[38];            //填充使SuperBlock块大小等于1024字节，占据2个扇区
 
     pthread_mutex_t		s_flock;		/* 封锁空闲盘块索引表标志 */
     pthread_mutex_t		s_ilock;		/* 封锁空闲Inode表标志 */
