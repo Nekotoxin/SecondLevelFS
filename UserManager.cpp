@@ -66,6 +66,7 @@ bool UserManager::Login(string uname) {
     // 设置 User 结构的初始值
     // 1. 关联根目录
     pusers[i]->u_cdir = g_INodeTable.IGet(FileSystem::ROOT_INODE_NO);
+    pusers[i]->u_cdir->NFrele();
     pusers[i]->u_curdir = "/";
     return true;
 

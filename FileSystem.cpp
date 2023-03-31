@@ -72,11 +72,16 @@ void FileSystem::Format() {
 void FileSystem::LoadSuperBlock() {
     fseek(m_diskDriver->diskp, 0, 0);
     m_diskDriver->read((uint8 *) (m_superBlock), sizeof(SuperBlock), 0);
+    pthread_mutex_init(&m_superBlock->s_ilock, NULL);
+    pthread_mutex_init(&m_superBlock->s_flock, NULL);
+
 }
 
 //将SuperBlock对象的内存副本更新到存储设备的SuperBlock中去
 void FileSystem::Update() {
     Buf *pCache;
+    pthread_mutex_lock(&m_superBlock->s_ilock);
+    pthread_mutex_lock(&m_superBlock->s_flock);
     m_superBlock->s_fmod = 0;
     m_superBlock->s_time = (int) time(NULL);
     for (int j = 0; j < 2; j++) {
@@ -85,6 +90,8 @@ void FileSystem::Update() {
         memcpy(pCache->addr, p, BLOCK_SIZE);
         this->m_bufferManager->Bwrite(pCache);
     }
+    pthread_mutex_unlock(&m_superBlock->s_ilock);
+    pthread_mutex_unlock(&m_superBlock->s_flock);
     g_INodeTable.UpdateINodeTable();
     this->m_bufferManager->Bflush();
 }
@@ -94,6 +101,7 @@ Buf *FileSystem::Alloc() {
     User *u = Kernel::Instance().GetUserManager().GetUser();
     int blkno;
     Buf *pCache;
+    pthread_mutex_lock(&m_superBlock->s_flock);
     //从索引表“栈顶”获取空闲磁盘块编号
     blkno = m_superBlock->s_free[--m_superBlock->s_nfree];
 
@@ -113,6 +121,7 @@ Buf *FileSystem::Alloc() {
         memcpy(m_superBlock->s_free, p, sizeof(m_superBlock->s_free));
         this->m_bufferManager->Brelse(pCache);
     }
+    pthread_mutex_unlock(&m_superBlock->s_flock);
     pCache = this->m_bufferManager->GetBlk(blkno);
     if (pCache)
         this->m_bufferManager->Bclear(pCache);
@@ -129,6 +138,7 @@ INode *FileSystem::IAlloc() {
     //SuperBlock直接管理的空闲Inode索引表已空，必须到磁盘上搜索空闲Inode
     if (m_superBlock->s_ninode <= 0) {
         ino = -1;
+        pthread_mutex_lock(&m_superBlock->s_ilock);
         for (int i = 0; i < m_superBlock->s_isize; ++i) {
             pCache = this->m_bufferManager->Bread(FileSystem::INODE_START_SECTOR + i);
             int *p = (int *) pCache->addr;
@@ -150,6 +160,7 @@ INode *FileSystem::IAlloc() {
             if (m_superBlock->s_ninode >= SuperBlock::MAX_NUMBER_INODE)
                 break;
         }
+        pthread_mutex_unlock(&m_superBlock->s_ilock);
         if (m_superBlock->s_ninode <= 0) {
             u->u_error = ENOSPC;
             return NULL;
@@ -178,6 +189,7 @@ void FileSystem::IFree(int number) {
 //释放存储设备dev上编号为blkno的磁盘块
 void FileSystem::Free(int blkno) {
     Buf *pCache;
+    pthread_mutex_lock(&m_superBlock->s_flock);
     if (m_superBlock->s_nfree >= SuperBlock::MAX_NUMBER_FREE) {
         pCache = this->m_bufferManager->GetBlk(blkno);
         int *p = (int *) pCache->addr;
@@ -188,9 +200,20 @@ void FileSystem::Free(int blkno) {
     }
 
     m_superBlock->s_free[m_superBlock->s_nfree++] = blkno;
+    pthread_mutex_unlock(&m_superBlock->s_flock);
     m_superBlock->s_fmod = 1;
 }
 
 SuperBlock *FileSystem::GetFS() {
     return &g_SuperBlock;
+}
+
+SuperBlock::SuperBlock() {
+    pthread_mutex_init(&s_ilock,NULL);
+    pthread_mutex_init(&s_flock,NULL);
+}
+
+SuperBlock::~SuperBlock() {
+    pthread_mutex_destroy(&s_ilock);
+    pthread_mutex_destroy(&s_flock);
 }

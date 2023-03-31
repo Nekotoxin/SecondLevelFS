@@ -35,7 +35,7 @@ public:
     unsigned char *addr;  //指向该缓存控制块所管理的缓冲区的首地址
     int blkno;              //磁盘逻辑块号
     int no;
-//    pthread_mutex_t buf_lock;
+    pthread_mutex_t buf_lock;
 
     Buf() {
         flags = 0;
@@ -45,6 +45,7 @@ public:
         addr = NULL;
         blkno = -1;
         no = 0;
+        pthread_mutex_init(&buf_lock, NULL);
     }
 
     void Reset() {
@@ -55,5 +56,6 @@ public:
         addr = NULL;
         blkno = -1;
         no = 0;
+        pthread_mutex_init(&buf_lock, NULL);
     }
 };

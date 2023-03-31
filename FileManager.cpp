@@ -17,6 +17,7 @@ void FileManager::Initialize() {
     //如果不在内存中，则将其读入内存后上锁并返回该内存INode
     //文件系统根目录外存INode编号
     rootDirINode->i_count += 0xff;//引用计数
+    rootDirINode->NFrele(); // 释放内存i节点
 }
 
 
@@ -171,6 +172,7 @@ void FileManager::Open1(INode *pINode, int trf) {
     //在creat文件的时候搜索到同文件名的文件，释放该文件所占据的所有盘块
     if (1 == trf)
         pINode->ITrunc();//释放Inode对应文件占用的磁盘块
+    pINode->NFrele();
     //分配打开文件控制块File结构
     File *pFile = this->m_openFileTable->FAlloc();//在系统打开文件表中分配一个空闲的File结构
     if (NULL == pFile) {
@@ -250,7 +252,7 @@ void FileManager::UnLink() {
     pDeleteINode = this->NameI(FileManager::DELETE);
     if (NULL == pDeleteINode)
         return;
-
+    pDeleteINode->NFrele();
     pINode = this->m_inodeTable->IGet(u->u_dent.m_ino);
     if (NULL == pINode)
         return;
@@ -316,7 +318,7 @@ void FileManager::Rdwr(enum File::FileFlags mode) {
     pFile = u->u_ofiles.GetF(u->u_arg[0]);
     if (NULL == pFile) //不存在该打开文件，GetF已经设置过出错码，所以这里不需要再设置了
         return;
-
+    pFile->inode->NFlock();
     u->u_IOParam.base = (unsigned char *) u->u_arg[1]; //目标缓冲区首址
     u->u_IOParam.count = u->u_arg[2];                //要求读/写的字节数
 
@@ -327,6 +329,7 @@ void FileManager::Rdwr(enum File::FileFlags mode) {
         pFile->inode->WriteI();
     //根据读写字数，移动文件读写偏移指针
     pFile->offset += (u->u_arg[2] - u->u_IOParam.count);
+    pFile->inode->NFrele();
     //返回实际读写的字节数，修改存放系统调用返回值的核心栈单元
     u->u_ar0[User::EAX] = u->u_arg[2] - u->u_IOParam.count;
 }
@@ -404,6 +407,7 @@ void FileManager::ChDir() {
     }
 
     u->u_cdir = pINode;
+    pINode->NFrele();
     //路径不是从根目录'/'开始，则在现有u.u_curdir后面加上当前路径分量
     if (u->u_dirp[0] != '/')
         u->u_curdir += u->u_dirp;

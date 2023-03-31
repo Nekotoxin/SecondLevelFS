@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <pthread.h>
 
 Kernel Kernel::instance;
 DiskDriver g_DiskDriver;
@@ -46,9 +47,9 @@ void Kernel::Initialize() {
     this->m_UserManager = &g_UserManager;
     this->m_FileManager = &g_FileManager;
     g_FileManager.Initialize();
-
     User *u = Kernel::Instance().GetUserManager().GetUser();
     u->u_cdir = g_INodeTable.IGet(FileSystem::ROOT_INODE_NO);
+    m_FileManager->rootDirINode->NFrele();
     u->u_curdir = "/";
     printf("[INFO] root 登录成功.\n", pthread_self());
     printf("[info] 文件系统初始化完毕.\n");

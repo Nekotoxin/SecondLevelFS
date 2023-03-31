@@ -42,10 +42,7 @@ void BufferManager::InitList() {
         }
         m_Buf[i].addr = buffer[i];
         m_Buf[i].no = i;
-//        pthread_mutex_init(&m_Buf[i].buf_lock, NULL);
-//        pthread_mutex_lock(&m_Buf[i].buf_lock);
-//        m_Buf[i].flags = Buf::BufFlag::B_BUSY;
-//        Brelse(&m_Buf[i]);
+        pthread_mutex_init(&m_Buf[i].buf_lock, NULL);
     }
 }
 
@@ -66,6 +63,7 @@ Buf *BufferManager::GetBlk(int blkno) {
     Buf *pb;
     if (map.find(blkno) != map.end()) {
         pb = map[blkno];
+        pthread_mutex_lock(&pb->buf_lock); // P操作, 加锁
         DetachNode(pb);
         return pb;
     }
@@ -74,6 +72,7 @@ Buf *BufferManager::GetBlk(int blkno) {
         cout << "无缓存块可供使用" << endl;
         return NULL;
     }
+    pthread_mutex_lock(&pb->buf_lock); // P操作, 加锁
     DetachNode(pb);
     map.erase(pb->blkno);
     if (pb->flags & Buf::B_DELWRI)
@@ -92,6 +91,7 @@ void BufferManager::Brelse(Buf *pb) {
     pb->back = m_bufferList;
     m_bufferList->forw->back = pb;
     m_bufferList->forw = pb;
+    pthread_mutex_unlock(&pb->buf_lock); // V操作, 解锁
 }
 
 //读一个磁盘块，blkno为目标磁盘块逻辑块号

@@ -25,6 +25,7 @@ INode::INode() {
     this->i_number = -1;
     this->i_size = 0;
     memset(i_addr, 0, sizeof(i_addr));
+    pthread_mutex_init(&this->mutex, NULL);
 }
 
 //根据Inode对象中的物理磁盘块索引表，读取相应的文件数据
@@ -210,6 +211,7 @@ void INode::Clean() {
     this->i_nlink = 0;
     this->i_size = 0;
     memset(i_addr, 0, sizeof(i_addr));
+    pthread_mutex_init(&this->mutex, NULL);
 }
 
 //更新外存Inode的最后的访问时间、修改时间
@@ -274,4 +276,18 @@ void INode::ITrunc() {
     this->i_flag |= INode::IUPD;
     this->i_mode &= ~(INode::ILARG);
     this->i_nlink = 1;
+}
+
+INode::~INode() {
+    pthread_mutex_destroy(&this->mutex);
+}
+
+void INode::NFrele() {
+//    this->i_flag &= ~INode::ILOCK;
+//    pthread_mutex_unlock(&this->mutex);
+}
+
+void INode::NFlock() {
+//    pthread_mutex_lock(&this->mutex);
+//    this->i_flag |= INode::ILOCK;
 }

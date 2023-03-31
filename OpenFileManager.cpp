@@ -83,6 +83,7 @@ INode *INodeTable::IGet(int inumber) {
     int index = IsLoaded(inumber);
     if (index >= 0) {
         pINode = m_INode + index;
+        pINode->NFlock();
         ++pINode->i_count;
         return pINode;
     }
@@ -93,7 +94,7 @@ INode *INodeTable::IGet(int inumber) {
         u->u_error = ENFILE;
         return NULL;
     }
-
+    pINode->NFlock();
     pINode->i_number = inumber;
     pINode->i_count++;
     Buf *pCache = m_bufferManager->Bread(
@@ -122,15 +123,20 @@ void INodeTable::IPut(INode *pINode) {
         pINode->i_flag = 0;
         //这是内存inode空闲的标志之一，另一个是i_count == 0
         pINode->i_number = -1;
+        pINode->NFrele();
     }
 
     pINode->i_count--;
+    pINode->NFrele();
 }
 
 //将所有被修改过的内存INode更新到对应外存INode中
 void INodeTable::UpdateINodeTable() {
     for (int i = 0; i < INodeTable::NINODE; ++i)
-        if (this->m_INode[i].i_count)
+        if (this->m_INode[i].i_count) {
             this->m_INode[i].IUpdate((int) time(NULL));
+            this->m_INode[i].NFrele();
+        }
+
 }
 

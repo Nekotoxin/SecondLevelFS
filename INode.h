@@ -3,6 +3,7 @@
 
 #include "Utility.h"
 #include "Buf.h"
+#include "pthread.h"
 
 /* 内存INode
 *     实现 INode 的各种操作，包括将文件的逻辑块号转换成对应的物
@@ -10,10 +11,15 @@
 */
 class INode {
 public:
-    //INodeFlag中的标志位
-    enum INodeFlag {
-        IUPD = 0x1,//内存INode被修改过，需要更新对应外存INode
-        IACC = 0x2 //内存INode被访问过，需要修改最近一次访问时间
+    /* i_flag中标志位 */
+    enum INodeFlag
+    {
+        ILOCK = 0x1,		/* 索引节点上锁 */
+        IUPD  = 0x2,		/* 内存inode被修改过，需要更新相应外存inode */
+        IACC  = 0x4,		/* 内存inode被访问过，需要修改最近一次访问时间 */
+        IMOUNT = 0x8,		/* 内存inode用于挂载子文件系统 */
+        IWANT = 0x10,		/* 有进程正在等待该内存inode被解锁，清ILOCK标志时，要唤醒这种进程 */
+        ITEXT = 0x20		/* 内存inode对应进程图像的正文段 */
     };
 
     static const unsigned int IALLOC = 0x8000;    //文件被使用
@@ -40,10 +46,12 @@ public:
     int i_size;            //文件大小，字节为单位
     int i_addr[10];        //用于文件逻辑块号和物理块号转换的基本索引表
     int i_lastr;        //存放最近一次读取文件的逻辑块号，用于判断是否需要预读
+
+    pthread_mutex_t mutex;	/*互斥锁*/
 public:
     INode();
 
-    ~INode() = default;
+    ~INode();
 
     void Reset() {
         i_mode = 0;
@@ -51,6 +59,7 @@ public:
         i_number = -1;
         i_size = 0;
         memset(i_addr, 0, sizeof(i_addr));
+        pthread_mutex_init(&this->mutex, NULL);
     }
 
     void ReadI();                           //根据Inode对象中的物理磁盘块索引表，读取相应的文件数据
@@ -60,6 +69,8 @@ public:
     void ITrunc();                          //释放Inode对应文件占用的磁盘块
     void Clean();                           //清空Inode对象中的数据
     void ICopy(Buf *bp, int inumber);//将包含外存Inode字符块中信息拷贝到内存Inode中
+    void NFrele();                          //释放Inode对象
+    void NFlock();                          //加锁
 };
 
 /* 磁盘INode
