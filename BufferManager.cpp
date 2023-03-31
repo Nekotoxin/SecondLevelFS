@@ -1,7 +1,7 @@
 #include "BufferManager.h"
 #include "Utility.h"
 
-extern DiskDriver myDiskDriver;
+extern DiskDriver g_DiskDriver;
 
 //CacheBlock只用到了两个标志，B_DONE和B_DELWRI，分别表示已经完成IO和延迟写的标志。
 //空闲Buffer无任何标志
@@ -9,7 +9,7 @@ BufferManager::BufferManager()
 {
 	bufferList = new Buf;
 	InitList();
-	diskDriver = &myDiskDriver;
+    m_diskDriver = &g_DiskDriver;
 }
 
 BufferManager::~BufferManager()
@@ -84,7 +84,7 @@ Buf* BufferManager::GetBlk(int blkno)
 	DetachNode(pb);
 	map.erase(pb->blkno);
 	if (pb->flags & Buf::CB_DELWRI)
-		diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+		m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
 	pb->flags &= ~(Buf::CB_DELWRI | Buf::CB_DONE);
 	pb->blkno = blkno;
 	map[blkno] = pb;
@@ -103,7 +103,7 @@ Buf* BufferManager::Bread(int blkno)
 	Buf* pb = GetBlk(blkno);
 	if (pb->flags & (Buf::CB_DONE | Buf::CB_DELWRI))
 		return pb;
-	diskDriver->read(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+	m_diskDriver->read(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
 	pb->flags |= Buf::CB_DONE;
 	return pb;
 }
@@ -112,7 +112,7 @@ Buf* BufferManager::Bread(int blkno)
 void BufferManager::Bwrite(Buf* pb)
 {
 	pb->flags &= ~(Buf::CB_DELWRI);
-	diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+	m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
 	pb->flags |= (Buf::CB_DONE);
 	this->Brelse(pb);
 }
@@ -140,7 +140,7 @@ void BufferManager::Bflush()
 		pb = nBuffer + i;
 		if ((pb->flags & Buf::CB_DELWRI)) {
 			pb->flags &= ~(Buf::CB_DELWRI);
-			diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
+			m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
 			pb->flags |= (Buf::CB_DONE);
 		}
 	}

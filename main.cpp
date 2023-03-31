@@ -9,18 +9,18 @@
 #include <unordered_map>
 using namespace std;
 
-DiskDriver myDiskDriver;
-BufferManager myCacheManager;
-OpenFileTable myOpenFileTable;
-SuperBlock mySuperBlock;
-FileSystem myFileSystem;
-INodeTable myINodeTable;
-FileManager mySystemCall;
-UserCall myUserCall;
+DiskDriver g_DiskDriver;
+BufferManager g_BufferManager;
+OpenFileTable g_OpenFileTable;
+SuperBlock g_SuperBlock;
+FileSystem g_FileSystem;
+INodeTable g_INodeTable;
+FileManager g_SystemCall;
+UserCall g_UserCall;
 
 bool AutoTest()
 {
-	UserCall& User = myUserCall;
+	UserCall& User = g_UserCall;
 	cout << "注意：自动测试不包含格式化操作" << endl;
 	cout << "由于测试程序中的文件句柄写定，所以如果之前打开过文件可能会执行出错，建议第一步就自动测试" << endl;
 	cout << "shell " << User.curDirPath << " > " << "mkdir /bin" << endl;
@@ -125,7 +125,7 @@ bool AutoTest()
 
 int main() 
 {
-	UserCall& User = myUserCall;
+	UserCall& User = g_UserCall;
 	cout << "***************************************************************************************" << endl
 		<< "*                                                                                     *" << endl
 		<< "*                                   类Unix文件系统                                    *" << endl
@@ -167,11 +167,11 @@ int main()
 		//格式化文件系统
 		if (opt == "fformat") {
 			//Us.userCd("/");
-			myOpenFileTable.Reset();
-			myINodeTable.Reset();
-			myCacheManager.FormatBuffer();
-			myFileSystem.FormatDevice();
-			//myUserCall.ofiles.Reset();
+			g_OpenFileTable.Reset();
+			g_INodeTable.Reset();
+			g_BufferManager.FormatBuffer();
+            g_FileSystem.Initialize();
+			//g_UserCall.ofiles.Reset();
 			cout << "格式化完毕，文件系统已退出，请重新启动！" << endl;
 			return 0;
 		}
@@ -200,7 +200,7 @@ int main()
 		//打开文件名为filename的文件
 		else if (opt == "fopen") {
 			in >> val[0];
-			if (myUserCall.ar0[UserCall::EAX] == 0) {
+			if (g_UserCall.ar0[UserCall::EAX] == 0) {
 				User.userMkDir("demo");
 				User.userDelete("demo");
 			}

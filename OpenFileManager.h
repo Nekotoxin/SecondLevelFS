@@ -30,8 +30,8 @@ class INodeTable {
 public:
 	static const int NINODE = 100;           //内存INode的数量
 private:
-	INode m_INodeTable[NINODE];              //内存INode数组，每个打开文件都会占用一个内存INode
-	FileSystem* fileSystem;                  //对全局对象g_FileSystem的引用
+	INode m_INode[NINODE];              //内存INode数组，每个打开文件都会占用一个内存INode
+	FileSystem* m_fileSystem;                  //对全局对象g_FileSystem的引用
 
 public:
 	INodeTable();

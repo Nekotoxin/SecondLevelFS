@@ -25,9 +25,9 @@ public:
 public:
 
 	INode* rootDirINode;         //根目录内存INode
-	FileSystem* fileSystem;      //对全局对象g_FileSystem的引用，该对象负责管理文件系统存储资源
-	INodeTable* inodeTable;      //对全局对象g_INodeTable的引用，该对象负责内存INode表的管理
-	OpenFileTable* openFileTable;//对全局对象g_OpenFileTable的引用，该对象负责打开文件表项的管理
+	FileSystem* m_fileSystem;      //对全局对象g_FileSystem的引用，该对象负责管理文件系统存储资源
+	INodeTable* m_inodeTable;      //对全局对象g_INodeTable的引用，该对象负责内存INode表的管理
+	OpenFileTable* m_openFileTable;//对全局对象g_OpenFileTable的引用，该对象负责打开文件表项的管理
 
 public:
 	FileManager();

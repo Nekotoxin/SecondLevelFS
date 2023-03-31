@@ -16,7 +16,7 @@ private:
 	Buf nBuffer[NBUF];               //缓存控制块数组
 	unsigned char buffer[NBUF][BUFFER_SIZE];//缓冲区数组
 	unordered_map<int, Buf*> map;
-	DiskDriver* diskDriver;
+	DiskDriver* m_diskDriver;
 
 public:
 	BufferManager();

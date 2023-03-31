@@ -53,15 +53,15 @@ public:
 	static const int DATA_END_SECTOR = DISK_SECTOR_NUMBER - 1;                         //数据区的最后扇区号
 	static const int DATA_SECTOR_NUMBER = DISK_SECTOR_NUMBER - DATA_START_SECTOR;      //数据区占据的扇区数量
 
-	DiskDriver* diskDriver;
-	SuperBlock* superBlock;
-	BufferManager* cacheManager;
+	DiskDriver* m_diskDriver;
+	SuperBlock* m_superBlock;
+	BufferManager* m_bufferManager;
 
 	FileSystem();
 	~FileSystem();
 
-	void FormatSuperBlock();//格式化SuperBlock
-	void FormatDevice();    //格式化整个文件系统
+//	void FormatSuperBlock();//格式化SuperBlock
+	void Initialize();    //格式化整个文件系统
 
 	/* 在操作系统初始化时，会将磁盘的SuperBlock读入一个内存的SuperBlock副本，以便于内核以更快的速度随时访问内存副本。
 	一旦内存中的副本发生变化，会通过设置s_fmod标志，由内核将内存副本写入磁盘 */

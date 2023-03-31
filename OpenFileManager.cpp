@@ -3,10 +3,10 @@
 #include "UserCall.h"
 #include <ctime>
 
-extern UserCall myUserCall;
-extern INodeTable myINodeTable;
-extern FileSystem myFileSystem;
-extern BufferManager myCacheManager;
+extern UserCall g_UserCall;
+extern INodeTable g_INodeTable;
+extern FileSystem g_FileSystem;
+extern BufferManager g_BufferManager;
 
 OpenFileTable::OpenFileTable() 
 {
@@ -26,19 +26,19 @@ void OpenFileTable::Reset()
 //作用：进程打开文件描述符表中找的空闲项之下标写入 ar0[EAX]
 File* OpenFileTable::FAlloc() 
 {
-	int fd = myUserCall.ofiles.AllocFreeSlot();
+	int fd = g_UserCall.ofiles.AllocFreeSlot();
 	if (fd < 0) 
 		return NULL;
 	for (int i = 0; i < OpenFileTable::MAX_FILES; ++i) {
 		//count == 0表示该项空闲
 		if (this->sysFileTable[i].count == 0) {
-			myUserCall.ofiles.SetF(fd, &this->sysFileTable[i]);
+			g_UserCall.ofiles.SetF(fd, &this->sysFileTable[i]);
 			this->sysFileTable[i].count++;
 			this->sysFileTable[i].offset = 0;
 			return (&this->sysFileTable[i]);
 		}
 	}
-	myUserCall.userErrorCode = UserCall::U_ENFILE;
+    g_UserCall.userErrorCode = UserCall::U_ENFILE;
 	return NULL;
 }
 
@@ -47,12 +47,12 @@ void OpenFileTable::CloseF(File* pFile)
 {
 	pFile->count--;
 	if (pFile->count <= 0)
-		myINodeTable.IPut(pFile->inode);
+		g_INodeTable.IPut(pFile->inode);
 }
 
 INodeTable::INodeTable() 
 {
-	fileSystem = &myFileSystem;
+    m_fileSystem = &g_FileSystem;
 }
 
 INodeTable::~INodeTable() 
@@ -64,14 +64,14 @@ void INodeTable::Reset()
 {
 	INode emptyINode;
 	for (int i = 0; i < INodeTable::NINODE; ++i)
-		m_INodeTable[i].Reset();
+		m_INode[i].Reset();
 }
 
 //检查编号为inumber的外存INode是否有内存拷贝，如果有则返回该内存INode在内存INode表中的索引
 int INodeTable::IsLoaded(int inumber) 
 {
 	for (int i = 0; i < NINODE; ++i) 
-		if (m_INodeTable[i].i_number == inumber && m_INodeTable[i].i_count)
+		if (m_INode[i].i_number == inumber && m_INode[i].i_count)
 			return i;
 	return -1;
 }
@@ -80,8 +80,8 @@ int INodeTable::IsLoaded(int inumber)
 INode* INodeTable::GetFreeINode() 
 {
 	for (int i = 0; i < INodeTable::NINODE; i++) 
-		if (this->m_INodeTable[i].i_count == 0)
-			return m_INodeTable + i;
+		if (this->m_INode[i].i_count == 0)
+			return m_INode + i;
 	return NULL;
 }
 
@@ -92,7 +92,7 @@ INode* INodeTable::IGet(int inumber)
 	INode* pINode;
 	int index = IsLoaded(inumber);
 	if (index >= 0) {
-		pINode = m_INodeTable + index;
+		pINode = m_INode + index;
 		++pINode->i_count;
 		return pINode;
 	}
@@ -100,15 +100,15 @@ INode* INodeTable::IGet(int inumber)
 	pINode = GetFreeINode();
 	if (NULL == pINode) {
 		cout << "内存 INode 表溢出!" << endl;
-		myUserCall.userErrorCode = UserCall::U_ENFILE;
+        g_UserCall.userErrorCode = UserCall::U_ENFILE;
 		return NULL;
 	}
 
 	pINode->i_number = inumber;
 	pINode->i_count++;
-	Buf* pCache = myCacheManager.Bread(FileSystem::INODE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
+	Buf* pCache = g_BufferManager.Bread(FileSystem::INODE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
 	pINode->ICopy(pCache, inumber);
-	myCacheManager.Brelse(pCache);
+	g_BufferManager.Brelse(pCache);
 	return pINode;
 }
 
@@ -124,7 +124,7 @@ void INodeTable::IPut(INode* pINode)
 			pINode->ITrunc();
 			pINode->i_mode = 0;
 			//释放对应的外存INode
-			this->fileSystem->IFree(pINode->i_number);
+			this->m_fileSystem->IFree(pINode->i_number);
 		}
 		//更新外存INode信息
 		pINode->IUpdate((int)time(NULL));
@@ -141,6 +141,6 @@ void INodeTable::IPut(INode* pINode)
 void INodeTable::UpdateINodeTable() 
 {
 	for (int i = 0; i < INodeTable::NINODE; ++i) 
-		if (this->m_INodeTable[i].i_count) 
-			this->m_INodeTable[i].IUpdate((int)time(NULL));
+		if (this->m_INode[i].i_count)
+			this->m_INode[i].IUpdate((int)time(NULL));
 }

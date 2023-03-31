@@ -3,9 +3,9 @@
 #include "FileSystem.h"
 #include "UserCall.h"
 
-extern UserCall myUserCall;
-extern BufferManager myCacheManager;
-extern FileSystem myFileSystem;
+extern UserCall g_UserCall;
+extern BufferManager g_BufferManager;
+extern FileSystem g_FileSystem;
 
 DiskINode::DiskINode() 
 {
@@ -38,22 +38,22 @@ INode::~INode()
 //根据Inode对象中的物理磁盘块索引表，读取相应的文件数据
 void INode::ReadI() 
 {
-	BufferManager& CacheManager = myCacheManager;
+	BufferManager& CacheManager = g_BufferManager;
 	int lbn, bn;
 	int offset, nbytes;
 	Buf* pCache;
 	//需要读字节数为零，则返回
-	if (0 == myUserCall.IOParam.count)
+	if (0 == g_UserCall.IOParam.count)
 		return;
 	this->i_flag |= INode::IACC;
 
-	while (UserCall::U_NOERROR == myUserCall.userErrorCode && myUserCall.IOParam.count) {
-		lbn = bn = myUserCall.IOParam.offset / INode::BLOCK_SIZE;
-		offset = myUserCall.IOParam.offset % INode::BLOCK_SIZE;
+	while (UserCall::U_NOERROR == g_UserCall.userErrorCode && g_UserCall.IOParam.count) {
+		lbn = bn = g_UserCall.IOParam.offset / INode::BLOCK_SIZE;
+		offset = g_UserCall.IOParam.offset % INode::BLOCK_SIZE;
 
 		//传送到用户区的字节数量，取读请求的剩余字节数与当前字符块内有效字节数较小值
-		nbytes = Utility::min(INode::BLOCK_SIZE - offset, myUserCall.IOParam.count);
-		int remain = this->i_size - myUserCall.IOParam.offset;
+		nbytes = Utility::min(INode::BLOCK_SIZE - offset, g_UserCall.IOParam.count);
+		int remain = this->i_size - g_UserCall.IOParam.offset;
 		if (remain <= 0)
 			return;
 		//传送的字节数量还取决于剩余文件的长度
@@ -64,10 +64,10 @@ void INode::ReadI()
 		pCache = CacheManager.Bread(bn);
 		//缓存中数据起始读位置
 		unsigned char* start = pCache->addr + offset;
-		memcpy(myUserCall.IOParam.base, start, nbytes);
-		myUserCall.IOParam.base += nbytes;
-		myUserCall.IOParam.offset += nbytes;
-		myUserCall.IOParam.count -= nbytes;
+		memcpy(g_UserCall.IOParam.base, start, nbytes);
+        g_UserCall.IOParam.base += nbytes;
+        g_UserCall.IOParam.offset += nbytes;
+        g_UserCall.IOParam.count -= nbytes;
 
 		CacheManager.Brelse(pCache);
 	}
@@ -80,35 +80,35 @@ void INode::WriteI() {
 	Buf* pCache;
 	this->i_flag |= (INode::IACC | INode::IUPD);
 	//需要写字节数为零，则返回
-	if (0 == myUserCall.IOParam.count)
+	if (0 == g_UserCall.IOParam.count)
 		return;
-	while (UserCall::U_NOERROR == myUserCall.userErrorCode && myUserCall.IOParam.count) 
+	while (UserCall::U_NOERROR == g_UserCall.userErrorCode && g_UserCall.IOParam.count)
 	{
-		lbn = myUserCall.IOParam.offset / INode::BLOCK_SIZE;
-		offset = myUserCall.IOParam.offset % INode::BLOCK_SIZE;
-		nbytes = Utility::min(INode::BLOCK_SIZE - offset, myUserCall.IOParam.count);
+		lbn = g_UserCall.IOParam.offset / INode::BLOCK_SIZE;
+		offset = g_UserCall.IOParam.offset % INode::BLOCK_SIZE;
+		nbytes = Utility::min(INode::BLOCK_SIZE - offset, g_UserCall.IOParam.count);
 		if ((bn = this->Bmap(lbn)) == 0)
 			return;
 
 		if (INode::BLOCK_SIZE == nbytes) //如果写入数据正好满一个字符块，则为其分配缓存
-			pCache = myCacheManager.GetBlk(bn);
+			pCache = g_BufferManager.GetBlk(bn);
 		else //写入数据不满一个字符块，先读后写（读出该字符块以保护不需要重写的数据）
-			pCache = myCacheManager.Bread(bn);
+			pCache = g_BufferManager.Bread(bn);
 		//缓存中数据的起始写位置 写操作: 从用户目标区拷贝数据到缓冲区
 		unsigned char* start = pCache->addr + offset;
 
-		memcpy(start, myUserCall.IOParam.base, nbytes);
-		myUserCall.IOParam.base += nbytes;
-		myUserCall.IOParam.offset += nbytes;
-		myUserCall.IOParam.count -= nbytes;
+		memcpy(start, g_UserCall.IOParam.base, nbytes);
+        g_UserCall.IOParam.base += nbytes;
+        g_UserCall.IOParam.offset += nbytes;
+        g_UserCall.IOParam.count -= nbytes;
 
-		if (myUserCall.userErrorCode != UserCall::U_NOERROR)
-			myCacheManager.Brelse(pCache);
+		if (g_UserCall.userErrorCode != UserCall::U_NOERROR)
+			g_BufferManager.Brelse(pCache);
 		//将缓存标记为延迟写，不急于进行I/O操作将字符块输出到磁盘上
-		myCacheManager.Bdwrite(pCache);
+		g_BufferManager.Bdwrite(pCache);
 		//普通文件长度增加
-		if (this->i_size < myUserCall.IOParam.offset)
-			this->i_size = myUserCall.IOParam.offset;
+		if (this->i_size < g_UserCall.IOParam.offset)
+			this->i_size = g_UserCall.IOParam.offset;
 		this->i_flag |= INode::IUPD;
 	}
 }
@@ -133,14 +133,14 @@ int INode::Bmap(int lbn)
 	//(3) i_addr[8] - i_addr[9]存放二次间接索引表所在磁盘块号，每个二次间接
 	//索引表记录128个一次间接索引表所在磁盘块号，此类文件长度范围是
 	//(128 * 2 + 6 ) < size <= (128 * 128 * 2 + 128 * 2 + 6)
-	BufferManager& CacheManager = myCacheManager;
-	FileSystem& fileSystem = myFileSystem;
+	BufferManager& CacheManager = g_BufferManager;
+	FileSystem& fileSystem = g_FileSystem;
 	Buf* pFirstCache, * pSecondCache;
 	int phyBlkno, index;
 	int* iTable;
 
 	if (lbn >= INode::HUGE_FILE_BLOCK) {
-		myUserCall.userErrorCode = UserCall::U_EFBIG;
+        g_UserCall.userErrorCode = UserCall::U_EFBIG;
 		return 0;
 	}
 	//如果是小型文件，从基本索引表i_addr[0-5]中获得物理盘块号即可
@@ -229,8 +229,8 @@ void INode::IUpdate(int time)
 {
 	Buf* pCache;
 	DiskINode dINode;
-	FileSystem& fileSystem = myFileSystem;
-	BufferManager& CacheManager = myCacheManager;
+	FileSystem& fileSystem = g_FileSystem;
+	BufferManager& CacheManager = g_BufferManager;
 	//当IUPD和IACC标志之一被设置，才需要更新相应DiskInode
 	//目录搜索，不会设置所途径的目录文件的IACC和IUPD标志
 	if (this->i_flag & (INode::IUPD | INode::IACC)) {
@@ -253,8 +253,8 @@ void INode::IUpdate(int time)
 
 void INode::ITrunc() 
 {
-	BufferManager& CacheManager = myCacheManager;
-	FileSystem& fileSystem = myFileSystem;
+	BufferManager& CacheManager = g_BufferManager;
+	FileSystem& fileSystem = g_FileSystem;
 	Buf* pFirstCache, * pSecondCache;
 
 	for (int i = 9; i >= 0; --i) {
