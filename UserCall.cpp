@@ -18,11 +18,11 @@ UserCall::UserCall() {
 
 void UserCall::Initialize() {
     userErrorCode = U_NOERROR;  //存放错误码
-    m_systemCall = &Kernel::Instance().GetFileManager();
+    m_fileManager = &Kernel::Instance().GetFileManager();
 
     dirp = "/";                                   //系统调用参数(一般用于Pathname)的指针
     curDirPath = "/";                             //当前工作目录完整路径
-    nowDirINodePointer = m_systemCall->rootDirINode;//指向当前目录的Inode指针
+    nowDirINodePointer = m_fileManager->rootDirINode;//指向当前目录的Inode指针
     paDirINodePointer = NULL;                     //指向父目录的Inode指针
     memset(arg, 0, sizeof(arg));                  //指向核心栈现场保护区中EAX寄存器
 }
@@ -72,13 +72,13 @@ void UserCall::userMkDir(string dirName) {
     if (!checkPathName(dirName))
         return;
     arg[1] = INode::IFDIR;//存放当前系统调用参数 文件类型：目录文件
-    m_systemCall->Creat();
+    m_fileManager->Creat();
     checkError();
 }
 
 void UserCall::userLs() {
     ls.clear();
-    m_systemCall->Ls();
+    m_fileManager->Ls();
     if (checkError())
         return;
     cout << ls << endl;
@@ -97,7 +97,7 @@ void UserCall::userRename(string ori, string cur) {
         if (cur.find('/') != string::npos)
             cur = cur.substr(cur.find_last_of('/') + 1);
     }
-    m_systemCall->Rename(ori, cur);
+    m_fileManager->Rename(ori, cur);
     userCd(curDir);
     if (checkError())
         return;
@@ -107,7 +107,7 @@ void UserCall::__userTree__(string path, int depth) {
     vector<string> dirs;
     string nextDir;
     ls.clear();
-    m_systemCall->Ls();
+    m_fileManager->Ls();
     for (int i = 0, p = 0; i < ls.length();) {
         p = ls.find('\n', i);
         dirs.emplace_back(ls.substr(i, p - i));
@@ -156,13 +156,13 @@ void UserCall::userTree(string path) {
 void UserCall::__userCd__(string dirName) {
     if (!checkPathName(dirName))
         return;
-    m_systemCall->ChDir();
+    m_fileManager->ChDir();
 }
 
 void UserCall::userCd(string dirName) {
     if (!checkPathName(dirName))
         return;
-    m_systemCall->ChDir();
+    m_fileManager->ChDir();
     checkError();
 }
 
@@ -170,14 +170,14 @@ void UserCall::userCreate(string fileName) {
     if (!checkPathName(fileName))
         return;
     arg[1] = (INode::IREAD | INode::IWRITE);//存放当前系统调用参数
-    m_systemCall->Creat();
+    m_fileManager->Creat();
     checkError();
 }
 
 void UserCall::userDelete(string fileName) {
     if (!checkPathName(fileName))
         return;
-    m_systemCall->UnLink();
+    m_fileManager->UnLink();
     checkError();
 }
 
@@ -185,7 +185,7 @@ void UserCall::userOpen(string fileName) {
     if (!checkPathName(fileName))
         return;
     arg[1] = (File::FREAD | File::FWRITE);//存放当前系统调用参数
-    m_systemCall->Open();
+    m_fileManager->Open();
     if (checkError())
         return;
     cout << "打开文件成功，返回的文件句柄fd为 " << ar0[UserCall::EAX] << endl;
@@ -194,7 +194,7 @@ void UserCall::userOpen(string fileName) {
 //传入sfd句柄
 void UserCall::userClose(string sfd) {
     arg[0] = stoi(sfd);//存放当前系统调用参数
-    m_systemCall->Close();
+    m_fileManager->Close();
     checkError();
 }
 
@@ -202,7 +202,7 @@ void UserCall::userSeek(string sfd, string offset, string origin) {
     arg[0] = stoi(sfd);
     arg[1] = stoi(offset);
     arg[2] = stoi(origin);
-    m_systemCall->Seek();
+    m_fileManager->Seek();
     checkError();
 }
 
@@ -223,7 +223,7 @@ void UserCall::userWrite(string sfd, string inFile, string size) {
     arg[0] = fd;
     arg[1] = (int) buffer;
     arg[2] = usize;
-    m_systemCall->Write();
+    m_fileManager->Write();
 
     if (checkError())
         return;
@@ -238,7 +238,7 @@ void UserCall::userRead(string sfd, string outFile, string size) {
     arg[0] = fd;
     arg[1] = (int) buffer;
     arg[2] = usize;
-    m_systemCall->Read();
+    m_fileManager->Read();
     if (checkError())
         return;
 

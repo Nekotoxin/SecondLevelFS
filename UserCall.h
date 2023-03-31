@@ -39,7 +39,7 @@ public:
     ErrorCode userErrorCode;          //存放错误码
     ProcessOpenFile ofiles;           //进程打开文件描述符表对象
     IOParameter IOParam;              //记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数
-    FileManager *m_systemCall;
+    FileManager *m_fileManager;
     string ls;
 
 public:

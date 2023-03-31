@@ -33,7 +33,7 @@ INode::~INode() {
 
 //根据Inode对象中的物理磁盘块索引表，读取相应的文件数据
 void INode::ReadI() {
-    BufferManager &CacheManager = g_BufferManager;
+    BufferManager &bufferManager = g_BufferManager;
     int lbn, bn;
     int offset, nbytes;
     Buf *pCache;
@@ -56,7 +56,7 @@ void INode::ReadI() {
         if ((bn = this->Bmap(lbn)) == 0)
             return;
 
-        pCache = CacheManager.Bread(bn);
+        pCache = bufferManager.Bread(bn);
         //缓存中数据起始读位置
         unsigned char *start = pCache->addr + offset;
         memcpy(g_UserCall.IOParam.base, start, nbytes);
@@ -64,7 +64,7 @@ void INode::ReadI() {
         g_UserCall.IOParam.offset += nbytes;
         g_UserCall.IOParam.count -= nbytes;
 
-        CacheManager.Brelse(pCache);
+        bufferManager.Brelse(pCache);
     }
 }
 
@@ -125,7 +125,7 @@ int INode::Bmap(int lbn) {
     //(3) i_addr[8] - i_addr[9]存放二次间接索引表所在磁盘块号，每个二次间接
     //索引表记录128个一次间接索引表所在磁盘块号，此类文件长度范围是
     //(128 * 2 + 6 ) < size <= (128 * 128 * 2 + 128 * 2 + 6)
-    BufferManager &CacheManager = g_BufferManager;
+    BufferManager &bufferManager = g_BufferManager;
     FileSystem &fileSystem = g_FileSystem;
     Buf *pFirstCache, *pSecondCache;
     int phyBlkno, index;
@@ -141,7 +141,7 @@ int INode::Bmap(int lbn) {
         //如果该逻辑块号还没有相应的物理盘块号与之对应，则分配一个物理块
         if (phyBlkno == 0 && (pFirstCache = fileSystem.Alloc()) != NULL) {
             phyBlkno = pFirstCache->blkno;
-            CacheManager.Bdwrite(pFirstCache);
+            bufferManager.Bdwrite(pFirstCache);
             this->i_addr[lbn] = phyBlkno;
             this->i_flag |= INode::IUPD;
         }
@@ -155,7 +155,7 @@ int INode::Bmap(int lbn) {
 
     phyBlkno = this->i_addr[index];
     if (phyBlkno)
-        pFirstCache = CacheManager.Bread(phyBlkno);
+        pFirstCache = bufferManager.Bread(phyBlkno);
     else { //若该项为零，则表示不存在相应的间接索引表块
         this->i_flag |= INode::IUPD;
         if ((pFirstCache = fileSystem.Alloc()) == 0)
@@ -171,15 +171,15 @@ int INode::Bmap(int lbn) {
         phyBlkno = iTable[index];
 
         if (phyBlkno) {
-            CacheManager.Brelse(pFirstCache);
-            pSecondCache = CacheManager.Bread(phyBlkno);
+            bufferManager.Brelse(pFirstCache);
+            pSecondCache = bufferManager.Bread(phyBlkno);
         } else {
             if ((pSecondCache = fileSystem.Alloc()) == NULL) {
-                CacheManager.Brelse(pFirstCache);
+                bufferManager.Brelse(pFirstCache);
                 return 0;
             }
             iTable[index] = pSecondCache->blkno;
-            CacheManager.Bdwrite(pFirstCache);
+            bufferManager.Bdwrite(pFirstCache);
         }
 
         pFirstCache = pSecondCache;
@@ -194,10 +194,10 @@ int INode::Bmap(int lbn) {
     if ((phyBlkno = iTable[index]) == 0 && (pSecondCache = fileSystem.Alloc()) != NULL) {
         phyBlkno = pSecondCache->blkno;
         iTable[index] = phyBlkno;
-        CacheManager.Bdwrite(pSecondCache);
-        CacheManager.Bdwrite(pFirstCache);
+        bufferManager.Bdwrite(pSecondCache);
+        bufferManager.Bdwrite(pFirstCache);
     } else
-        CacheManager.Brelse(pFirstCache);
+        bufferManager.Brelse(pFirstCache);
     return phyBlkno;
 }
 
@@ -218,11 +218,11 @@ void INode::IUpdate(int time) {
     Buf *pCache;
     DiskINode dINode;
     FileSystem &fileSystem = g_FileSystem;
-    BufferManager &CacheManager = g_BufferManager;
+    BufferManager &bufferManager = g_BufferManager;
     //当IUPD和IACC标志之一被设置，才需要更新相应DiskInode
     //目录搜索，不会设置所途径的目录文件的IACC和IUPD标志
     if (this->i_flag & (INode::IUPD | INode::IACC)) {
-        pCache = CacheManager.Bread(
+        pCache = bufferManager.Bread(
                 FileSystem::INODE_START_SECTOR + this->i_number / FileSystem::INODE_NUMBER_PER_SECTOR);
         dINode.d_mode = this->i_mode;
         dINode.d_nlink = this->i_nlink;
@@ -236,36 +236,36 @@ void INode::IUpdate(int time) {
         unsigned char *p = pCache->addr + (this->i_number % FileSystem::INODE_NUMBER_PER_SECTOR) * sizeof(DiskINode);
         DiskINode *pNode = &dINode;
         memcpy(p, pNode, sizeof(DiskINode));
-        CacheManager.Bwrite(pCache);
+        bufferManager.Bwrite(pCache);
     }
 }
 
 void INode::ITrunc() {
-    BufferManager &CacheManager = g_BufferManager;
+    BufferManager &bufferManager = g_BufferManager;
     FileSystem &fileSystem = g_FileSystem;
     Buf *pFirstCache, *pSecondCache;
 
     for (int i = 9; i >= 0; --i) {
         if (this->i_addr[i]) {
             if (i >= 6) {
-                pFirstCache = CacheManager.Bread(this->i_addr[i]);
+                pFirstCache = bufferManager.Bread(this->i_addr[i]);
                 int *pFirst = (int *) pFirstCache->addr;
                 for (int j = BLOCK_SIZE / sizeof(int) - 1; j >= 0; --j) {
                     if (pFirst[j]) {
                         if (i >= 8) {
-                            pSecondCache = CacheManager.Bread(pFirst[j]);
+                            pSecondCache = bufferManager.Bread(pFirst[j]);
                             int *pSecond = (int *) pSecondCache->addr;
                             for (int k = BLOCK_SIZE / sizeof(int) - 1; k >= 0; --k) {
                                 if (pSecond[k]) {
                                     fileSystem.Free(pSecond[k]);
                                 }
                             }
-                            CacheManager.Brelse(pSecondCache);
+                            bufferManager.Brelse(pSecondCache);
                         }
                         fileSystem.Free(pFirst[j]);
                     }
                 }
-                CacheManager.Brelse(pFirstCache);
+                bufferManager.Brelse(pFirstCache);
             }
             fileSystem.Free(this->i_addr[i]);
             this->i_addr[i] = 0;
