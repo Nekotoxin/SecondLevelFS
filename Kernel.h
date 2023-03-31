@@ -9,7 +9,8 @@
 #include "BufferManager.h"
 #include "FileSystem.h"
 #include "FileManager.h"
-#include "UserCall.h"
+#include "SysCall.h"
+#include "UserManager.h"
 
 
 class Kernel {
@@ -34,8 +35,10 @@ public:
     FileSystem &GetFileSystem();
 
     FileManager &GetFileManager();
+
+    UserManager& GetUserManager();
 //    User& GetSuperUser();
-//    User& GetUser(); //作为单体实例，单用户时放在这里，多用户时放在线程局部数据中
+    User& GetUser(); //作为单体实例，单用户时放在这里，多用户时放在线程局部数据中
 //    UserManager& GetUserManager();
 
 // Kernel提供的文件系统API
@@ -60,6 +63,7 @@ private:
     BufferManager *m_BufferManager;
     FileSystem *m_FileSystem;
     FileManager *m_FileManager;
+    UserManager *m_UserManager;
 //    User* m_User;
 //    UserManager* m_UserManager;
 };

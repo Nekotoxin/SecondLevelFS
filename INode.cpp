@@ -1,9 +1,10 @@
 #include "Utility.h"
 #include "INode.h"
 #include "FileSystem.h"
-#include "UserCall.h"
+#include "SysCall.h"
+#include "Kernel.h"
 
-extern UserCall g_UserCall;
+extern SysCall g_UserCall;
 extern BufferManager g_BufferManager;
 extern FileSystem g_FileSystem;
 
@@ -33,22 +34,23 @@ INode::~INode() {
 
 //根据Inode对象中的物理磁盘块索引表，读取相应的文件数据
 void INode::ReadI() {
+    User* u=Kernel::Instance().GetUserManager().GetUser();
     BufferManager &bufferManager = g_BufferManager;
     int lbn, bn;
     int offset, nbytes;
     Buf *pCache;
     //需要读字节数为零，则返回
-    if (0 == g_UserCall.IOParam.count)
+    if (0 == u->u_IOParam.count)
         return;
     this->i_flag |= INode::IACC;
 
-    while (UserCall::U_NOERROR == g_UserCall.userErrorCode && g_UserCall.IOParam.count) {
-        lbn = bn = g_UserCall.IOParam.offset / INode::BLOCK_SIZE;
-        offset = g_UserCall.IOParam.offset % INode::BLOCK_SIZE;
+    while (NOERROR == u->u_error && u->u_IOParam.count) {
+        lbn = bn = u->u_IOParam.offset / INode::BLOCK_SIZE;
+        offset = u->u_IOParam.offset % INode::BLOCK_SIZE;
 
         //传送到用户区的字节数量，取读请求的剩余字节数与当前字符块内有效字节数较小值
-        nbytes = Utility::min(INode::BLOCK_SIZE - offset, g_UserCall.IOParam.count);
-        int remain = this->i_size - g_UserCall.IOParam.offset;
+        nbytes = Utility::min(INode::BLOCK_SIZE - offset, u->u_IOParam.count);
+        int remain = this->i_size - u->u_IOParam.offset;
         if (remain <= 0)
             return;
         //传送的字节数量还取决于剩余文件的长度
@@ -59,10 +61,10 @@ void INode::ReadI() {
         pCache = bufferManager.Bread(bn);
         //缓存中数据起始读位置
         unsigned char *start = pCache->addr + offset;
-        memcpy(g_UserCall.IOParam.base, start, nbytes);
-        g_UserCall.IOParam.base += nbytes;
-        g_UserCall.IOParam.offset += nbytes;
-        g_UserCall.IOParam.count -= nbytes;
+        memcpy(u->u_IOParam.base, start, nbytes);
+        u->u_IOParam.base += nbytes;
+        u->u_IOParam.offset += nbytes;
+        u->u_IOParam.count -= nbytes;
 
         bufferManager.Brelse(pCache);
     }
@@ -70,17 +72,18 @@ void INode::ReadI() {
 
 //根据Inode对象中的物理磁盘块索引表，将数据写入文件
 void INode::WriteI() {
+    User* u=Kernel::Instance().GetUserManager().GetUser();
     int lbn, bn;
     int offset, nbytes;
     Buf *pCache;
     this->i_flag |= (INode::IACC | INode::IUPD);
     //需要写字节数为零，则返回
-    if (0 == g_UserCall.IOParam.count)
+    if (0 == u->u_IOParam.count)
         return;
-    while (UserCall::U_NOERROR == g_UserCall.userErrorCode && g_UserCall.IOParam.count) {
-        lbn = g_UserCall.IOParam.offset / INode::BLOCK_SIZE;
-        offset = g_UserCall.IOParam.offset % INode::BLOCK_SIZE;
-        nbytes = Utility::min(INode::BLOCK_SIZE - offset, g_UserCall.IOParam.count);
+    while (NOERROR == u->u_error && u->u_IOParam.count) {
+        lbn = u->u_IOParam.offset / INode::BLOCK_SIZE;
+        offset = u->u_IOParam.offset % INode::BLOCK_SIZE;
+        nbytes = Utility::min(INode::BLOCK_SIZE - offset, u->u_IOParam.count);
         if ((bn = this->Bmap(lbn)) == 0)
             return;
 
@@ -91,18 +94,18 @@ void INode::WriteI() {
         //缓存中数据的起始写位置 写操作: 从用户目标区拷贝数据到缓冲区
         unsigned char *start = pCache->addr + offset;
 
-        memcpy(start, g_UserCall.IOParam.base, nbytes);
-        g_UserCall.IOParam.base += nbytes;
-        g_UserCall.IOParam.offset += nbytes;
-        g_UserCall.IOParam.count -= nbytes;
+        memcpy(start, u->u_IOParam.base, nbytes);
+        u->u_IOParam.base += nbytes;
+        u->u_IOParam.offset += nbytes;
+        u->u_IOParam.count -= nbytes;
 
-        if (g_UserCall.userErrorCode != UserCall::U_NOERROR)
+        if (u->u_error != NOERROR)
             g_BufferManager.Brelse(pCache);
         //将缓存标记为延迟写，不急于进行I/O操作将字符块输出到磁盘上
         g_BufferManager.Bdwrite(pCache);
         //普通文件长度增加
-        if (this->i_size < g_UserCall.IOParam.offset)
-            this->i_size = g_UserCall.IOParam.offset;
+        if (this->i_size < u->u_IOParam.offset)
+            this->i_size = u->u_IOParam.offset;
         this->i_flag |= INode::IUPD;
     }
 }
@@ -118,6 +121,7 @@ void INode::ICopy(Buf *pb, int inumber) {
 
 //将文件的逻辑块号转换成对应的物理盘块号
 int INode::Bmap(int lbn) {
+    User* u=Kernel::Instance().GetUserManager().GetUser();
     //Unix V6++的文件索引结构：(小型、大型和巨型文件)
     //(1) i_addr[0] - i_addr[5]为直接索引表，文件长度范围是0 - 6个盘块；
     //(2) i_addr[6] - i_addr[7]存放一次间接索引表所在磁盘块号，每磁盘块
@@ -132,7 +136,7 @@ int INode::Bmap(int lbn) {
     int *iTable;
 
     if (lbn >= INode::HUGE_FILE_BLOCK) {
-        g_UserCall.userErrorCode = UserCall::U_EFBIG;
+        u->u_error = EFBIG;
         return 0;
     }
     //如果是小型文件，从基本索引表i_addr[0-5]中获得物理盘块号即可

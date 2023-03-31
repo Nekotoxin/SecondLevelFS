@@ -22,10 +22,13 @@ add_executable(SecondLevelFS
         OpenFileManager.h
         FileManager.cpp
         FileManager.h
-        UserCall.cpp
-        UserCall.h
+        SysCall.cpp
+        SysCall.h
         Kernel.cpp
         Kernel.h
-        DiskDriver.cpp)
+        DiskDriver.cpp
+        UserManager.cpp
+        UserManager.h
+        User.h)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")

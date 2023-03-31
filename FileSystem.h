@@ -4,7 +4,7 @@
 #include "INode.h"
 #include "BufferManager.h"
 #include "DiskDriver.h"
-//#include "UserCall.h"
+//#include "SysCall.h"
 /* 磁盘文件结构：SuperBlock + DiskINode + 文件数据区 */
 
 /* 文件系统存储资源管理块(SuperBlock结构) 1024字节 */

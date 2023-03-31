@@ -1,11 +1,11 @@
 #include "Utility.h"
 #include "OpenFileManager.h"
-#include "UserCall.h"
+#include "SysCall.h"
 #include "Kernel.h"
 #include <ctime>
 
 extern INodeTable g_INodeTable;
-extern UserCall g_UserCall;
+extern SysCall g_UserCall;
 
 OpenFileTable g_OpenFileTable;
 INodeTable g_INodeTable;
@@ -22,21 +22,22 @@ void OpenFileTable::Reset() {
         sysFileTable[i].Reset();
 }
 
-//作用：进程打开文件描述符表中找的空闲项之下标写入 ar0[EAX]
+//作用：进程打开文件描述符表中找的空闲项之下标写入 u_ar0[EAX]
 File *OpenFileTable::FAlloc() {
-    int fd = g_UserCall.ofiles.AllocFreeSlot();
+    User* u=Kernel::Instance().GetUserManager().GetUser();
+    int fd = u->u_ofiles.AllocFreeSlot();
     if (fd < 0)
         return NULL;
     for (int i = 0; i < OpenFileTable::MAX_FILES; ++i) {
         //count == 0表示该项空闲
         if (this->sysFileTable[i].count == 0) {
-            g_UserCall.ofiles.SetF(fd, &this->sysFileTable[i]);
+            u->u_ofiles.SetF(fd, &this->sysFileTable[i]);
             this->sysFileTable[i].count++;
             this->sysFileTable[i].offset = 0;
             return (&this->sysFileTable[i]);
         }
     }
-    g_UserCall.userErrorCode = UserCall::U_ENFILE;
+    u->u_error = ENFILE;
     return NULL;
 }
 
@@ -86,6 +87,7 @@ INode *INodeTable::GetFreeINode() {
 //根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode；
 //如果不在内存中，则将其读入内存后上锁并返回该内存INode，返回NULL:INode Table OverFlow
 INode *INodeTable::IGet(int inumber) {
+    User* u=Kernel::Instance().GetUserManager().GetUser();
     INode *pINode;
     int index = IsLoaded(inumber);
     if (index >= 0) {
@@ -97,7 +99,7 @@ INode *INodeTable::IGet(int inumber) {
     pINode = GetFreeINode();
     if (NULL == pINode) {
         cout << "内存 INode 表溢出!" << endl;
-        g_UserCall.userErrorCode = UserCall::U_ENFILE;
+        u->u_error = ENFILE;
         return NULL;
     }
 
