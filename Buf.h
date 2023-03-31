@@ -14,9 +14,16 @@ using namespace std;
 class Buf {
 public:
     //flags中的标志位
-    enum CacheBlockFlag {
-        CB_DONE = 0x1,    //I/O操作结束
-        CB_DELWRI = 0x2   //延迟写，对应的缓存有其他用途时，将其内容写到对应的块设备上
+    enum BufFlag	/* b_flags中标志位 */
+    {
+        B_WRITE = 0x1,		/* 写操作。将缓存中的信息写到硬盘上去 */
+        B_READ	= 0x2,		/* 读操作。从盘读取信息到缓存中 */
+        B_DONE	= 0x4,		/* I/O操作结束 */
+        B_ERROR	= 0x8,		/* I/O因出错而终止 */
+        B_BUSY	= 0x10,		/* 相应缓存正在使用中 */
+        B_WANTED = 0x20,	/* 有进程正在等待使用该buf管理的资源，清B_BUSY标志时，要唤醒这种进程 */
+        B_ASYNC	= 0x40,		/* 异步I/O，不需要等待其结束 */
+        B_DELWRI = 0x80		/* 延迟写，在相应缓存要移做他用时，再将其内容写到相应块设备上 */
     };
     unsigned int flags;   //缓存控制块标志位
 

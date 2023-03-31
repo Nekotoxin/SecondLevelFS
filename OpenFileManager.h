@@ -20,9 +20,9 @@ public:
 //    DiskDriver* m_diskDriver;
 //    BufferManager* m_bufferManager;
 public:
-    OpenFileTable();
+    OpenFileTable() = default;
 
-    ~OpenFileTable();
+    ~OpenFileTable() = default;
 
     void Reset();
 

@@ -27,9 +27,6 @@ INode::INode() {
     memset(i_addr, 0, sizeof(i_addr));
 }
 
-INode::~INode() {
-}
-
 //根据Inode对象中的物理磁盘块索引表，读取相应的文件数据
 void INode::ReadI() {
     User *u = Kernel::Instance().GetUserManager().GetUser();

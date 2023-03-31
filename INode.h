@@ -43,7 +43,7 @@ public:
 public:
     INode();
 
-    ~INode();
+    ~INode() = default;
 
     void Reset() {
         i_mode = 0;

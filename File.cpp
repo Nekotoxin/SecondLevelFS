@@ -9,7 +9,6 @@ File::File() {
     offset = 0;
 }
 
-File::~File() {}
 
 void File::Reset() {
     count = 0;
@@ -21,8 +20,6 @@ OpenFiles::OpenFiles() {
     memset(processOpenFileTable, 0, sizeof(processOpenFileTable));
 }
 
-OpenFiles::~OpenFiles() {
-}
 
 //进程请求打开文件时，在打开文件描述符表中分配一个空闲表项
 int OpenFiles::AllocFreeSlot() {

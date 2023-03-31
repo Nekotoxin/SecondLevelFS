@@ -30,9 +30,9 @@ public:
     BufferManager *m_BufferManager;
 
 public:
-    FileManager();
+    FileManager() = default;
 
-    ~FileManager();
+    ~FileManager() = default;
 
     void Initialize();
 

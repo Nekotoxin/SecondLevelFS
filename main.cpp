@@ -116,14 +116,10 @@ bool AutoTest() {
 }
 
 int main() {
-//	SysCall& u = g_UserCall;
     Kernel::Instance().Initialize();
-//    return 0;
-
     User *u = Kernel::Instance().GetUserManager().GetUser();
 
     cout << "***************************************************************************************" << endl
-         << "*                                                                                     *" << endl
          << "*                                   类Unix文件系统                                    *" << endl
          << "*                                                                                     *" << endl
          << "* [操作说明]:                                                                         *" << endl

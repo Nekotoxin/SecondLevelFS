@@ -18,9 +18,9 @@ public:
 
 
 // 工具函数
-    Kernel();
+    Kernel() = default;
 
-    ~Kernel();
+    ~Kernel() = default;
 
     static Kernel &Instance();
 

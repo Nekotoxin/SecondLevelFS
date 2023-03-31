@@ -28,9 +28,9 @@ User *UserManager::GetUser() {
 }
 
 UserManager::~UserManager() {
-    for (int i = 0; i < USER_N; ++i) {
-        if ((this->pusers)[i] != NULL)
-            free((this->pusers)[i]);
+    for (auto & puser : this->pusers) {
+        if (puser != NULL)
+            free(puser);
     }
 }
 

@@ -16,7 +16,7 @@ public:
 public:
     File();
 
-    ~File();
+    ~File() = default;
 
     void Reset();
 
@@ -39,7 +39,7 @@ private:
 public:
     OpenFiles();
 
-    ~OpenFiles();
+    ~OpenFiles() = default;
 
     void Reset() {
         memset(processOpenFileTable, 0, sizeof(processOpenFileTable));

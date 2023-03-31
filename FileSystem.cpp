@@ -9,10 +9,6 @@ extern INodeTable g_INodeTable;
 SuperBlock g_SuperBlock;
 
 
-FileSystem::FileSystem() {
-
-}
-
 void FileSystem::Initialize() {
     m_diskDriver = &Kernel::Instance().GetDiskDriver();
     m_superBlock = &g_SuperBlock;

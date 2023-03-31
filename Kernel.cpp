@@ -16,14 +16,6 @@ UserManager g_UserManager;
 extern INodeTable g_INodeTable;
 
 
-Kernel::Kernel() {
-
-}
-
-Kernel::~Kernel() {
-
-}
-
 Kernel &Kernel::Instance() {
     return instance;
 }

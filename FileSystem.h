@@ -56,7 +56,7 @@ public:
     SuperBlock *m_superBlock;
     BufferManager *m_bufferManager;
 
-    FileSystem();
+    FileSystem() = default;
 
     ~FileSystem();
 

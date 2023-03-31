@@ -6,9 +6,6 @@
 extern OpenFileTable g_OpenFileTable;
 extern INodeTable g_INodeTable;
 
-FileManager::FileManager() {
-
-}
 
 void FileManager::Initialize() {
     m_fileSystem = &Kernel::Instance().GetFileSystem();
@@ -22,7 +19,6 @@ void FileManager::Initialize() {
     rootDirINode->i_count += 0xff;//引用计数
 }
 
-FileManager::~FileManager() {}
 
 //功能：打开文件
 //效果：建立打开文件结构，内存i节点开锁 、i_count 为正数（i_count ++）

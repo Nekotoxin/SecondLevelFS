@@ -79,9 +79,9 @@ Buf *BufferManager::GetBlk(int blkno) {
     }
     DetachNode(pb);
     map.erase(pb->blkno);
-    if (pb->flags & Buf::CB_DELWRI)
+    if (pb->flags & Buf::B_DELWRI)
         m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
-    pb->flags &= ~(Buf::CB_DELWRI | Buf::CB_DONE);
+    pb->flags &= ~(Buf::B_DELWRI | Buf::B_DONE);
     pb->blkno = blkno;
     map[blkno] = pb;
     return pb;
@@ -95,24 +95,24 @@ void BufferManager::Brelse(Buf *pb) {
 //读一个磁盘块，blkno为目标磁盘块逻辑块号
 Buf *BufferManager::Bread(int blkno) {
     Buf *pb = GetBlk(blkno);
-    if (pb->flags & (Buf::CB_DONE | Buf::CB_DELWRI))
+    if (pb->flags & (Buf::B_DONE | Buf::B_DELWRI))
         return pb;
     m_diskDriver->read(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
-    pb->flags |= Buf::CB_DONE;
+    pb->flags |= Buf::B_DONE;
     return pb;
 }
 
 //写一个磁盘块
 void BufferManager::Bwrite(Buf *pb) {
-    pb->flags &= ~(Buf::CB_DELWRI);
+    pb->flags &= ~(Buf::B_DELWRI);
     m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
-    pb->flags |= (Buf::CB_DONE);
+    pb->flags |= (Buf::B_DONE);
     this->Brelse(pb);
 }
 
 //延迟写磁盘块
 void BufferManager::Bdwrite(Buf *bp) {
-    bp->flags |= (Buf::CB_DELWRI | Buf::CB_DONE);
+    bp->flags |= (Buf::B_DELWRI | Buf::B_DONE);
     this->Brelse(bp);
     return;
 }
@@ -128,10 +128,10 @@ void BufferManager::Bflush() {
     Buf *pb = NULL;
     for (int i = 0; i < NBUF; ++i) {
         pb = nBuffer + i;
-        if ((pb->flags & Buf::CB_DELWRI)) {
-            pb->flags &= ~(Buf::CB_DELWRI);
+        if ((pb->flags & Buf::B_DELWRI)) {
+            pb->flags &= ~(Buf::B_DELWRI);
             m_diskDriver->write(pb->addr, BUFFER_SIZE, pb->blkno * BUFFER_SIZE);
-            pb->flags |= (Buf::CB_DONE);
+            pb->flags |= (Buf::B_DONE);
         }
     }
 }

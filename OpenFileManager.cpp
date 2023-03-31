@@ -8,13 +8,6 @@ extern INodeTable g_INodeTable;
 OpenFileTable g_OpenFileTable;
 INodeTable g_INodeTable;
 
-OpenFileTable::OpenFileTable() {
-}
-
-OpenFileTable::~OpenFileTable() {
-}
-
-
 void OpenFileTable::Reset() {
     for (int i = 0; i < OpenFileTable::MAX_FILES; ++i)
         sysFileTable[i].Reset();
