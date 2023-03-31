@@ -9,7 +9,6 @@
 #include "BufferManager.h"
 #include "FileSystem.h"
 #include "FileManager.h"
-#include "SysCall.h"
 #include "UserManager.h"
 
 
@@ -36,21 +35,11 @@ public:
 
     FileManager &GetFileManager();
 
-    UserManager& GetUserManager();
-//    User& GetSuperUser();
-    User& GetUser(); //作为单体实例，单用户时放在这里，多用户时放在线程局部数据中
-//    UserManager& GetUserManager();
+    UserManager &GetUserManager();
 
-// Kernel提供的文件系统API
-//    FD Sys_Open(std::string& fpath,int mode=File::FWRITE);
-//    int Sys_Close(FD fd);
-//    int Sys_Creat(std::string& fpath,int mode=File::FWRITE);
-//    int Sys_Delete(std::string& fpath);
-//    int Sys_Read(FD fd, size_t size, size_t nmemb, void* ptr);
-//    int Sys_Write(FD fd, size_t size, size_t nmemb, void* ptr);
-//    /*whence : 0 设为offset；1 加offset；2 文件结束位置加offset*/
-//    int Sys_Seek(FD fd, long int offset, int whence);
-//    int Sys_CreatDir(std::string &fpath);
+//    User& GetSuperUser();
+    User &GetUser(); //作为单体实例，单用户时放在这里，多用户时放在线程局部数据中
+
 
 private:
 // Kernel子组件的初始化函数
@@ -66,6 +55,39 @@ private:
     UserManager *m_UserManager;
 //    User* m_User;
 //    UserManager* m_UserManager;
+public:
+
+    void sysLs();
+
+    void sysCd(string dirName);
+
+    void sysMkDir(string dirName);
+
+    void sysCreate(string fileName);
+
+    void sysDelete(string fileName);
+
+    void sysOpen(string fileName);
+
+    void sysClose(string fd);
+
+    void sysSeek(string fd, string offset, string origin);
+
+    void sysWrite(string fd, string inFile, string size);
+
+    void sysRead(string fd, string outFile, string size);
+
+    void sysRename(string ori, string cur);  //重命名文件、文件夹
+    void sysTree(string path);               //打印树状目录
+
+private:
+    bool checkError();
+
+    bool checkPathName(string path);
+
+    void __sysCd__(string dirName);
+
+    void __sysTree__(string path, int depth);//内部打印树状目录
 };
 
 #endif //SECONDLEVELFS_KERNEL_H

@@ -22,8 +22,6 @@ add_executable(SecondLevelFS
         OpenFileManager.h
         FileManager.cpp
         FileManager.h
-        SysCall.cpp
-        SysCall.h
         Kernel.cpp
         Kernel.h
         DiskDriver.cpp

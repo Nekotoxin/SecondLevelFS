@@ -8,21 +8,19 @@ extern INodeTable g_INodeTable;
 
 UserManager::UserManager() {
 // 清空
-    for (int i = 0; i < USER_N; ++i)
-    {
+    for (int i = 0; i < USER_N; ++i) {
         (this->pusers)[i] = NULL;
     }
     this->user_addr.clear();
     pthread_t pid = pthread_self();
-    pusers[0] = (User*)malloc(sizeof(User));
+    pusers[0] = (User *) malloc(sizeof(User));
     pusers[0]->u_uid = 0;
     user_addr[pid] = 0;
 }
 
 User *UserManager::GetUser() {
     pthread_t pthread_id = pthread_self();
-    if (user_addr.find(pthread_id) == user_addr.end())
-    {
+    if (user_addr.find(pthread_id) == user_addr.end()) {
         printf("[ERROR] 线程 %d 的 User 结构无法得到，系统错误.\n", pthread_id);
         exit(1);
     }
@@ -30,8 +28,7 @@ User *UserManager::GetUser() {
 }
 
 UserManager::~UserManager() {
-    for (int i = 0; i < USER_N; ++i)
-    {
+    for (int i = 0; i < USER_N; ++i) {
         if ((this->pusers)[i] != NULL)
             free((this->pusers)[i]);
     }
@@ -41,29 +38,24 @@ bool UserManager::Login(string uname) {
     // 取得线程 id
     pthread_t pthread_id = pthread_self();
     // 检查该线程是否已登录
-    if (user_addr.find(pthread_id) != user_addr.end())
-    {
+    if (user_addr.find(pthread_id) != user_addr.end()) {
         printf("[ERROR] 线程 %llu 重复登录\n", pthread_id);
         return false;
     }
     // 寻找空闲的pusers指针
     int i;
-    for (i = 0; i < USER_N; ++i)
-    {
-        if (pusers[i] == NULL)
-        {
+    for (i = 0; i < USER_N; ++i) {
+        if (pusers[i] == NULL) {
             break;
         }
     }
-    if (i == USER_N)
-    {
+    if (i == USER_N) {
         printf("[ERROR] UserManager无空闲资源可用，用户并发数量达到上限\n");
         return false;
     }
     // i 为空闲索引
-    pusers[i] = (User *)malloc(sizeof(User));
-    if (pusers[i] == NULL)
-    {
+    pusers[i] = (User *) malloc(sizeof(User));
+    if (pusers[i] == NULL) {
         printf("[ERROR] UserManager申请堆空间失败\n");
         return false;
     }
@@ -98,8 +90,7 @@ bool UserManager::Logout() {
     // 取得线程 id
     pthread_t pthread_id = pthread_self();
     // 检查该线程是否已登录
-    if (user_addr.find(pthread_id) == user_addr.end())
-    {
+    if (user_addr.find(pthread_id) == user_addr.end()) {
         printf("[ERROR] 线程 %d 未登录，无需登出\n", pthread_id);
         return false;
     }

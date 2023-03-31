@@ -1,6 +1,5 @@
 #include "Utility.h"
 #include "File.h"
-#include "SysCall.h"
 #include "Kernel.h"
 //extern SysCall g_UserCall;
 
@@ -27,7 +26,7 @@ OpenFiles::~OpenFiles() {
 
 //进程请求打开文件时，在打开文件描述符表中分配一个空闲表项
 int OpenFiles::AllocFreeSlot() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     for (int i = 0; i < OpenFiles::MAX_FILES; i++)
         //进程打开文件描述符表中找到空闲项，则返回之
         if (!processOpenFileTable[i]) {
@@ -43,7 +42,7 @@ int OpenFiles::AllocFreeSlot() {
 //根据用户系统调用提供的文件描述符参数fd，找到对应的打开文件控制块File结构
 File *OpenFiles::GetF(int fd) {
     File *pFile;
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
 
     if (fd < 0 || fd >= OpenFiles::MAX_FILES) {
         u->u_error = EBADF;

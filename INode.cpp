@@ -1,10 +1,8 @@
 #include "Utility.h"
 #include "INode.h"
 #include "FileSystem.h"
-#include "SysCall.h"
 #include "Kernel.h"
 
-extern SysCall g_UserCall;
 extern BufferManager g_BufferManager;
 extern FileSystem g_FileSystem;
 
@@ -34,7 +32,7 @@ INode::~INode() {
 
 //根据Inode对象中的物理磁盘块索引表，读取相应的文件数据
 void INode::ReadI() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     BufferManager &bufferManager = g_BufferManager;
     int lbn, bn;
     int offset, nbytes;
@@ -72,7 +70,7 @@ void INode::ReadI() {
 
 //根据Inode对象中的物理磁盘块索引表，将数据写入文件
 void INode::WriteI() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     int lbn, bn;
     int offset, nbytes;
     Buf *pCache;
@@ -121,7 +119,7 @@ void INode::ICopy(Buf *pb, int inumber) {
 
 //将文件的逻辑块号转换成对应的物理盘块号
 int INode::Bmap(int lbn) {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     //Unix V6++的文件索引结构：(小型、大型和巨型文件)
     //(1) i_addr[0] - i_addr[5]为直接索引表，文件长度范围是0 - 6个盘块；
     //(2) i_addr[6] - i_addr[7]存放一次间接索引表所在磁盘块号，每磁盘块

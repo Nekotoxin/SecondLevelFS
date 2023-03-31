@@ -4,9 +4,13 @@
 
 #ifndef SECONDLEVELFS_USER_H
 #define SECONDLEVELFS_USER_H
+
 #include "FileManager.h"
 
+#define NOERROR 0
+
 typedef int ErrorCode;
+
 class User {
 public:
     static const int EAX = 0;//u.u_ar0[EAX]；访问现场保护区中EAX寄存器的偏移量
@@ -68,7 +72,7 @@ public:
     IOParameter u_IOParam;              //记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数
     string ls;
 
-    short u_uid;		/* 有效用户ID */
+    short u_uid;        /* 有效用户ID */
 };
 
 #endif //SECONDLEVELFS_USER_H

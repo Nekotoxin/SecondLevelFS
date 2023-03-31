@@ -1,7 +1,6 @@
 #include "Utility.h"
 #include "FileManager.h"
 #include "BufferManager.h"
-#include "SysCall.h"
 #include "Kernel.h"
 
 extern OpenFileTable g_OpenFileTable;
@@ -37,7 +36,7 @@ void FileManager::Open() {
 //Creat()系统调用处理过程
 void FileManager::Creat() {
     INode *pINode;
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
 
     int newACCMode = u->u_arg[1];//存放当前系统调用参数 文件类型：目录文件
     //搜索目录的模式为1，表示创建；若父目录不可写，出错返回
@@ -62,7 +61,7 @@ void FileManager::Creat() {
 //目录搜索，将路径转化为相应的INode返回上锁后的INode
 //返回NULL表示目录搜索失败，否则是根指针，指向文件的内存打开i节点 ，上锁的内存i节点
 INode *FileManager::NameI(enum DirectorySearchMode mode) {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     INode *pINode = u->u_cdir;
     Buf *pCache;
     int freeEntryOffset; //以创建文件模式搜索目录时，记录空闲目录项的偏移量
@@ -172,7 +171,7 @@ INode *FileManager::NameI(enum DirectorySearchMode mode) {
 //trf == 2由creat调用，creat文件的时候未搜索到同文件名的文件，这是文件创建时更一般的情况
 //mode参数：打开文件模式，表示文件操作是 读、写还是读写
 void FileManager::Open1(INode *pINode, int trf) {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     //在creat文件的时候搜索到同文件名的文件，释放该文件所占据的所有盘块
     if (1 == trf)
         pINode->ITrunc();//释放Inode对应文件占用的磁盘块
@@ -203,7 +202,7 @@ void FileManager::Open1(INode *pINode, int trf) {
 //为新创建的文件写新的i节点和父目录中新的目录项(相应参数在User结构中)
 //返回的pINode是上了锁的内存i节点，其中的i_count是 1
 INode *FileManager::MakNode(int mode) {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     INode *pINode;
     //分配一个空闲DiskInode，里面内容已全部清空
     pINode = this->m_fileSystem->IAlloc();
@@ -221,7 +220,7 @@ INode *FileManager::MakNode(int mode) {
 //向父目录的目录文件写入一个目录项
 //把属于自己的目录项写进父目录，修改父目录文件的i节点 、将其写回磁盘。
 void FileManager::WriteDir(INode *pINode) {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     //设置目录项中INode编号部分
     u->u_dent.m_ino = pINode->i_number;
     //设置目录项中pathname分量部分
@@ -236,7 +235,7 @@ void FileManager::WriteDir(INode *pINode) {
 
 
 void FileManager::Close() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     int fd = u->u_arg[0];
     //获取打开文件控制块File结构
     File *pFile = u->u_ofiles.GetF(fd);
@@ -248,7 +247,7 @@ void FileManager::Close() {
 }
 
 void FileManager::UnLink() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     //注意删除文件夹有磁盘泄露
     INode *pINode;
     INode *pDeleteINode;
@@ -275,7 +274,7 @@ void FileManager::UnLink() {
 }
 
 void FileManager::Seek() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     File *pFile;
     int fd = u->u_arg[0];
 
@@ -315,7 +314,7 @@ void FileManager::Write() {
 }
 
 void FileManager::Rdwr(enum File::FileFlags mode) {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     File *pFile;
     //根据Read()/Write()的系统调用参数fd获取打开文件控制块结构
     pFile = u->u_ofiles.GetF(u->u_arg[0]);
@@ -337,7 +336,7 @@ void FileManager::Rdwr(enum File::FileFlags mode) {
 }
 
 void FileManager::Ls() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     INode *pINode = u->u_cdir;
     Buf *pCache = NULL;
     u->u_IOParam.offset = 0;
@@ -366,7 +365,7 @@ void FileManager::Ls() {
 }
 
 void FileManager::Rename(string ori, string cur) {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     INode *pINode = u->u_cdir;
     Buf *pCache = NULL;
     u->u_IOParam.offset = 0;
@@ -396,7 +395,7 @@ void FileManager::Rename(string ori, string cur) {
 
 //改变当前工作目录
 void FileManager::ChDir() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     INode *pINode;
     pINode = this->NameI(FileManager::OPEN);
     if (NULL == pINode)

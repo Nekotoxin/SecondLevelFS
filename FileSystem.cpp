@@ -4,10 +4,8 @@
 #include "BufferManager.h"
 #include "Kernel.h"
 #include <ctime>
-#include "SysCall.h"
 
 extern INodeTable g_INodeTable;
-extern SysCall g_UserCall;
 SuperBlock g_SuperBlock;
 
 
@@ -97,7 +95,7 @@ void FileSystem::Update() {
 
 //在存储设备上分配空闲磁盘块
 Buf *FileSystem::Alloc() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     int blkno;
     Buf *pCache;
     //从索引表“栈顶”获取空闲磁盘块编号
@@ -128,7 +126,7 @@ Buf *FileSystem::Alloc() {
 
 //在存储设备dev上分配一个空闲外存INode，一般用于创建新的文件
 INode *FileSystem::IAlloc() {
-    User* u=Kernel::Instance().GetUserManager().GetUser();
+    User *u = Kernel::Instance().GetUserManager().GetUser();
     Buf *pCache;
     INode *pINode;
     int ino;
