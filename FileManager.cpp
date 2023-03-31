@@ -2,22 +2,27 @@
 #include "FileManager.h"
 #include "BufferManager.h"
 #include "UserCall.h"
+#include "Kernel.h"
 
-extern BufferManager g_BufferManager;
 extern OpenFileTable g_OpenFileTable;
-extern FileSystem g_FileSystem;
 extern INodeTable g_INodeTable;
 extern UserCall g_UserCall;
 
 FileManager::FileManager()
 {
-    m_fileSystem = &g_FileSystem;
+
+}
+
+void FileManager::Initialize() {
+    m_fileSystem = &Kernel::Instance().GetFileSystem();
+    m_BufferManager = &Kernel::Instance().GetBufferManager();
     m_openFileTable = &g_OpenFileTable;
     m_inodeTable = &g_INodeTable;
-	rootDirINode = m_inodeTable->IGet(FileSystem::ROOT_INODE_NO);//根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode；
-		                                                         //如果不在内存中，则将其读入内存后上锁并返回该内存INode
-	                                                             //文件系统根目录外存INode编号
-	rootDirINode->i_count += 0xff;//引用计数                            
+    m_inodeTable->Initialize();
+    rootDirINode = m_inodeTable->IGet(FileSystem::ROOT_INODE_NO);//根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode；
+    //如果不在内存中，则将其读入内存后上锁并返回该内存INode
+    //文件系统根目录外存INode编号
+    rootDirINode->i_count += 0xff;//引用计数
 }
 
 FileManager::~FileManager() { }
@@ -100,7 +105,7 @@ INode* FileManager::NameI(enum DirectorySearchMode mode)
 			/* 对目录项已经搜索完毕 */
 			if (0 == g_UserCall.IOParam.count) {
 				if (NULL != pCache)
-					g_BufferManager.Brelse(pCache);
+					m_BufferManager->Brelse(pCache);
 				//如果是创建新文件
 				if (FileManager::CREATE == mode && nindex >= g_UserCall.dirp.length()) {
 					//将父目录Inode指针保存起来，以后写目录项WriteDir()函数会用到
@@ -119,10 +124,10 @@ INode* FileManager::NameI(enum DirectorySearchMode mode)
 			//已读完目录文件的当前盘块，需要读入下一目录项数据盘块
 			if (0 == g_UserCall.IOParam.offset % INode::BLOCK_SIZE) {
 				if (pCache)
-					g_BufferManager.Brelse(pCache);
+					m_BufferManager->Brelse(pCache);
 				//计算要读的物理盘块号
 				int phyBlkno = pINode->Bmap(g_UserCall.IOParam.offset / INode::BLOCK_SIZE);
-				pCache = g_BufferManager.Bread(phyBlkno);
+				pCache = m_BufferManager->Bread(phyBlkno);
 			}
 			//没有读完当前目录项盘块，则读取下一目录项至u.u_dent
 			memcpy(&g_UserCall.dent, pCache->addr + (g_UserCall.IOParam.offset % INode::BLOCK_SIZE), sizeof(g_UserCall.dent));
@@ -142,7 +147,7 @@ INode* FileManager::NameI(enum DirectorySearchMode mode)
 
 		//从内层目录项匹配循环跳至此处，说明pathname中当前路径分量匹配成功了，还需匹配pathname中下一路径分量，直至遇到'\0'结束
 		if (pCache)
-			g_BufferManager.Brelse(pCache);
+			m_BufferManager->Brelse(pCache);
 
 		//如果是删除操作，则返回父目录Inode，而要删除文件的Inode号在u.u_dent.m_ino中
 		if (FileManager::DELETE == mode && nindex >= g_UserCall.dirp.length())
@@ -342,9 +347,9 @@ void FileManager::Ls()
 	while (g_UserCall.IOParam.count) {
 		if (0 == g_UserCall.IOParam.offset % INode::BLOCK_SIZE) {
 			if (pCache)
-				g_BufferManager.Brelse(pCache);
+				m_BufferManager->Brelse(pCache);
 			int phyBlkno = pINode->Bmap(g_UserCall.IOParam.offset / INode::BLOCK_SIZE);
-			pCache = g_BufferManager.Bread(phyBlkno);
+			pCache = m_BufferManager->Bread(phyBlkno);
 		}
 		memcpy(&g_UserCall.dent, pCache->addr + (g_UserCall.IOParam.offset % INode::BLOCK_SIZE), sizeof(g_UserCall.dent));
         g_UserCall.IOParam.offset += sizeof(DirectoryEntry);
@@ -358,7 +363,7 @@ void FileManager::Ls()
 	}
 
 	if (pCache)
-		g_BufferManager.Brelse(pCache);
+		m_BufferManager->Brelse(pCache);
 }
 
 void FileManager::Rename(string ori, string cur)
@@ -370,9 +375,9 @@ void FileManager::Rename(string ori, string cur)
 	while (g_UserCall.IOParam.count) {
 		if (0 == g_UserCall.IOParam.offset % INode::BLOCK_SIZE) {
 			if (pCache)
-				g_BufferManager.Brelse(pCache);
+				m_BufferManager->Brelse(pCache);
 			int phyBlkno = pINode->Bmap(g_UserCall.IOParam.offset / INode::BLOCK_SIZE);
-			pCache = g_BufferManager.Bread(phyBlkno);
+			pCache = m_BufferManager->Bread(phyBlkno);
 		}
 
 		DirectoryEntry tmp;
@@ -387,7 +392,7 @@ void FileManager::Rename(string ori, string cur)
 	}
 
 	if (pCache)
-		g_BufferManager.Brelse(pCache);
+		m_BufferManager->Brelse(pCache);
 }
 
 //改变当前工作目录

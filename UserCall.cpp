@@ -4,22 +4,27 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "Kernel.h"
 using namespace std;
 
-extern FileManager g_SystemCall;
+UserCall g_UserCall;
 //    extern是一个关键字，它告诉编译器存在着一个变量或者一个函数，如果在当前编译语句的前面
 //中没有找到相应的变量或者函数，也会在当前文件的后面或者其它文件中定义
 
 UserCall::UserCall() 
 {
-	userErrorCode = U_NOERROR;  //存放错误码
-	m_systemCall = &g_SystemCall;
 
-	dirp = "/";                                   //系统调用参数(一般用于Pathname)的指针
-	curDirPath = "/";                             //当前工作目录完整路径
-	nowDirINodePointer = m_systemCall->rootDirINode;//指向当前目录的Inode指针
-	paDirINodePointer = NULL;                     //指向父目录的Inode指针
-	memset(arg, 0, sizeof(arg));                  //指向核心栈现场保护区中EAX寄存器
+}
+
+void UserCall::Initialize() {
+    userErrorCode = U_NOERROR;  //存放错误码
+    m_systemCall = &Kernel::Instance().GetFileManager();
+
+    dirp = "/";                                   //系统调用参数(一般用于Pathname)的指针
+    curDirPath = "/";                             //当前工作目录完整路径
+    nowDirINodePointer = m_systemCall->rootDirINode;//指向当前目录的Inode指针
+    paDirINodePointer = NULL;                     //指向父目录的Inode指针
+    memset(arg, 0, sizeof(arg));                  //指向核心栈现场保护区中EAX寄存器
 }
 
 UserCall::~UserCall() {}

@@ -1,15 +1,18 @@
 #include "BufferManager.h"
 #include "Utility.h"
-
-extern DiskDriver g_DiskDriver;
+#include "Kernel.h"
 
 //CacheBlock只用到了两个标志，B_DONE和B_DELWRI，分别表示已经完成IO和延迟写的标志。
 //空闲Buffer无任何标志
 BufferManager::BufferManager()
 {
-	bufferList = new Buf;
-	InitList();
-    m_diskDriver = &g_DiskDriver;
+
+}
+
+void BufferManager::Initialize() {
+    bufferList = new Buf;
+    InitList();
+    m_diskDriver = &Kernel::Instance().GetDiskDriver();
 }
 
 BufferManager::~BufferManager()

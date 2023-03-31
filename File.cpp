@@ -40,7 +40,7 @@ int ProcessOpenFile::AllocFreeSlot()
 		}
 
     g_UserCall.ar0[UserCall::EAX] = -1; //Open1，需要一个标志。当打开文件结构创建失败时，可以回收系统资源
-	g_UserCall.userErrorCode = UserCall::U_EMFILE;
+    g_UserCall.userErrorCode = UserCall::U_EMFILE;
 	return -1;
 }
 

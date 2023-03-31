@@ -43,6 +43,7 @@ public:
 public:
 	UserCall();
 	~UserCall();
+    void Initialize();
 
 	void userLs();
 	void userCd(string dirName);

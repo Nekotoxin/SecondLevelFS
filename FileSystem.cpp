@@ -1,28 +1,31 @@
 #include "Utility.h"
 #include "FileSystem.h"
-#include "UserCall.h"
-#include "DiskDriver.h"
 #include "OpenFileManager.h"
 #include "BufferManager.h"
+#include "Kernel.h"
 #include <ctime>
+#include "UserCall.h"
 
-extern DiskDriver g_DiskDriver;
-extern BufferManager g_BufferManager;
-extern SuperBlock g_SuperBlock;
 extern INodeTable g_INodeTable;
 extern UserCall g_UserCall;
+SuperBlock g_SuperBlock;
 
-FileSystem::FileSystem() 
-{
-    m_diskDriver = &g_DiskDriver;
-    m_superBlock = &g_SuperBlock;
-    m_bufferManager = &g_BufferManager;
 
-	if (!m_diskDriver->Exists())
-        Initialize();
-	else
-		LoadSuperBlock();
+FileSystem::FileSystem(){
+
 }
+
+void FileSystem::Initialize() {
+    m_diskDriver = &Kernel::Instance().GetDiskDriver();
+    m_superBlock = &g_SuperBlock;
+    m_bufferManager = &Kernel::Instance().GetBufferManager();
+
+    if (!m_diskDriver->Exists())
+        Format();
+    else
+        LoadSuperBlock();
+}
+
 
 FileSystem::~FileSystem() 
 {
@@ -33,7 +36,7 @@ FileSystem::~FileSystem()
 
 
 //格式化整个文件系统
-void FileSystem::Initialize()
+void FileSystem::Format()
 {
     // initialize superblock
     m_superBlock->s_isize = FileSystem::INODE_SECTOR_NUMBER;
@@ -198,4 +201,8 @@ void FileSystem::Free(int blkno)
 
     m_superBlock->s_free[m_superBlock->s_nfree++] = blkno;
     m_superBlock->s_fmod = 1;
+}
+
+SuperBlock *FileSystem::GetFS() {
+    return &g_SuperBlock;
 }

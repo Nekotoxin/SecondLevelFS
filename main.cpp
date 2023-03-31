@@ -4,20 +4,12 @@
 #include "OpenFileManager.h"
 #include "FileManager.h"
 #include "UserCall.h"
+#include "Kernel.h"
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
 using namespace std;
-
-DiskDriver g_DiskDriver;
-BufferManager g_BufferManager;
-OpenFileTable g_OpenFileTable;
-SuperBlock g_SuperBlock;
-FileSystem g_FileSystem;
-INodeTable g_INodeTable;
-FileManager g_SystemCall;
-UserCall g_UserCall;
-
+extern UserCall g_UserCall;
 bool AutoTest()
 {
 	UserCall& User = g_UserCall;
@@ -125,7 +117,10 @@ bool AutoTest()
 
 int main() 
 {
-	UserCall& User = g_UserCall;
+//	UserCall& u = g_UserCall;
+    Kernel::Instance().Initialize();
+    UserCall& u = g_UserCall;
+
 	cout << "***************************************************************************************" << endl
 		<< "*                                                                                     *" << endl
 		<< "*                                   类Unix文件系统                                    *" << endl
@@ -155,7 +150,7 @@ int main()
 	string line, opt, val[3];
 	while (true) 
 	{
-		cout << "shell " << User.curDirPath << " > ";
+		cout << "shell " << u.curDirPath << " > ";
 		getline(cin, line);
 		if (line.size() == 0) 
 			continue;
@@ -167,47 +162,47 @@ int main()
 		//格式化文件系统
 		if (opt == "fformat") {
 			//Us.userCd("/");
-			g_OpenFileTable.Reset();
-			g_INodeTable.Reset();
-			g_BufferManager.FormatBuffer();
-            g_FileSystem.Initialize();
+//			g_OpenFileTable.Reset();
+//			g_INodeTable.Reset();
+//			g_BufferManager.FormatBuffer();
+//            g_FileSystem.Format();
 			//g_UserCall.ofiles.Reset();
 			cout << "格式化完毕，文件系统已退出，请重新启动！" << endl;
 			return 0;
 		}
 		//查看当前目录内容
 		else if (opt == "ls")
-			User.userLs();
+			u.userLs();
 		//生成文件夹
 		else if (opt == "mkdir") {
 			in >> val[0];
 			if (val[0][0] != '/')
-				val[0] = User.curDirPath + val[0];
-			User.userMkDir(val[0]);
+				val[0] = u.curDirPath + val[0];
+			u.userMkDir(val[0]);
 		}
 		//进入目录
 		else if (opt == "cd") {
 			in >> val[0];
-			User.userCd(val[0]);
+			u.userCd(val[0]);
 		}
 		//创建文件名为filename的文件
 		else if (opt == "fcreate") {
 			in >> val[0];
 			if (val[0][0] != '/')
-				val[0] = User.curDirPath + val[0];
-			User.userCreate(val[0]);
+				val[0] = u.curDirPath + val[0];
+			u.userCreate(val[0]);
 		}
 		//打开文件名为filename的文件
 		else if (opt == "fopen") {
 			in >> val[0];
-			if (g_UserCall.ar0[UserCall::EAX] == 0) {
-				User.userMkDir("demo");
-				User.userDelete("demo");
+			if (u.ar0[UserCall::EAX] == 0) {
+				u.userMkDir("demo");
+				u.userDelete("demo");
 			}
 			if (val[0][0] != '/')
-				val[0] = User.curDirPath + val[0];
+				val[0] = u.curDirPath + val[0];
 			
-			User.userOpen(val[0]);
+			u.userOpen(val[0]);
 		}
 		//退出系统，并将缓存内容存至磁盘
 		else if (opt == "exit")
@@ -215,48 +210,48 @@ int main()
 		//关闭文件句柄为fd的文件
 		else if (opt == "fclose") {
 			in >> val[0];
-			User.userClose(val[0]);
+			u.userClose(val[0]);
 		}
 		else if (opt == "fseek") {
 			in >> val[0] >> val[1] >> val[2];
 			//以begin模式把fd文件指针偏移step
 			if (val[2] == "begin")
-				User.userSeek(val[0], val[1], string("0"));
+				u.userSeek(val[0], val[1], string("0"));
 			//以cur模式把fd文件指针偏移step
 			else if (val[2] == "cur")
-				User.userSeek(val[0], val[1], string("1"));
+				u.userSeek(val[0], val[1], string("1"));
 			//以end模式把fd文件指针偏移step
 			else if (val[2] == "end")
-				User.userSeek(val[0], val[1], string("2"));
+				u.userSeek(val[0], val[1], string("2"));
 		}
 		//从fd文件读取size字节，输出到outfile
 		//从fd文件读取size字节，输出到屏幕
 		else if (opt == "fread") {
 			in >> val[0] >> val[1] >> val[2];
-			User.userRead(val[0], val[1], val[2]);
+			u.userRead(val[0], val[1], val[2]);
 		}
 		//从infile输入，写入fd文件size字节
 		else if (opt == "fwrite") {
 			in >> val[0] >> val[1] >> val[2];
-			User.userWrite(val[0], val[1], val[2]);
+			u.userWrite(val[0], val[1], val[2]);
 		}
 		//删除文件文件名为filename的文件或者文件夹
 		else if (opt == "fdelete") {
 			in >> val[0];
 			if (val[0][0] != '/')
-				val[0] = User.curDirPath + val[0];
-			User.userDelete(val[0]);
+				val[0] = u.curDirPath + val[0];
+			u.userDelete(val[0]);
 		}
 		else if (opt == "test")
 			AutoTest();
 		//重命名文件或文件夹
 		else if (opt == "frename") {
 			in >> val[0] >> val[1];
-			User.userRename(val[0], val[1]);
+			u.userRename(val[0], val[1]);
 		}
 		else if (opt == "ftree") {
 			in >> val[0];
-			User.userTree(val[0]);
+			u.userTree(val[0]);
 		}
 		else if (opt == "help") {
 			in >> val[0];

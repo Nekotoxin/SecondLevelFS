@@ -1,14 +1,16 @@
 #include "Utility.h"
 #include "OpenFileManager.h"
 #include "UserCall.h"
+#include "Kernel.h"
 #include <ctime>
 
-extern UserCall g_UserCall;
 extern INodeTable g_INodeTable;
-extern FileSystem g_FileSystem;
-extern BufferManager g_BufferManager;
+extern UserCall g_UserCall;
 
-OpenFileTable::OpenFileTable() 
+OpenFileTable g_OpenFileTable;
+INodeTable g_INodeTable;
+
+OpenFileTable::OpenFileTable()
 {
 }
 
@@ -52,13 +54,19 @@ void OpenFileTable::CloseF(File* pFile)
 
 INodeTable::INodeTable() 
 {
-    m_fileSystem = &g_FileSystem;
+
 }
 
 INodeTable::~INodeTable() 
 {
 
 }
+
+void INodeTable::Initialize() {
+    m_fileSystem = &Kernel::Instance().GetFileSystem();
+    m_bufferManager = &Kernel::Instance().GetBufferManager();
+}
+
 
 void INodeTable::Reset() 
 {
@@ -106,9 +114,9 @@ INode* INodeTable::IGet(int inumber)
 
 	pINode->i_number = inumber;
 	pINode->i_count++;
-	Buf* pCache = g_BufferManager.Bread(FileSystem::INODE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
+	Buf* pCache = m_bufferManager->Bread(FileSystem::INODE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
 	pINode->ICopy(pCache, inumber);
-	g_BufferManager.Brelse(pCache);
+    m_bufferManager->Brelse(pCache);
 	return pINode;
 }
 
@@ -144,3 +152,4 @@ void INodeTable::UpdateINodeTable()
 		if (this->m_INode[i].i_count)
 			this->m_INode[i].IUpdate((int)time(NULL));
 }
+

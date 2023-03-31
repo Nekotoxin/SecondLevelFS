@@ -21,6 +21,7 @@ private:
 public:
 	BufferManager();
 	~BufferManager();
+    void Initialize();
 	Buf* GetBlk(int blkno);         //申请一块缓存，用于读写设备上的块blkno
 	void Brelse(Buf* bp);           //释放缓存控制块buf
 	Buf* Bread(int blkno);          //读一个磁盘块，blkno为目标磁盘块逻辑块号

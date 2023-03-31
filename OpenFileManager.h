@@ -15,6 +15,9 @@ public:
 public:
 	File sysFileTable[MAX_FILES];            //系统打开文件表，为所有进程共享，进程打开
 	                                         //文件描述符表中包含指向打开文件表中对应File结构的指针
+
+//    DiskDriver* m_diskDriver;
+//    BufferManager* m_bufferManager;
 public:
 	OpenFileTable();
 	~OpenFileTable();
@@ -32,10 +35,12 @@ public:
 private:
 	INode m_INode[NINODE];              //内存INode数组，每个打开文件都会占用一个内存INode
 	FileSystem* m_fileSystem;                  //对全局对象g_FileSystem的引用
+    BufferManager* m_bufferManager;
 
 public:
 	INodeTable();
 	~INodeTable();
+    void Initialize();
 	INode* IGet(int inumber);                //根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode；
 		                                       //如果不在内存中，则将其读入内存后上锁并返回该内存INode
 	void IPut(INode* pNode);                 //减少该内存INode的引用计数，如果此INode已经没有目录项指向它，

@@ -3,6 +3,7 @@
 #include "INode.h"
 #include "BufferManager.h"
 #include "DiskDriver.h"
+//#include "UserCall.h"
 /* 磁盘文件结构：SuperBlock + DiskINode + 文件数据区 */
 
 /* 文件系统存储资源管理块(SuperBlock结构) 1024字节 */
@@ -61,7 +62,8 @@ public:
 	~FileSystem();
 
 //	void FormatSuperBlock();//格式化SuperBlock
-	void Initialize();    //格式化整个文件系统
+	void Format();    //格式化整个文件系统
+    void Initialize();
 
 	/* 在操作系统初始化时，会将磁盘的SuperBlock读入一个内存的SuperBlock副本，以便于内核以更快的速度随时访问内存副本。
 	一旦内存中的副本发生变化，会通过设置s_fmod标志，由内核将内存副本写入磁盘 */
@@ -74,4 +76,6 @@ public:
 
 	Buf* Alloc();    //在存储设备上分配空闲磁盘块
 	void Free(int blkno);   //释放存储设备上编号为blkno的磁盘块
+
+    SuperBlock* GetFS();
 };

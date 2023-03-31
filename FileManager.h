@@ -28,10 +28,12 @@ public:
 	FileSystem* m_fileSystem;      //对全局对象g_FileSystem的引用，该对象负责管理文件系统存储资源
 	INodeTable* m_inodeTable;      //对全局对象g_INodeTable的引用，该对象负责内存INode表的管理
 	OpenFileTable* m_openFileTable;//对全局对象g_OpenFileTable的引用，该对象负责打开文件表项的管理
+    BufferManager* m_BufferManager;
 
 public:
 	FileManager();
 	~FileManager();
+    void Initialize();
 	void Open();                          //Open()系统调用处理过程
 	void Creat();                         //Creat()系统调用处理过程
 	void Open1(INode* pINode, int trf);   //Open()、Creat()系统调用的公共部分
