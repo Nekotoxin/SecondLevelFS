@@ -12,23 +12,28 @@
 #include "UserCall.h"
 
 
-class Kernel
-{
+class Kernel {
 public:
 // 定义一些全局常量
 
 
 // 工具函数
     Kernel();
+
     ~Kernel();
-    static Kernel& Instance();
+
+    static Kernel &Instance();
+
     void Initialize(); //文件系统初始化
     void Quit();       //退出文件系统
 // Kernel的子组件
-    DiskDriver& GetDiskDriver();
-    BufferManager& GetBufferManager();
-    FileSystem& GetFileSystem();
-    FileManager& GetFileManager();
+    DiskDriver &GetDiskDriver();
+
+    BufferManager &GetBufferManager();
+
+    FileSystem &GetFileSystem();
+
+    FileManager &GetFileManager();
 //    User& GetSuperUser();
 //    User& GetUser(); //作为单体实例，单用户时放在这里，多用户时放在线程局部数据中
 //    UserManager& GetUserManager();
@@ -51,10 +56,10 @@ private:
     static Kernel instance; // 单体实例
 
 // 指向子组件的指针
-    DiskDriver* m_DiskDriver;
-    BufferManager*  m_BufferManager;
-    FileSystem*  m_FileSystem;
-    FileManager* m_FileManager;
+    DiskDriver *m_DiskDriver;
+    BufferManager *m_BufferManager;
+    FileSystem *m_FileSystem;
+    FileManager *m_FileManager;
 //    User* m_User;
 //    UserManager* m_UserManager;
 };

@@ -1,7 +1,9 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <cstdio>
 #include <iostream>
+
 using namespace std;
 
 /* 缓存块
@@ -9,44 +11,40 @@ using namespace std;
 * 缓存编号以及缓存的前后指针等信息。
 */
 //分配和释放的操作也非常简单，分配是从队列头取第一个缓存块，释放时将该缓存块标志位置换后放在队列尾部。
-class Buf
-{
+class Buf {
 public:
-	//flags中的标志位
-	enum CacheBlockFlag
-	{
-		CB_DONE = 0x1,    //I/O操作结束
-		CB_DELWRI = 0x2   //延迟写，对应的缓存有其他用途时，将其内容写到对应的块设备上
-	};
-	unsigned int flags;   //缓存控制块标志位
+    //flags中的标志位
+    enum CacheBlockFlag {
+        CB_DONE = 0x1,    //I/O操作结束
+        CB_DELWRI = 0x2   //延迟写，对应的缓存有其他用途时，将其内容写到对应的块设备上
+    };
+    unsigned int flags;   //缓存控制块标志位
 
-	Buf* forw;
-	Buf* back;
+    Buf *forw;
+    Buf *back;
 
-	int wcount;		      //需传送的字节数
-	unsigned char* addr;  //指向该缓存控制块所管理的缓冲区的首地址
-	int	blkno;		      //磁盘逻辑块号
-	int no;
+    int wcount;              //需传送的字节数
+    unsigned char *addr;  //指向该缓存控制块所管理的缓冲区的首地址
+    int blkno;              //磁盘逻辑块号
+    int no;
 
-	Buf()
-	{
-		flags = 0;
-		forw = NULL;
-		back = NULL;
-		wcount = 0;
-		addr = NULL;
-		blkno = -1;
-		no = 0;
-	}
+    Buf() {
+        flags = 0;
+        forw = NULL;
+        back = NULL;
+        wcount = 0;
+        addr = NULL;
+        blkno = -1;
+        no = 0;
+    }
 
-	void Reset() 
-	{
-		flags = 0;
-		forw = NULL;
-		back = NULL;
-		wcount = 0;
-		addr = NULL;
-		blkno = -1;
-		no = 0;
-	}
+    void Reset() {
+        flags = 0;
+        forw = NULL;
+        back = NULL;
+        wcount = 0;
+        addr = NULL;
+        blkno = -1;
+        no = 0;
+    }
 };

@@ -12,8 +12,6 @@ FileManager g_FileManager;
 extern UserCall g_UserCall;
 
 
-
-
 Kernel::Kernel() {
 
 }
