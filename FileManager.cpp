@@ -13,7 +13,7 @@ void FileManager::Initialize() {
     m_openFileTable = &g_OpenFileTable;
     m_inodeTable = &g_INodeTable;
     m_inodeTable->Initialize();
-    rootDirINode = m_inodeTable->IGet(FileSystem::ROOT_INODE_NO);//根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode；
+    rootDirINode = m_inodeTable->IGet(FileSystem::ROOTINO);//根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode；
     //如果不在内存中，则将其读入内存后上锁并返回该内存INode
     //文件系统根目录外存INode编号
     rootDirINode->i_count += 0xff;//引用计数

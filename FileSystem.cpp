@@ -15,9 +15,11 @@ void FileSystem::Initialize() {
     m_bufferManager = &Kernel::Instance().GetBufferManager();
 
     if (!m_diskDriver->Exists())
-        Format();
+        FormatFS();
     else
         LoadSuperBlock();
+    // 定义是否使用mmap
+    this->m_diskDriver->UseMMAP();
 }
 
 
@@ -29,43 +31,48 @@ FileSystem::~FileSystem() {
 
 
 //格式化整个文件系统
-void FileSystem::Format() {
-    // initialize superblock
-    m_superBlock->s_isize = FileSystem::INODE_SECTOR_NUMBER;
-    m_superBlock->s_fsize = FileSystem::DISK_SECTOR_NUMBER;
+void FileSystem::FormatFS() {
+    m_diskDriver->OpenIMGFile(); // 打开磁盘文件
+    // 初始化SuperBlock
+    m_superBlock->s_isize = FileSystem::INODE_ZONE_SIZE;
+    m_superBlock->s_fsize = FileSystem::DATA_END_SECTOR + 1;
     m_superBlock->s_nfree = 0;
-    m_superBlock->s_free[0] = -1;
+    m_superBlock->s_free[0] = -1; // -1表示空闲盘块索引表已经用完
     m_superBlock->s_ninode = 0;
     m_superBlock->s_fmod = 0;
-    time((time_t *) &m_superBlock->s_time);
+    time((time_t *) &m_superBlock->s_time); // 获取当前时间
+    m_diskDriver->write((uint8 *) (m_superBlock), sizeof(SuperBlock), 0); // 将SuperBlock写入磁盘
 
-    m_diskDriver->Construct();
-    m_diskDriver->write((uint8 *) (m_superBlock), sizeof(SuperBlock), 0);
-
-    DiskINode emptyDINode, rootDINode;
-    rootDINode.d_mode |= INode::IALLOC | INode::IFDIR;
-    m_diskDriver->write((uint8 *) &rootDINode, sizeof(rootDINode));
-    for (int i = 1; i < FileSystem::INODE_NUMBER_ALL; ++i) {
-        if (m_superBlock->s_ninode < SuperBlock::MAX_NUMBER_INODE)
-            m_superBlock->s_inode[m_superBlock->s_ninode++] = i;
-        m_diskDriver->write((uint8 *) &emptyDINode, sizeof(emptyDINode));
+    // 初始化INode区
+    DiskINode rootInode;
+    rootInode.d_mode |= INode::IALLOC | INode::IFDIR; // 设置根目录的属性
+    m_diskDriver->write((uint8 *) &rootInode, sizeof(rootInode)); // 将根目录的INode写入磁盘
+    DiskINode ZeroInode;
+    for (int i = 1; i < FileSystem::INODE_ZONE_SIZE * FileSystem::INODE_NUMBER_PER_SECTOR; ++i) {
+        if (m_superBlock->s_ninode < SuperBlock::S_ISTACK_SIZE) {
+            m_superBlock->s_inode[m_superBlock->s_ninode++] = i; // 将空的INode编号写入SuperBlock的索引表
+        }
+        m_diskDriver->write((uint8 *) &ZeroInode, sizeof(ZeroInode));
     }
-    char freeBlock[BLOCK_SIZE], freeBlock1[BLOCK_SIZE];
-    memset(freeBlock, 0, BLOCK_SIZE);
-    memset(freeBlock1, 0, BLOCK_SIZE);
-
+    // 初始化数据区
+    char dataBlock[BLOCK_SIZE];
     for (int i = 0; i < FileSystem::DATA_SECTOR_NUMBER; ++i) {
-        if (m_superBlock->s_nfree >= SuperBlock::MAX_NUMBER_FREE) {
-            memcpy(freeBlock1, &m_superBlock->s_nfree, sizeof(int) + sizeof(m_superBlock->s_free));
-            m_diskDriver->write((uint8 *) &freeBlock1, BLOCK_SIZE);
-            m_superBlock->s_nfree = 0;
-        } else
-            m_diskDriver->write((uint8 *) freeBlock, BLOCK_SIZE);
-        m_superBlock->s_free[m_superBlock->s_nfree++] = i + FileSystem::DATA_START_SECTOR;
+        if (m_superBlock->s_nfree >= SuperBlock::S_FSTACK_SIZE) {
+            // 这是队长块，记录了下一组空闲盘块的数量和编号
+            ((int *) dataBlock)[0] = m_superBlock->s_nfree; // 记录下一组空闲盘块的数量
+            memcpy(dataBlock + sizeof(int), &m_superBlock->s_free, sizeof(m_superBlock->s_free));
+            m_diskDriver->write((uint8 *) &dataBlock, BLOCK_SIZE); // 将队长块写入磁盘
+            m_superBlock->s_nfree = 0; // 开始下一组的记数
+        } else {
+            // 这是普通块，全部初始化为0
+            memset(dataBlock, 0, BLOCK_SIZE);
+            m_diskDriver->write((uint8 * ) & dataBlock, BLOCK_SIZE);
+        }
+        m_superBlock->s_free[m_superBlock->s_nfree++] = i + FileSystem::DATA_START_SECTOR; // 将空闲盘块的编号写入SuperBlock的索引表
     }
 
     time((time_t *) &m_superBlock->s_time);
-    m_diskDriver->write((uint8 *) (m_superBlock), sizeof(SuperBlock), 0);
+    m_diskDriver->write((uint8 *) (m_superBlock), sizeof(SuperBlock), 0); // 更新SuperBlock
 }
 
 //系统初始化时读入SuperBlock
@@ -86,7 +93,7 @@ void FileSystem::Update() {
     m_superBlock->s_time = (int) time(NULL);
     for (int j = 0; j < 2; j++) {
         int *p = (int *) m_superBlock + j * 128;
-        pCache = this->m_bufferManager->GetBlk(FileSystem::SUPERBLOCK_START_SECTOR + j);
+        pCache = this->m_bufferManager->GetBlk(FileSystem::SUPER_BLOCK_SECTOR_NUMBER + j);
         memcpy(pCache->addr, p, BLOCK_SIZE);
         this->m_bufferManager->Bwrite(pCache);
     }
@@ -140,24 +147,24 @@ INode *FileSystem::IAlloc() {
         ino = -1;
         pthread_mutex_lock(&m_superBlock->s_ilock);
         for (int i = 0; i < m_superBlock->s_isize; ++i) {
-            pCache = this->m_bufferManager->Bread(FileSystem::INODE_START_SECTOR + i);
+            pCache = this->m_bufferManager->Bread(FileSystem::INODE_ZONE_START_SECTOR + i);
             int *p = (int *) pCache->addr;
             for (int j = 0; j < FileSystem::INODE_NUMBER_PER_SECTOR; ++j) {
                 ++ino;
-                int mode = *(p + j * FileSystem::INODE_SIZE / sizeof(int));
+                int mode = *(p + j * 64 / sizeof(int)); // 64: sizeof(Inode)
                 if (mode)
                     continue;
                 //如果外存inode的i_mode == 0，此时并不能确定该inode是空闲的，
                 //因为有可能是内存inode没有写到磁盘上, 所以要继续搜索内存inode中是否有相应的项
                 if (g_INodeTable.IsLoaded(ino) == -1) {
                     m_superBlock->s_inode[m_superBlock->s_ninode++] = ino;
-                    if (m_superBlock->s_ninode >= SuperBlock::MAX_NUMBER_INODE)
+                    if (m_superBlock->s_ninode >= SuperBlock::S_ISTACK_SIZE)
                         break;
                 }
             }
 
             this->m_bufferManager->Brelse(pCache);
-            if (m_superBlock->s_ninode >= SuperBlock::MAX_NUMBER_INODE)
+            if (m_superBlock->s_ninode >= SuperBlock::S_ISTACK_SIZE)
                 break;
         }
         pthread_mutex_unlock(&m_superBlock->s_ilock);
@@ -180,7 +187,7 @@ INode *FileSystem::IAlloc() {
 
 //释放编号为number的外存INode，一般用于删除文件
 void FileSystem::IFree(int number) {
-    if (m_superBlock->s_ninode >= SuperBlock::MAX_NUMBER_INODE)
+    if (m_superBlock->s_ninode >= SuperBlock::S_ISTACK_SIZE)
         return;
     m_superBlock->s_inode[m_superBlock->s_ninode++] = number;
     m_superBlock->s_fmod = 1;
@@ -190,11 +197,11 @@ void FileSystem::IFree(int number) {
 void FileSystem::Free(int blkno) {
     Buf *pCache;
     pthread_mutex_lock(&m_superBlock->s_flock);
-    if (m_superBlock->s_nfree >= SuperBlock::MAX_NUMBER_FREE) {
+    if (m_superBlock->s_nfree >= SuperBlock::S_FSTACK_SIZE) {
         pCache = this->m_bufferManager->GetBlk(blkno);
         int *p = (int *) pCache->addr;
         *p++ = m_superBlock->s_nfree;
-        memcpy(p, m_superBlock->s_free, sizeof(int) * SuperBlock::MAX_NUMBER_FREE);
+        memcpy(p, m_superBlock->s_free, sizeof(int) * SuperBlock::S_FSTACK_SIZE);
         m_superBlock->s_nfree = 0;
         this->m_bufferManager->Bwrite(pCache);
     }

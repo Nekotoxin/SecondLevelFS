@@ -98,7 +98,7 @@ INode *INodeTable::IGet(int inumber) {
     pINode->i_number = inumber;
     pINode->i_count++;
     Buf *pCache = m_bufferManager->Bread(
-            FileSystem::INODE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
+            FileSystem::INODE_ZONE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
     pINode->ICopy(pCache, inumber);
     m_bufferManager->Brelse(pCache);
     return pINode;

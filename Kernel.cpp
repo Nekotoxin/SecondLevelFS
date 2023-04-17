@@ -48,7 +48,7 @@ void Kernel::Initialize() {
     this->m_FileManager = &g_FileManager;
     g_FileManager.Initialize();
     User *u = Kernel::Instance().GetUserManager().GetUser();
-    u->u_cdir = g_INodeTable.IGet(FileSystem::ROOT_INODE_NO);
+    u->u_cdir = g_INodeTable.IGet(FileSystem::ROOTINO);
     m_FileManager->rootDirINode->NFrele();
     u->u_curdir = "/";
     printf("[INFO] root 登录成功.\n", pthread_self());

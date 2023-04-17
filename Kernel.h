@@ -14,10 +14,6 @@
 
 class Kernel {
 public:
-// 定义一些全局常量
-
-
-// 工具函数
     Kernel() = default;
 
     ~Kernel() = default;
@@ -37,12 +33,7 @@ public:
 
     UserManager &GetUserManager();
 
-//    User& GetSuperUser();
     User &GetUser(); //作为单体实例，单用户时放在这里，多用户时放在线程局部数据中
-
-
-private:
-// Kernel子组件的初始化函数
 
 private:
     static Kernel instance; // 单体实例

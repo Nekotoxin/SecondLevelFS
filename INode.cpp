@@ -224,7 +224,7 @@ void INode::IUpdate(int time) {
     //目录搜索，不会设置所途径的目录文件的IACC和IUPD标志
     if (this->i_flag & (INode::IUPD | INode::IACC)) {
         pCache = bufferManager.Bread(
-                FileSystem::INODE_START_SECTOR + this->i_number / FileSystem::INODE_NUMBER_PER_SECTOR);
+                FileSystem::INODE_ZONE_START_SECTOR + this->i_number / FileSystem::INODE_NUMBER_PER_SECTOR);
         dINode.d_mode = this->i_mode;
         dINode.d_nlink = this->i_nlink;
         dINode.d_size = this->i_size;
