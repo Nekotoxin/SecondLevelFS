@@ -15,19 +15,17 @@ public:
 
     ~UserManager();
 
-    // 用户登录
     bool Login(string uname);
 
-    // 用户登出
     bool Logout();
 
-    // 得到当前线程的User结构
+    // 获得当前线程User
     User *GetUser();
 
 public:
-    // 一个动态的索引表
+    // 线程pid -> User数组索引
     std::map<pthread_t, int> user_addr;
-    // 一个User数组
+    // User数组
     User *pusers[USER_N];
 };
 
