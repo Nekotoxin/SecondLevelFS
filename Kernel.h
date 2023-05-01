@@ -22,7 +22,7 @@ public:
 
     void Initialize(); /* 文件系统初始化 */
     void Quit();       /* 退出文件系统 */
-/*  Kernel的子组件 */
+    /*  Kernel的子组件 */
     DiskDriver &GetDiskDriver();
 
     BufferManager &GetBufferManager();

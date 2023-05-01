@@ -4,7 +4,6 @@
 #include "INode.h"
 #include "BufferManager.h"
 #include "DiskDriver.h"
-/* #include "SysCall.h" */
 /* 磁盘文件结构：SuperBlock + DiskINode + 文件数据区 */
 
 /* 文件系统存储资源管理块(SuperBlock结构) 1024字节 */
@@ -18,14 +17,14 @@ public:
     int s_fsize;                /* 文件系统的数据盘块总数  16384 - 1024 = 15360 */
 
     int s_nfree;                /* 直接管理的空闲盘块数量 */
-    int s_free[S_FSTACK_SIZE];/* 直接管理的空闲盘块索引表 */
+    int s_free[S_FSTACK_SIZE];  /* 直接管理的空闲盘块索引表 */
 
-    int s_ninode;                  /* 直接管理的空闲外存INode数量 */
-    int s_inode[S_ISTACK_SIZE];/* 直接管理的空闲外存INode索引表 */
+    int s_ninode;                   /* 直接管理的空闲外存INode数量 */
+    int s_inode[S_ISTACK_SIZE];     /* 直接管理的空闲外存INode索引表 */
 
-    int s_fmod;                    /* 内存中super block副本被修改标志，意味着需要更新外存对应的Super Block */
-    int s_time;                    /* 最近一次更新时间 */
-    int padding[38];            /* 填充使SuperBlock块大小等于1024字节，占据2个扇区 */
+    int s_fmod;                     /* 内存中super block副本被修改标志，意味着需要更新外存对应的Super Block */
+    int s_time;                     /* 最近一次更新时间 */
+    int padding[38];                /* 填充使SuperBlock块大小等于1024字节，占据2个扇区 */
 
     pthread_mutex_t s_flock;        /* 封锁空闲盘块索引表标志 */
     pthread_mutex_t s_ilock;        /* 封锁空闲Inode表标志 */

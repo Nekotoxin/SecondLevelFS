@@ -2,8 +2,6 @@
 #include "File.h"
 #include "Kernel.h"
 
-/* extern SysCall g_UserCall; */
-
 File::File() {
     count = 0;
     inode = NULL;

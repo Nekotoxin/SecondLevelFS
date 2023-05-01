@@ -64,11 +64,11 @@ public:
     int u_arg[5];                       /* 存放当前系统调用参数 */
     /* 系统调用相关成员 */
     uint32 u_ar0[5];                    /*     指向核心栈现场保护区中EAX寄存器 */
-/* 存放的栈单元，本字段存放该栈单元的地址。
- * 在V6中r0存放系统调用的返回值给用户程序，
- * x86平台上使用EAX存放返回值，替代u.u_ar0[R0] */
-    ErrorCode u_error;          /* 存放错误码 */
-    OpenFiles u_ofiles;           /* 进程打开文件描述符表对象 */
+    /* 存放的栈单元，本字段存放该栈单元的地址。
+     * 在V6中r0存放系统调用的返回值给用户程序，
+     * x86平台上使用EAX存放返回值，替代u.u_ar0[R0] */
+    ErrorCode u_error;                  /* 存放错误码 */
+    OpenFiles u_ofiles;                 /* 进程打开文件描述符表对象 */
     IOParameter u_IOParam;              /* 记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数 */
     string ls;
 

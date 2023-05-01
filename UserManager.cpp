@@ -87,9 +87,9 @@ bool UserManager::Login(string uname) {
 }
 
 bool UserManager::Logout() {
-/* 将系统更新至磁盘
- * SecondFileKernel::Instance().Quit();
- * 取得线程 id */
+    /* 将系统更新至磁盘
+     * SecondFileKernel::Instance().Quit();
+     * 取得线程 id */
     pthread_t pthread_id = pthread_self();
     /*  检查该线程是否已登录 */
     if (user_addr.find(pthread_id) == user_addr.end()) {

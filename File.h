@@ -2,15 +2,14 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "INode.h"
-/* #include "SysCall.h" */
 /*    打开文件控制块File类。
  * 该结构记录了进程打开文件的读、写请求类型，文件读写位置等等。
  */
 class File {
 public:
     enum FileFlags {
-        FREAD = 0x1,    /* 读请求类型 */
-        FWRITE = 0x2,    /* 写请求类型 */
+        FREAD = 0x1,        /* 读请求类型 */
+        FWRITE = 0x2,       /* 写请求类型 */
     };
 
 public:
@@ -20,10 +19,10 @@ public:
 
     void Reset();
 
-    unsigned int flag;    /* 对打开文件的读、写操作要求 */
-    int count;            /* 当前引用该文件控制块的进程数量，若为0则表示该File空闲，可以分配作他用 */
-    INode *inode;        /* 指向打开文件的内存INode指针 */
-    int offset;            /* 文件读写位置指针 */
+    unsigned int flag;      /* 对打开文件的读、写操作要求 */
+    int count;              /* 当前引用该文件控制块的进程数量，若为0则表示该File空闲，可以分配作他用 */
+    INode *inode;           /* 指向打开文件的内存INode指针 */
+    int offset;             /* 文件读写位置指针 */
 };
 
 /*     进程打开文件描述符表(OpenFiles)的定义
@@ -31,10 +30,10 @@ public:
  */
 class OpenFiles {
 public:
-    static const int MAX_FILES = 100;        /* 进程允许打开的最大文件数 */
+    static const int MAX_FILES = 100;           /* 进程允许打开的最大文件数 */
 
 private:
-    File *processOpenFileTable[MAX_FILES];    /* File对象的指针数组，指向系统打开文件表中的File对象 */
+    File *processOpenFileTable[MAX_FILES];      /* File对象的指针数组，指向系统打开文件表中的File对象 */
 
 public:
     OpenFiles();
@@ -55,7 +54,7 @@ public:
  */
 class IOParameter {
 public:
-    unsigned char *base;    /* 当前读、写用户目标区域的首地址 */
-    int offset;                /* 当前读、写文件的字节偏移量 */
-    int count;                /* 当前还剩余的读、写字节数量 */
+    unsigned char *base;        /* 当前读、写用户目标区域的首地址 */
+    int offset;                 /* 当前读、写文件的字节偏移量 */
+    int count;                  /* 当前还剩余的读、写字节数量 */
 };

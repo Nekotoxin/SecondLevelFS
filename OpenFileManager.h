@@ -14,11 +14,8 @@ public:
     static const int MAX_FILES = 100;        /*  打开文件控制块File结构的数量 */
 
 public:
-    File sysFileTable[MAX_FILES];            /* 系统打开文件表，为所有进程共享，进程打开 */
-    /* 文件描述符表中包含指向打开文件表中对应File结构的指针 */
+    File sysFileTable[MAX_FILES];            /* 系统打开文件表，为所有进程共享，进程打开 文件描述符表中包含指向打开文件表中对应File结构的指针 */
 
-/* DiskDriver* m_diskDriver;
- * BufferManager* m_bufferManager; */
 public:
     OpenFileTable() = default;
 
@@ -35,10 +32,10 @@ public:
  */
 class INodeTable {
 public:
-    static const int NINODE = 100;           /* 内存INode的数量 */
+    static const int NINODE = 100;              /* 内存INode的数量 */
 private:
-    INode m_INode[NINODE];              /* 内存INode数组，每个打开文件都会占用一个内存INode */
-    FileSystem *m_fileSystem;                  /* 对全局对象g_FileSystem的引用 */
+    INode m_INode[NINODE];                      /* 内存INode数组，每个打开文件都会占用一个内存INode */
+    FileSystem *m_fileSystem;                   /* 对全局对象g_FileSystem的引用 */
     BufferManager *m_bufferManager;
 
 public:
@@ -48,13 +45,10 @@ public:
 
     void Initialize();
 
-    INode *IGet(int inumber);                /* 根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode； */
-    /* 如果不在内存中，则将其读入内存后上锁并返回该内存INode */
-    void IPut(INode *pNode);                 /* 减少该内存INode的引用计数，如果此INode已经没有目录项指向它， */
-    /* 且无进程引用该INode，则释放此文件占用的磁盘块 */
+    INode *IGet(int inumber);                /* 根据外存INode编号获取对应INode。如果该INode已经在内存中，返回该内存INode；如果不在内存中，则将其读入内存后上锁并返回该内存INode */
+    void IPut(INode *pNode);                 /* 减少该内存INode的引用计数，如果此INode已经没有目录项指向它，且无进程引用该INode，则释放此文件占用的磁盘块 */
     void UpdateINodeTable();                 /* 将所有被修改过的内存INode更新到对应外存INode中 */
-    int IsLoaded(int inumber);               /* 检查编号为inumber的外存INode是否有内存拷贝， */
-    /* 如果有则返回该内存INode在内存INode表中的索引 */
+    int IsLoaded(int inumber);               /* 检查编号为inumber的外存INode是否有内存拷贝，如果有则返回该内存INode在内存INode表中的索引 */
     INode *GetFreeINode();                   /* 在内存INode表中寻找一个空闲的内存INode */
     void Reset();
 };
