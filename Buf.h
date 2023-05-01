@@ -11,10 +11,10 @@ using namespace std;
 *     缓存对应的物理盘号，缓存的标志（是否已经和硬盘同步，或者是延迟写），
 * 缓存编号以及缓存的前后指针等信息。
 */
-//分配和释放的操作也非常简单，分配是从队列头取第一个缓存块，释放时将该缓存块标志位置换后放在队列尾部。
+/* 分配和释放的操作也非常简单，分配是从队列头取第一个缓存块，释放时将该缓存块标志位置换后放在队列尾部。 */
 class Buf {
 public:
-    //flags中的标志位
+    /* flags中的标志位 */
     enum BufFlag    /* b_flags中标志位 */
     {
         B_WRITE = 0x1,        /* 写操作。将缓存中的信息写到硬盘上去 */
@@ -26,14 +26,14 @@ public:
         B_ASYNC = 0x40,        /* 异步I/O，不需要等待其结束 */
         B_DELWRI = 0x80        /* 延迟写，在相应缓存要移做他用时，再将其内容写到相应块设备上 */
     };
-    unsigned int flags;   //缓存控制块标志位
+    unsigned int flags;   /* 缓存控制块标志位 */
 
     Buf *forw;
     Buf *back;
 
-    int wcount;              //需传送的字节数
-    unsigned char *addr;  //指向该缓存控制块所管理的缓冲区的首地址
-    int blkno;              //磁盘逻辑块号
+    int wcount;              /* 需传送的字节数 */
+    unsigned char *addr;  /* 指向该缓存控制块所管理的缓冲区的首地址 */
+    int blkno;              /* 磁盘逻辑块号 */
     int no;
     pthread_mutex_t buf_lock;
 

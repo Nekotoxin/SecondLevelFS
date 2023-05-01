@@ -1,6 +1,6 @@
-//
-// Created by nekotoxin on 23-3-31.
-//
+/* 
+ * Created by nekotoxin on 23-3-31.
+ * */
 
 #include "Kernel.h"
 #include <iostream>
@@ -59,8 +59,8 @@ UserManager &Kernel::GetUserManager() {
     return *(this->m_UserManager);
 }
 
-//此函数改变Usercall对象的dirp(系统调用参数 一般用于Pathname)数据成员
-//只检查文件名是否过长
+/* 此函数改变Usercall对象的dirp(系统调用参数 一般用于Pathname)数据成员
+ * 只检查文件名是否过长 */
 bool Kernel::checkPathName(string path) {
     if (path.empty()) {
         cout << "参数路径为空" << endl;
@@ -68,13 +68,13 @@ bool Kernel::checkPathName(string path) {
     }
     User *u = Kernel::Instance().GetUserManager().GetUser();
     if (path[0] == '/' || path.substr(0, 2) != "..")
-        u->u_dirp = path;            //系统调用参数(一般用于Pathname)的指针
+        u->u_dirp = path;            /* 系统调用参数(一般用于Pathname)的指针 */
     else {
         if (u->u_curdir.back() != '/')
             u->u_curdir += '/';
-        string pre = u->u_curdir;//当前工作目录完整路径 cd命令才会改变curDirPath的值
+        string pre = u->u_curdir;/* 当前工作目录完整路径 cd命令才会改变curDirPath的值 */
         unsigned int p = 0;
-        //可以多重相对路径 .. ../../
+        /* 可以多重相对路径 .. ../../ */
         for (; pre.length() > 3 && p < path.length() && path.substr(p, 2) == "..";) {
             pre.pop_back();
             pre.erase(pre.find_last_of('/') + 1);
@@ -102,7 +102,7 @@ void Kernel::sysMkDir(string dirName) {
     if (!checkPathName(dirName))
         return;
     User *u = Kernel::Instance().GetUserManager().GetUser();
-    u->u_arg[1] = INode::IFDIR;//存放当前系统调用参数 文件类型：目录文件
+    u->u_arg[1] = INode::IFDIR;/* 存放当前系统调用参数 文件类型：目录文件 */
     m_FileManager->Creat();
     checkError();
 }
@@ -155,7 +155,7 @@ void Kernel::__sysTree__(string path, int depth) {
             cout << "|   ";
         cout << "|---" << dirs[i] << endl;
         __sysCd__(nextDir);
-        if (u->u_error != NOERROR) {//访问到文件
+        if (u->u_error != NOERROR) {/* 访问到文件 */
             u->u_error = NOERROR;
             continue;
         }
@@ -179,7 +179,7 @@ void Kernel::sysTree(string path) {
 
     path = u->u_dirp;
     __sysCd__(path);
-    if (u->u_error != NOERROR) {//访问到文件
+    if (u->u_error != NOERROR) {/* 访问到文件 */
         cout << "目录路径不存在！" << endl;
         u->u_error = NOERROR;
         __sysCd__(curDir);
@@ -207,7 +207,7 @@ void Kernel::sysCreate(string fileName) {
     User *u = Kernel::Instance().GetUserManager().GetUser();
     if (!checkPathName(fileName))
         return;
-    u->u_arg[1] = (INode::IREAD | INode::IWRITE);//存放当前系统调用参数
+    u->u_arg[1] = (INode::IREAD | INode::IWRITE);/* 存放当前系统调用参数 */
     m_FileManager->Creat();
     checkError();
 }
@@ -223,17 +223,17 @@ void Kernel::sysOpen(string fileName) {
     User *u = Kernel::Instance().GetUserManager().GetUser();
     if (!checkPathName(fileName))
         return;
-    u->u_arg[1] = (File::FREAD | File::FWRITE);//存放当前系统调用参数
+    u->u_arg[1] = (File::FREAD | File::FWRITE);/* 存放当前系统调用参数 */
     m_FileManager->Open();
     if (checkError())
         return;
     cout << "打开文件成功，返回的文件句柄fd为 " << u->u_ar0[User::EAX] << endl;
 }
 
-//传入sfd句柄
+/* 传入sfd句柄 */
 void Kernel::sysClose(string fd) {
     User *u = Kernel::Instance().GetUserManager().GetUser();
-    u->u_arg[0] = stoi(fd);//存放当前系统调用参数
+    u->u_arg[0] = stoi(fd);/* 存放当前系统调用参数 */
     m_FileManager->Close();
     checkError();
 }

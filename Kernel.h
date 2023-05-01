@@ -1,6 +1,6 @@
-//
-// Created by nekotoxin on 23-3-31.
-//
+/* 
+ * Created by nekotoxin on 23-3-31.
+ * */
 
 #ifndef SECONDLEVELFS_KERNEL_H
 #define SECONDLEVELFS_KERNEL_H
@@ -20,9 +20,9 @@ public:
 
     static Kernel &Instance();
 
-    void Initialize(); //文件系统初始化
-    void Quit();       //退出文件系统
-// Kernel的子组件
+    void Initialize(); /* 文件系统初始化 */
+    void Quit();       /* 退出文件系统 */
+/*  Kernel的子组件 */
     DiskDriver &GetDiskDriver();
 
     BufferManager &GetBufferManager();
@@ -33,19 +33,19 @@ public:
 
     UserManager &GetUserManager();
 
-    User &GetUser(); //作为单体实例，单用户时放在这里，多用户时放在线程局部数据中
+    User &GetUser(); /* 作为单体实例，单用户时放在这里，多用户时放在线程局部数据中 */
 
 private:
-    static Kernel instance; // 单体实例
+    static Kernel instance; /*  单体实例 */
 
-// 指向子组件的指针
+/*  指向子组件的指针 */
     DiskDriver *m_DiskDriver;
     BufferManager *m_BufferManager;
     FileSystem *m_FileSystem;
     FileManager *m_FileManager;
     UserManager *m_UserManager;
-//    User* m_User;
-//    UserManager* m_UserManager;
+/* User* m_User;
+ * UserManager* m_UserManager; */
 public:
 
     void sysLs();
@@ -68,8 +68,8 @@ public:
 
     void sysRead(string fd, string outFile, string size);
 
-    void sysRename(string ori, string cur);  //重命名文件、文件夹
-    void sysTree(string path);               //打印树状目录
+    void sysRename(string ori, string cur);  /* 重命名文件、文件夹 */
+    void sysTree(string path);               /* 打印树状目录 */
 
 private:
     bool checkError();
@@ -78,7 +78,7 @@ private:
 
     void __sysCd__(string dirName);
 
-    void __sysTree__(string path, int depth);//内部打印树状目录
+    void __sysTree__(string path, int depth);/* 内部打印树状目录 */
 };
 
-#endif //SECONDLEVELFS_KERNEL_H
+#endif /* SECONDLEVELFS_KERNEL_H */

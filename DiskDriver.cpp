@@ -16,7 +16,7 @@ DiskDriver::DiskDriver() {
 
 DiskDriver::~DiskDriver() {
     if (diskp != NULL) {
-        if(diskMode == MMAP_DISK_MODE){
+        if (diskMode == MMAP_DISK_MODE) {
             munmap(diskmapp, DISK_SIZE);
         }
         fclose(diskp);
@@ -24,10 +24,9 @@ DiskDriver::~DiskDriver() {
 }
 
 void DiskDriver::write(const uint8 *in_buffer, uint32 in_size, int offset, uint32 origin) {
-    if(diskMode == MMAP_DISK_MODE)
-    {
+    if (diskMode == MMAP_DISK_MODE) {
         uint8 *p = diskmapp;
-        if(offset >= 0)
+        if (offset >= 0)
             p += offset;
         memcpy(p, in_buffer, in_size);
         return;
@@ -39,10 +38,9 @@ void DiskDriver::write(const uint8 *in_buffer, uint32 in_size, int offset, uint3
 }
 
 void DiskDriver::read(uint8 *out_buffer, uint32 out_size, int offset, uint32 origin) {
-    if(diskMode == MMAP_DISK_MODE)
-    {
+    if (diskMode == MMAP_DISK_MODE) {
         uint8 *p = diskmapp;
-        if(offset >= 0)
+        if (offset >= 0)
             p += offset;
         memcpy(out_buffer, p, out_size);
         return;
@@ -58,7 +56,7 @@ bool DiskDriver::Exists() {
 }
 
 void DiskDriver::OpenIMGFile() {
-    diskp = fopen(diskFileName, "wb+"); // 没有就创建
+    diskp = fopen(diskFileName, "wb+"); /*  没有就创建 */
     if (diskp == NULL) {
         printf("Disk OpenIMGFile Error!\n");
         exit(1);
@@ -67,7 +65,7 @@ void DiskDriver::OpenIMGFile() {
 
 void DiskDriver::UseMMAP() {
     int fd = fileno(diskp);
-    ftruncate(fd, DISK_SIZE); // 8MB
+    ftruncate(fd, DISK_SIZE); /*  8MB */
     struct stat sb;
     fstat(fd, &sb);
     diskmapp = (uint8 *) mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);

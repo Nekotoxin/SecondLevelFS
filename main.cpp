@@ -155,40 +155,40 @@ int main() {
         in >> opt;
         val[0] = val[1] = val[2] = "";
 
-        //格式化文件系统
+        /* 格式化文件系统 */
         if (opt == "fformat") {
-            //Us.sysCd("/");
-//			g_OpenFileTable.Reset();
-//			g_INodeTable.Reset();
-//			g_BufferManager.FormatBuffer();
-//            g_FileSystem.FormatFS();
-            //Kernel::Instance().u_ofiles.Reset();
+/* Us.sysCd("/");
+ * 			g_OpenFileTable.Reset();
+ * 			g_INodeTable.Reset();
+ * 			g_BufferManager.FormatBuffer();
+ * g_FileSystem.FormatFS();
+ * Kernel::Instance().u_ofiles.Reset(); */
             cout << "格式化完毕，文件系统已退出，请重新启动！" << endl;
             return 0;
         }
-            //查看当前目录内容
+            /* 查看当前目录内容 */
         else if (opt == "ls")
             Kernel::Instance().sysLs();
-            //生成文件夹
+            /* 生成文件夹 */
         else if (opt == "mkdir") {
             in >> val[0];
             if (val[0][0] != '/')
                 val[0] = u->u_curdir + val[0];
             Kernel::Instance().sysMkDir(val[0]);
         }
-            //进入目录
+            /* 进入目录 */
         else if (opt == "cd") {
             in >> val[0];
             Kernel::Instance().sysCd(val[0]);
         }
-            //创建文件名为filename的文件
+            /* 创建文件名为filename的文件 */
         else if (opt == "fcreate") {
             in >> val[0];
             if (val[0][0] != '/')
                 val[0] = u->u_curdir + val[0];
             Kernel::Instance().sysCreate(val[0]);
         }
-            //打开文件名为filename的文件
+            /* 打开文件名为filename的文件 */
         else if (opt == "fopen") {
             in >> val[0];
             if (u->u_ar0[User::EAX] == 0) {
@@ -200,37 +200,37 @@ int main() {
 
             Kernel::Instance().sysOpen(val[0]);
         }
-            //退出系统，并将缓存内容存至磁盘
+            /* 退出系统，并将缓存内容存至磁盘 */
         else if (opt == "exit")
             return 0;
-            //关闭文件句柄为fd的文件
+            /* 关闭文件句柄为fd的文件 */
         else if (opt == "fclose") {
             in >> val[0];
             Kernel::Instance().sysClose(val[0]);
         } else if (opt == "fseek") {
             in >> val[0] >> val[1] >> val[2];
-            //以begin模式把fd文件指针偏移step
+            /* 以begin模式把fd文件指针偏移step */
             if (val[2] == "begin")
                 Kernel::Instance().sysSeek(val[0], val[1], string("0"));
-                //以cur模式把fd文件指针偏移step
+                /* 以cur模式把fd文件指针偏移step */
             else if (val[2] == "cur")
                 Kernel::Instance().sysSeek(val[0], val[1], string("1"));
-                //以end模式把fd文件指针偏移step
+                /* 以end模式把fd文件指针偏移step */
             else if (val[2] == "end")
                 Kernel::Instance().sysSeek(val[0], val[1], string("2"));
         }
-            //从fd文件读取size字节，输出到outfile
-            //从fd文件读取size字节，输出到屏幕
+/* 从fd文件读取size字节，输出到outfile
+ * 从fd文件读取size字节，输出到屏幕 */
         else if (opt == "fread") {
             in >> val[0] >> val[1] >> val[2];
             Kernel::Instance().sysRead(val[0], val[1], val[2]);
         }
-            //从infile输入，写入fd文件size字节
+            /* 从infile输入，写入fd文件size字节 */
         else if (opt == "fwrite") {
             in >> val[0] >> val[1] >> val[2];
             Kernel::Instance().sysWrite(val[0], val[1], val[2]);
         }
-            //删除文件文件名为filename的文件或者文件夹
+            /* 删除文件文件名为filename的文件或者文件夹 */
         else if (opt == "fdelete") {
             in >> val[0];
             if (val[0][0] != '/')
@@ -238,7 +238,7 @@ int main() {
             Kernel::Instance().sysDelete(val[0]);
         } else if (opt == "test")
             AutoTest();
-            //重命名文件或文件夹
+            /* 重命名文件或文件夹 */
         else if (opt == "frename") {
             in >> val[0] >> val[1];
             Kernel::Instance().sysRename(val[0], val[1]);
