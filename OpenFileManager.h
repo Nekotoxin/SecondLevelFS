@@ -21,7 +21,7 @@ public:
 
     ~OpenFileTable() = default;
 
-    void Reset();
+    void Initialize();
 
     File *FAlloc();                          /* 在系统打开文件表中分配一个空闲的File结构 */
     void CloseF(File *pFile);                /* 对打开文件控制块File结构的引用计数count减1，若引用计数count为0，则释放File结构 */

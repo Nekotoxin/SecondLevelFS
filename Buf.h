@@ -38,17 +38,10 @@ public:
     pthread_mutex_t buf_lock;
 
     Buf() {
-        flags = 0;
-        forw = NULL;
-        back = NULL;
-        wcount = 0;
-        addr = NULL;
-        blkno = -1;
-        no = 0;
-        pthread_mutex_init(&buf_lock, NULL);
+        Initialize();
     }
 
-    void Reset() {
+    void Initialize() {
         flags = 0;
         forw = NULL;
         back = NULL;

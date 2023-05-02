@@ -26,8 +26,6 @@ public:
     void Bdwrite(Buf *bp);          /* 延迟写磁盘 */
     void Bclear(Buf *bp);           /* 清空缓冲区 */
     void Bflush();                         /* 延迟写缓存全部flush到磁盘 */
-    void InitializeBuffer();                   /* 初始化缓冲区 */
-    void InitializeQueue();                 /* 初始化缓存队列 */
     void DetachNode(Buf *bp);               /* 分离控制块pb */
 
 private:

@@ -158,12 +158,12 @@ int main() {
 
         /* 格式化文件系统 */
         if (opt == "fformat") {
-/* Us.sysCd("/");
- * 			g_OpenFileTable.Reset();
- * 			g_INodeTable.Reset();
- * 			g_BufferManager.InitializeBuffer();
- * g_FileSystem.Format();
- * Kernel::Instance().u_ofiles.Reset(); */
+            Kernel::Instance().sysCd("/");
+            Kernel::Instance().GetFileManager().m_openFileTable->Initialize();
+            Kernel::Instance().GetFileManager().m_inodeTable->Initialize();
+            Kernel::Instance().GetBufferManager().Initialize();
+            Kernel::Instance().GetFileSystem().Initialize();
+            Kernel::Instance().GetUserManager().GetUser()->u_ofiles.Initialize();
             cout << "格式化完毕，文件系统已退出，请重新启动！" << endl;
             return 0;
         }

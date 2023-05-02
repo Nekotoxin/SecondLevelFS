@@ -8,7 +8,7 @@ extern INodeTable g_INodeTable;
 OpenFileTable g_OpenFileTable;
 INodeTable g_INodeTable;
 
-void OpenFileTable::Reset() {
+void OpenFileTable::Initialize() {
     for (int i = 0; i < OpenFileTable::MAX_FILES; ++i)
         sysFileTable[i].Reset();
 }
@@ -56,7 +56,7 @@ void INodeTable::Initialize() {
 void INodeTable::Reset() {
     INode emptyINode;
     for (int i = 0; i < INodeTable::NINODE; ++i)
-        m_INode[i].Reset();
+        m_INode[i].Initialize();
 }
 
 /* 检查编号为inumber的外存INode是否有内存拷贝，如果有则返回该内存INode在内存INode表中的索引 */

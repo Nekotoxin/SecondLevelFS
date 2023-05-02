@@ -1,7 +1,3 @@
-/* 
- * Created by nekotoxin on 23-3-31.
- * */
-
 #ifndef SECONDLEVELFS_USERMANAGER_H
 #define SECONDLEVELFS_USERMANAGER_H
 

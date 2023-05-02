@@ -40,9 +40,7 @@ public:
 
     ~OpenFiles() = default;
 
-    void Reset() {
-        memset(processOpenFileTable, 0, sizeof(processOpenFileTable));
-    };
+    void Initialize();
 
     int AllocFreeSlot();           /* 进程请求打开文件时，在打开文件描述符表中分配一个空闲表项 */
     File *GetF(int fd);            /* 根据用户系统调用提供的文件描述符参数fd，找到对应的打开文件控制块File结构 */

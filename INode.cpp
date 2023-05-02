@@ -15,15 +15,20 @@ DiskINode::DiskINode() {
     this->d_mtime = 0;
 }
 
+
 DiskINode::~DiskINode() {
 }
 
 INode::INode() {
-    this->i_mode = 0;
-    this->i_nlink = 0;
-    this->i_count = 0;
-    this->i_number = -1;
-    this->i_size = 0;
+    Initialize();
+}
+
+void INode::Initialize() {
+    i_mode = 0;
+    i_count = 0;
+    i_nlink = 0;
+    i_number = -1;
+    i_size = 0;
     memset(i_addr, 0, sizeof(i_addr));
     pthread_mutex_init(&this->mutex, NULL);
 }
@@ -283,11 +288,14 @@ INode::~INode() {
 }
 
 void INode::NFrele() {
-/* this->i_flag &= ~INode::ILOCK;
- * pthread_mutex_unlock(&this->mutex); */
+    this->i_flag &= ~INode::ILOCK;
+    pthread_mutex_unlock(&this->mutex);
 }
 
 void INode::NFlock() {
-/* pthread_mutex_lock(&this->mutex);
- * this->i_flag |= INode::ILOCK; */
+    pthread_mutex_lock(&this->mutex);
+    this->i_flag |= INode::ILOCK;
 }
+
+
+

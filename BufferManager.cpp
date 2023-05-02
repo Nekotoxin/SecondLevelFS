@@ -2,16 +2,8 @@
 #include "Utility.h"
 #include "Kernel.h"
 
-/* CacheBlock只用到了两个标志，B_DONE和B_DELWRI，分别表示已经完成IO和延迟写的标志。*/
-/* 空闲Buffer无任何标志 */
 BufferManager::BufferManager() {
 
-}
-
-void BufferManager::Initialize() {
-    m_bufList = new Buf;
-    InitializeQueue();
-    m_diskDriver = &Kernel::Instance().GetDiskDriver();
 }
 
 BufferManager::~BufferManager() {
@@ -19,13 +11,8 @@ BufferManager::~BufferManager() {
     delete m_bufList;
 }
 
-void BufferManager::InitializeBuffer() {
-    for (int i = 0; i < NBUF; ++i)
-        m_Buf[i].Reset();
-    InitializeQueue();
-}
-
-void BufferManager::InitializeQueue() {
+void BufferManager::Initialize() {
+    m_bufList = new Buf; // 泄漏？
     for (int i = 0; i < NBUF; ++i) {
         if (i)
             m_Buf[i].forw = m_Buf + i - 1;
@@ -44,6 +31,7 @@ void BufferManager::InitializeQueue() {
         m_Buf[i].no = i;
         pthread_mutex_init(&m_Buf[i].buf_lock, NULL);
     }
+    m_diskDriver = &Kernel::Instance().GetDiskDriver();
 }
 
 /* 采用LRU Cache 算法，每次从头部取出，使用后放到尾部 */

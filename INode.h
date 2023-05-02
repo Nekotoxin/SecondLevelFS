@@ -54,15 +54,7 @@ public:
 
     ~INode();
 
-    void Reset() {
-        i_mode = 0;
-        i_count = 0;
-        i_number = -1;
-        i_size = 0;
-        memset(i_addr, 0, sizeof(i_addr));
-        pthread_mutex_init(&this->mutex, NULL);
-    }
-
+    void Initialize();                      /* 初始化Inode对象 */
     void ReadI();                           /* 根据Inode对象中的物理磁盘块索引表，读取相应的文件数据 */
     void WriteI();                          /* 根据Inode对象中的物理磁盘块索引表，将数据写入文件 */
     int Bmap(int lbn);                      /* 将文件的逻辑块号转换成对应的物理盘块号 */
@@ -84,7 +76,7 @@ public:
  * 相对应。外存INode对象长度为64字节，
  * 每个磁盘块可以存放512/64 = 8个外存Inode
  */
-class DiskINode/* 64字节  */
+class DiskINode
 {
 public:
     unsigned int d_mode;    /* 状态的标志位，定义见enum INodeFlag */

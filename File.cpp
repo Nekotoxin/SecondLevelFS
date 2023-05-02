@@ -16,8 +16,12 @@ void File::Reset() {
 }
 
 OpenFiles::OpenFiles() {
-    memset(processOpenFileTable, 0, sizeof(processOpenFileTable));
+    Initialize();
 }
+
+void OpenFiles::Initialize() {
+    memset(processOpenFileTable, 0, sizeof(processOpenFileTable));
+};
 
 
 /* 进程请求打开文件时，在打开文件描述符表中分配一个空闲表项 */

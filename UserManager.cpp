@@ -1,7 +1,3 @@
-/* 
- * Created by nekotoxin on 23-3-31.
- * */
-
 #include "UserManager.h"
 
 extern INodeTable g_INodeTable;
