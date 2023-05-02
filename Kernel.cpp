@@ -51,7 +51,7 @@ void Kernel::Initialize() {
     u->u_cdir = g_INodeTable.IGet(FileSystem::ROOTINO);
     m_FileManager->rootDirINode->NFrele();
     u->u_curdir = "/";
-    printf("[INFO] root 登录成功.\n", pthread_self());
+    printf("[INFO] root 登录成功.\n");
     printf("[info] 文件系统初始化完毕.\n");
 }
 
@@ -263,7 +263,7 @@ void Kernel::sysWrite(string sfd, string inFile, string size) {
     fin.read(buffer, usize);
     fin.close();
     u->u_arg[0] = fd;
-    u->u_arg[1] = (int) buffer;
+    u->u_arg[1] = (long long) buffer;
     u->u_arg[2] = usize;
     m_FileManager->Write();
 
@@ -279,7 +279,7 @@ void Kernel::sysRead(string sfd, string outFile, string size) {
     int usize = stoi(size);
     char *buffer = new char[usize];
     u->u_arg[0] = fd;
-    u->u_arg[1] = (int) buffer;
+    u->u_arg[1] = (long long) buffer;
     u->u_arg[2] = usize;
     m_FileManager->Read();
     if (checkError())

@@ -61,7 +61,7 @@ public:
     string u_curdir;                /* 当前工作目录完整路径 */
     string u_dirp;                      /* 系统调用参数(一般用于Pathname)的指针 */
 
-    int u_arg[5];                       /* 存放当前系统调用参数 */
+    long long u_arg[5];                       /* 存放当前系统调用参数 */
     /* 系统调用相关成员 */
     uint32 u_ar0[5];                    /*     指向核心栈现场保护区中EAX寄存器 */
     /* 存放的栈单元，本字段存放该栈单元的地址。

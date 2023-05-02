@@ -116,6 +116,7 @@ bool AutoTest() {
 }
 
 int main() {
+    printf("sizeof spb:%lu\n",sizeof(SuperBlock));
     Kernel::Instance().Initialize();
     User *u = Kernel::Instance().GetUserManager().GetUser();
 

@@ -22,7 +22,7 @@ UserManager::UserManager() {
 User *UserManager::GetUser() {
     pthread_t pthread_id = pthread_self();
     if (user_addr.find(pthread_id) == user_addr.end()) {
-        printf("ERR: 线程 %d 的 User 结构无法得到，系统错误.\n", pthread_id);
+        printf("ERR: 线程 %p 的 User 结构无法得到，系统错误.\n", pthread_id);
         exit(1);
     }
     return pusers[user_addr[pthread_id]];
@@ -40,7 +40,7 @@ bool UserManager::Login(string uname) {
     pthread_t pthread_id = pthread_self();
     /*  检查该线程是否已登录 */
     if (user_addr.find(pthread_id) != user_addr.end()) {
-        printf("ERR: 线程 %llu 重复登录\n", pthread_id);
+        printf("ERR: 线程 %p 重复登录\n", pthread_id);
         return false;
     }
     /*  寻找空闲的pusers指针 */
@@ -63,7 +63,7 @@ bool UserManager::Login(string uname) {
     /*  建立pid与addr的关联 */
     user_addr[pthread_id] = i;
     pusers[i]->u_uid = 0;
-    printf("[INFO] 线程 %llu 登录成功.\n", pthread_id);
+    printf("[INFO] 线程 %p 登录成功.\n", pthread_id);
 /* 设置 User 结构的初始值
  * 1. 关联根目录 */
     pusers[i]->u_cdir = g_INodeTable.IGet(FileSystem::ROOTINO);
@@ -93,12 +93,12 @@ bool UserManager::Logout() {
     pthread_t pthread_id = pthread_self();
     /*  检查该线程是否已登录 */
     if (user_addr.find(pthread_id) == user_addr.end()) {
-        printf("ERR: 线程 %d 未登录，无需登出\n", pthread_id);
+        printf("ERR: 线程 %p 未登录，无需登出\n", pthread_id);
         return false;
     }
     int i = user_addr[pthread_id];
     free(pusers[i]);
     user_addr.erase(pthread_id);
-    printf("[INFO] 线程 %d 登出成功.\n", pthread_id);
+    printf("[INFO] 线程 %p 登出成功.\n", pthread_id);
     return true;
 }
