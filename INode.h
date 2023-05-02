@@ -5,10 +5,14 @@
 #include "Buf.h"
 #include "pthread.h"
 
-/* 内存INode
-*     实现 INode 的各种操作，包括将文件的逻辑块号转换成对应的物
-* 理盘块号等功能。
-*/
+/*
+ * 内存索引节点(INode)的定义
+ * 系统中每一个打开的文件、当前访问目录、
+ * 挂载的子文件系统都对应唯一的内存inode。
+ * 每个内存inode通过外存inode所在存储设备的设备号(i_dev)
+ * 以及该设备外存inode区中的编号(i_number)来确定
+ * 其对应的外存inode。
+ */
 class INode {
 public:
     /* i_flag中标志位 */
@@ -39,9 +43,7 @@ public:
     unsigned int i_mode;    /* 文件工作方式信息 */
     int i_count;        /* 引用计数 */
     int i_nlink;        /* 文件联结计数，即该文件在目录树中不同路径名的数量 */
-    int i_number;        /* *** 外存INode区中的编号 *** */
-/* 被拷贝到内存的 Inode 中的索引节点数据需要知道它来自于哪个外存 DiskInode，
- * 以便于将来内存副本被修改之后更新到外存对应的 DiskInode 中去 */
+    int i_number;        /* 外存INode区中的编号 */
     int i_size;            /* 文件大小，字节为单位 */
     int i_addr[10];        /* 用于文件逻辑块号和物理块号转换的基本索引表 */
     int i_lastr;        /* 存放最近一次读取文件的逻辑块号，用于判断是否需要预读 */
@@ -72,9 +74,16 @@ public:
     void NFlock();                          /* 加锁 */
 };
 
-/* 磁盘INode
-*      磁盘中 INode 结构，是 INode 的简化版本
-*/
+/*
+ * 外存索引节点(DiskINode)的定义
+ * 外存Inode位于文件存储设备上的
+ * 外存Inode区中。每个文件有唯一对应
+ * 的外存Inode，其作用是记录了该文件
+ * 对应的控制信息。
+ * 外存Inode中许多字段和内存Inode中字段
+ * 相对应。外存INode对象长度为64字节，
+ * 每个磁盘块可以存放512/64 = 8个外存Inode
+ */
 class DiskINode/* 64字节  */
 {
 public:

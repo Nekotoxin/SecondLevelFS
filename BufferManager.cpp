@@ -10,7 +10,7 @@ BufferManager::BufferManager() {
 
 void BufferManager::Initialize() {
     m_bufList = new Buf;
-    InitList();
+    InitializeQueue();
     m_diskDriver = &Kernel::Instance().GetDiskDriver();
 }
 
@@ -19,13 +19,13 @@ BufferManager::~BufferManager() {
     delete m_bufList;
 }
 
-void BufferManager::FormatBuffer() {
+void BufferManager::InitializeBuffer() {
     for (int i = 0; i < NBUF; ++i)
         m_Buf[i].Reset();
-    InitList();
+    InitializeQueue();
 }
 
-void BufferManager::InitList() {
+void BufferManager::InitializeQueue() {
     for (int i = 0; i < NBUF; ++i) {
         if (i)
             m_Buf[i].forw = m_Buf + i - 1;
@@ -47,13 +47,13 @@ void BufferManager::InitList() {
 }
 
 /* 采用LRU Cache 算法，每次从头部取出，使用后放到尾部 */
-void BufferManager::DetachNode(Buf *pb) {
-    if (pb->back == NULL)
+void BufferManager::DetachNode(Buf *bp) {
+    if (bp->back == NULL)
         return;
-    pb->forw->back = pb->back;
-    pb->back->forw = pb->forw;
-    pb->back = NULL;
-    pb->forw = NULL;
+    bp->forw->back = bp->back;
+    bp->back->forw = bp->forw;
+    bp->back = NULL;
+    bp->forw = NULL;
 }
 
 

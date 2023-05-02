@@ -160,8 +160,8 @@ int main() {
 /* Us.sysCd("/");
  * 			g_OpenFileTable.Reset();
  * 			g_INodeTable.Reset();
- * 			g_BufferManager.FormatBuffer();
- * g_FileSystem.FormatFS();
+ * 			g_BufferManager.InitializeBuffer();
+ * g_FileSystem.Format();
  * Kernel::Instance().u_ofiles.Reset(); */
             cout << "格式化完毕，文件系统已退出，请重新启动！" << endl;
             return 0;
